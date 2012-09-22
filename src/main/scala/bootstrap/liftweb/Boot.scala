@@ -10,6 +10,8 @@ import net.liftweb._
   import Loc._
   import mongodb._
 
+import com.anchortab.snippet._
+
 import net.liftmodules.JQueryModule
 
 
@@ -31,6 +33,9 @@ class Boot {
 
     // Specify where to search for our stuff.
     LiftRules.addToPackages("com.anchortab")
+
+    // Add Snippet handlers
+    LiftRules.snippets.append(Authentication.snippetHandlers)
 
     //Init the jQuery module, see http://liftweb.net/jquery for more information.
     LiftRules.jsArtifacts = JQueryArtifacts
