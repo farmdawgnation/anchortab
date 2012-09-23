@@ -15,7 +15,9 @@ case class UserSession(userId:ObjectId, ip:String, userAgent:String,
 object UserSession extends MongoDocumentMeta[UserSession] {
 }
 
-case class User(email:String, password:String,
+case class UserProfile(firstName:Option[String], lastName:Option[String], organization:Option[String])
+
+case class User(email:String, password:String, profile:Option[UserProfile] = None,
                 createdAt:DateTime = new DateTime,
                 _id:ObjectId = ObjectId.get) extends MongoDocument[User] {
   val meta = User
