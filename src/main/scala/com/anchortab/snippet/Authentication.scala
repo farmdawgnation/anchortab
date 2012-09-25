@@ -9,9 +9,38 @@ import net.liftweb._
     import LiftRules._
   import util._
     import Helpers._
+  import json._
+    import JsonDSL._
 
+import com.anchortab.model._
+
+object userSession extends SessionVar[Box[UserSession]](Empty)
+object statelessUser extends RequestVar[Box[User]](Empty)
 
 object Authentication extends Loggable {
+  /**
+   * Handle authentication for stateless requests (the API).
+  **/
+  def earlyInStateless(req:Box[Req]) = {
+    req match {
+      case Full(req:Req) if req.header("Authorization").isDefined =>
+        req.header("Authorization").foreach { authHeader =>
+          val authParts = authHeader.split(" ")
+
+          for {
+            authType <- tryo(authParts(0)) if authType == "Bearer"
+            authKey <- tryo(authParts(1))
+            user <- User.find("authorizations.key" -> authKey)
+          } {
+            statelessUser(Full(user))
+          }
+        }
+
+      case _ =>
+        // Nada
+    }
+  }
+
   def snippetHandlers : SnippetPF = {
     case "login-form" :: Nil => loginForm
     case "registration-form" :: Nil => registrationForm
