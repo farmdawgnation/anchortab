@@ -34,6 +34,9 @@ class Boot {
     // Specify where to search for our stuff.
     LiftRules.addToPackages("com.anchortab")
 
+    // Add API to dispatch
+    LiftRules.statelessDispatch.append(Api)
+
     // Add Snippet handlers
     LiftRules.snippets.append(Authentication.snippetHandlers)
 
