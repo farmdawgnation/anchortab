@@ -15,7 +15,7 @@ import com.anchortab.model._
 
 object Api extends RestHelper with Loggable {
   serve {
-    case Req("api" :: "user" :: id :: Nil, _, GetRequest) =>
+    case Req("api" :: "v1" :: "user" :: id :: Nil, _, GetRequest) =>
       {
         for {
           currentUser <- statelessUser.is
