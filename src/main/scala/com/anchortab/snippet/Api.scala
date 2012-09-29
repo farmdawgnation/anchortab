@@ -78,5 +78,43 @@ object Api extends RestHelper with Loggable {
           user.asJson
         }
       } ?~! "Authentication Failed." ~> 401
+
+    //////////
+    // API "tab" resource
+    //////////
+    case Req("api" :: "v1" :: "tab" :: tabId :: Nil, _, GetRequest) =>
+      {
+        for {
+          currentUser <- statelessUser.is
+          tab <- (Tab.find(tabId):Box[Tab])
+            if tab.userId == currentUser._id || currentUser.admin_?
+        } yield {
+          tab.asJson
+        }
+      } ?~! "Tab not found." ~> 404
+
+    case req @ Req("api" :: "v1" :: "tab" :: tabId :: "appearance" :: Nil, _, PutRequest) =>
+      {
+        for {
+          currentUser <- statelessUser.is
+          tab <- (Tab.find(tabId):Box[Tab])
+            if tab.userId == currentUser._id || currentUser.admin_?
+          delay <- req.param("delay").map(_ toInt) ?~! "Delay parameter is required." ~> 400
+          font <- req.param("font") ?~! "The font parameter is required." ~> 400
+          colorScheme <- req.param("colorScheme") ?~! "The colorScheme parameter is required." ~> 400
+          customText <- req.param("customText") ?~! "the customText parameter is required." ~> 400
+        } yield {
+          Tab.update("_id" -> tabId, "$set" -> (
+            "appearance" -> (
+              ("delay" -> delay) ~
+              ("font" -> font) ~
+              ("colorScheme" -> colorScheme) ~
+              ("customTest" -> customText)
+            )
+          ))
+
+          JObject(Nil)
+        }
+      } ?~! "Tab not found." ~> 404
   }
 }
