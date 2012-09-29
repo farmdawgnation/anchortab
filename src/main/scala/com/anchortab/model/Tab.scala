@@ -12,6 +12,8 @@ case class TabService(serviceId:String, credentials:Map[String,String])
 case class Tab(name:String, userId:ObjectId, appearance:TabAppearance, service:Option[TabService] = None,
                _id:ObjectId = ObjectId.get) extends MongoDocument[Tab] {
   val meta = Tab
+
+  lazy val user = User.find(userId)
 }
 
 object Tab extends MongoDocumentMeta[Tab]
