@@ -83,6 +83,8 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
       }
     }.foldLeft(true)(_ && _)
   }
+
+  lazy val tabsActive_? = admin_? || (validSubscription_? && withinQuota_?)
 }
 object User extends MongoDocumentMeta[User] {
   object Roles {
