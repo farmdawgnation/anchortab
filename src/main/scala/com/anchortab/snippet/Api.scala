@@ -26,5 +26,37 @@ object Api extends RestHelper with Loggable {
           ("email" -> user.email)
         }
       } ?~! "Authentication Failed." ~> 401
+
+    //////////
+    // API "embed" resource.
+    //
+    // Calls in this namespace are used by the Tab itself to retrieve the information
+    // it needs to render, or to add an email address to the Tab's email list.
+    //////////
+    case Req("api" :: "v1" :: "embed" :: tabId :: Nil, _, GetRequest) =>
+      {
+        for {
+          tab <- (Tab.find(tabId):Box[Tab])
+          user <- tab.user.filter(_.tabsActive_?) ?~! "This tab has been disabled." ~> 403
+        } yield {
+          ("delay" -> tab.appearance.delay) ~
+          ("font" -> tab.appearance.font) ~
+          ("colorScheme" -> tab.appearance.colorScheme) ~
+          ("customText" -> tab.appearance.customText)
+        }
+      } ?~! "Unknown Tab." ~> 404
+
+    case req @ Req("api" :: "v1" :: "embed" :: tabId :: Nil, _, PutRequest) =>
+      {
+        for {
+          tab <- (Tab.find(tabId):Box[Tab]) // Force box type.
+          user <- tab.user.filter(_.tabsActive_?) ?~! "This tab has been disabled." ~> 403
+          email <- req.param("email") ?~! "Email was not specified." ~> 403
+        } yield {
+          // FIXME: Actually record the email submission.
+          ("success" -> 1) ~
+          ("email" -> email)
+        }
+      } ?~! "Unknwon Tab." ~> 404
   }
 }
