@@ -5,6 +5,9 @@ import scala.collection.immutable.HashMap
 import net.liftweb._
   import mongodb._
   import util.Helpers._
+  import json._
+    import JsonDSL._
+    import Extraction._
 
 import org.joda.time.DateTime
 
@@ -64,6 +67,7 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
                 role:Option[String] = None, createdAt:DateTime = new DateTime,
                 _id:ObjectId = ObjectId.get) extends MongoDocument[User] {
   val meta = User
+  implicit val formats = DefaultFormats
 
   lazy val subscription = subscriptions.filter(_.valid_?).lastOption
   lazy val validSubscription_? = subscription.isDefined
@@ -85,6 +89,14 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
   }
 
   lazy val tabsActive_? = admin_? || (validSubscription_? && withinQuota_?)
+
+  lazy val asJson =
+    ("email" -> email) ~
+    ("profile" -> decompose(profile)) ~
+    ("role" -> role) ~
+    ("subscriptionValid" -> validSubscription_?) ~
+    ("withinUsageLimits" -> withinQuota_?) ~
+    ("tabsActive" -> tabsActive_?)
 }
 object User extends MongoDocumentMeta[User] {
   object Roles {
