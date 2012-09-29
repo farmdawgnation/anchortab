@@ -6,7 +6,7 @@ import net.liftweb._
 
 import org.bson.types.ObjectId
 
-case class TabAppearance(appearanceDelay:Int, font:String, colorScheme:String, customText:String)
+case class TabAppearance(delay:Int, font:String, colorScheme:String, customText:String)
 
 case class TabService(serviceId:String, credentials:Map[String,String])
 
