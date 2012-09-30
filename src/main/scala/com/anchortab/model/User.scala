@@ -13,6 +13,8 @@ import org.joda.time.DateTime
 
 import org.bson.types.ObjectId
 
+import org.mindrot.jbcrypt.BCrypt
+
 /**
  * Model representing a user session. A user session is sored in a
  * Lift SessionVar to associate the current Lift session to a logged
@@ -101,5 +103,13 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
 object User extends MongoDocumentMeta[User] {
   object Roles {
     val Admin = "admin"
+  }
+
+  def hashPassword(inputPassword:String) = {
+    BCrypt.hashpw(inputPassword, BCrypt.gensalt())
+  }
+
+  def checkPassword(candidatePassword:String, hashedPassword:String) = {
+    BCrypt.checkpw(candidatePassword, hashedPassword)
   }
 }
