@@ -118,4 +118,14 @@ object User extends MongoDocumentMeta[User] {
   def checkPassword(candidatePassword:String, hashedPassword:String) = {
     BCrypt.checkpw(candidatePassword, hashedPassword)
   }
+
+  def attemptLogin(email:String, password:String) = {
+    for {
+      user <- User.find("email" -> email):Box[User]
+      passwordMatches = User.checkPassword(password, user.password)
+        if passwordMatches
+    } yield {
+      user
+    }
+  }
 }
