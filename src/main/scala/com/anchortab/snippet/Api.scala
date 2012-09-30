@@ -17,6 +17,11 @@ import net.liftweb._
 import com.anchortab.model._
 
 object Api extends RestHelper with Loggable {
+  def statelessRewrite : RewritePF = {
+    case RewriteRequest(ParsePath("api" :: "v1" :: "user" :: userId :: "tabs" :: Nil, _, _, _), _, _) =>
+      RewriteResponse("api" :: "v1" :: "user" :: userId :: "tabs" :: "0" :: Nil)
+  }
+
   serve {
     //////////
     // API "embed" resource.
