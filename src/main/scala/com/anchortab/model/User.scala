@@ -3,9 +3,11 @@ package com.anchortab.model
 import scala.collection.immutable.HashMap
 
 import net.liftweb._
+  import common._
   import mongodb._
   import util.Helpers._
   import json._
+    import ext._
     import JsonDSL._
     import Extraction._
 
@@ -65,11 +67,10 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
                 authorizations:List[UserAuthorizationKey] = List(),
                 subscriptions:List[UserSubscription] = List(),
                 invoices:List[UserInvoice] = List(),
-                quotaCounts:HashMap[String, Long] = HashMap.empty,
+                quotaCounts:Map[String, Long] = Map.empty,
                 role:Option[String] = None, createdAt:DateTime = new DateTime,
                 _id:ObjectId = ObjectId.get) extends MongoDocument[User] {
   val meta = User
-  implicit val formats = DefaultFormats
 
   lazy val subscription = subscriptions.filter(_.valid_?).lastOption
   lazy val validSubscription_? = subscription.isDefined
@@ -92,15 +93,20 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
 
   lazy val tabsActive_? = admin_? || (validSubscription_? && withinQuota_?)
 
-  lazy val asJson =
+  lazy val asJson = {
+    implicit val formats = DefaultFormats
+
     ("email" -> email) ~
     ("profile" -> decompose(profile)) ~
     ("role" -> role) ~
     ("subscriptionValid" -> validSubscription_?) ~
     ("withinUsageLimits" -> withinQuota_?) ~
     ("tabsActive" -> tabsActive_?)
+  }
 }
 object User extends MongoDocumentMeta[User] {
+  override def formats = allFormats ++ JodaTimeSerializers.all
+
   object Roles {
     val Admin = "admin"
   }
