@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+    <title>Tab Manager</title>
+  </head>
+  <body class="lift:content_id=main">
+    <div id="main" class="lift:surround?with=tab-manager;at=content">
+      <lift:pwn-if-not-logged-in />
+      <h2>Tab Manager Dashboard</h2>
+
+      <p>Welcome to your Tab Manager dashboard. To the left you'll find the
+        main menu that allows yout access to other areas of the Tab Manager.</p>
+
+      <h3>Account Information</h3>
+
+      <ul class="account-stats">
+        <li>Subscription status: <span class="sub-status">Subscribed (Plan Name)</span></li>
+        <ul class="quota-summary-list">
+          <li class="quota-summary">
+            <span class="quota-name">Emails</span>:
+            <span class="usage">100</span> used out of
+            <span class="maximum">500</span>
+          </li>
+        </ul>
+
+        <li>Tab Summary</li>
+        <ul class="tab-summary-list">
+          <li class="tab-summary">
+            <span class="tab-name">My Awesome Tab</span>:
+            <span class="submissions">100</span> submissions out of
+            <span class="views">500</span> views. (<span class="percent">20</span>%)
+          </li>
+      </ul>
+    </div>
+  </body>
+</html>
