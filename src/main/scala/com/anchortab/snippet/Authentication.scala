@@ -5,6 +5,8 @@ import scala.xml.NodeSeq
 import net.liftweb._
   import common._
   import http._
+    import js._
+      import JsCmds._
     import SHtml._
     import LiftRules._
   import util._
@@ -45,6 +47,30 @@ object Authentication extends Loggable {
     case "login-form" :: Nil => loginForm
     case "registration-form" :: Nil => registrationForm
     case "forgot-password-form" :: Nil => forgotPasswordForm
+    case "redirect-to-dashboard-if-logged-in" :: Nil => redirectToDashboardIfLoggedIn
+    case "pwn-if-not-logged-in" :: Nil => pwnIfNotLoggedIn
+    case "show-if-logged-in" :: Nil => showIfLoggedIn
+  }
+
+  def redirectToDashboardIfLoggedIn(ns:NodeSeq) = {
+    if (userSession.isDefined)
+      S.redirectTo("/manager/dashboard")
+
+    ns
+  }
+
+  def pwnIfNotLoggedIn(ns:NodeSeq) = {
+    if (! userSession.isDefined)
+      S.redirectTo("/manager")
+
+    ns
+  }
+
+  def showIfLoggedIn(ns:NodeSeq) = {
+    if (userSession.isDefined)
+      ns
+    else
+      NodeSeq.Empty
   }
 
   def loginForm = {
