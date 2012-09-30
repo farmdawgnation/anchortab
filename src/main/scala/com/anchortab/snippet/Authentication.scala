@@ -88,8 +88,20 @@ object Authentication extends Loggable {
   }
 
   private def processLogin(username:String, password:String) = {
-    // FIXME
-    logger.info("Logged in with credentials: " + username + " " + password)
+    User.attemptLogin(username, password) match {
+      case Full(user) =>
+        val remoteIp = S.containerRequest.map(_.remoteAddress).openOr("localhost")
+        val userAgent = S.containerRequest.flatMap(_.userAgent).openOr("unknown")
+
+        val session = UserSession(user._id, remoteIp, userAgent)
+        session.save
+        userSession(Full(session))
+
+        RedirectTo("/manager/dashboard")
+
+      case _ =>
+        Alert("That username or password appears to be invalid.")
+    }
   }
 
   def registrationForm = {
