@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+    <title>Tab Manager</title>
+  </head>
+  <body class="lift:content_id=main">
+    <lift:redirect-to-dashboard-if-logged-in />
+    <div id="main" class="lift:surround?with=tab-manager;at=content">
+      <h2>Tab Manager Login</h2>
+
+      <div class="l:login-form">
+        <form>
+          <label>Username:</label> <input type="text" class="username">
+          <label>Password:</label> <input type="password" class="password">
+          <input type="submit" value="Log In" class="submit">
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
+
