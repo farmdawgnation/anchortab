@@ -1,5 +1,7 @@
 package com.anchortab.snippet
 
+import scala.math._
+
 import net.liftweb._
   import common._
   import http._
@@ -9,7 +11,8 @@ import net.liftweb._
     import Helpers._
   import json._
     import JsonDSL._
-  import mongodb.BsonDSL._
+  import mongodb._
+    import BsonDSL._
 
 import com.anchortab.model._
 
@@ -62,7 +65,8 @@ object Api extends RestHelper with Loggable {
     case Req("api" :: "v1" :: "user" :: id :: Nil, _, GetRequest) =>
       {
         for {
-          currentUser <- statelessUser.is if currentUser.admin_?
+          currentUser <- statelessUser.is
+            if id == currentUser._id || currentUser.admin_?
           user <- (User.find(id):Box[User]) ?~! "User not found." ~> 404
         } yield {
           user.asJson
@@ -76,6 +80,21 @@ object Api extends RestHelper with Loggable {
           user <- (User.find("email" -> email):Box[User]) ?~! "User not found." ~> 404
         } yield {
           user.asJson
+        }
+      } ?~! "Authentication Failed." ~> 401
+
+    case Req("api" :: "v1" :: "user" :: userId :: "tabs" :: AsInt(page) :: Nil, _, GetRequest) =>
+      {
+        for {
+          currentUser <- statelessUser.is
+            if userId == currentUser._id || currentUser.admin_?
+        } yield {
+          val limit = 20
+          val skip = max((page - 1) * limit, 0)
+          val userTabs =
+            Tab.findAll("userId" -> userId, "createdAt" -> 1, Limit(20), Skip(skip)).map(_.asJson)
+
+          ("tabs" -> userTabs):JObject
         }
       } ?~! "Authentication Failed." ~> 401
 
