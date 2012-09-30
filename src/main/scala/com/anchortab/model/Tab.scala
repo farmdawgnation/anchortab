@@ -10,6 +10,9 @@ import net.liftweb._
 import org.bson.types.ObjectId
 
 case class TabAppearance(delay:Int, font:String, colorScheme:String, customText:String)
+object TabAppearance {
+  val defaults = TabAppearance(30, "Arial", "red", "")
+}
 
 case class TabService(serviceId:String, credentials:Map[String,String])
 

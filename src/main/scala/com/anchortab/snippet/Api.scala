@@ -14,6 +14,8 @@ import net.liftweb._
   import mongodb._
     import BsonDSL._
 
+import org.bson.types.ObjectId
+
 import com.anchortab.model._
 
 object Api extends RestHelper with Loggable {
@@ -100,6 +102,21 @@ object Api extends RestHelper with Loggable {
             Tab.findAll("userId" -> userId, "createdAt" -> 1, Limit(20), Skip(skip)).map(_.asJson)
 
           ("tabs" -> userTabs):JObject
+        }
+      } ?~! "Authentication Failed." ~> 401
+
+    case req @ Req("api" :: "v1" :: "user" :: userId :: "tabs" :: Nil, _, PostRequest) =>
+      {
+        for {
+          currentUser <- statelessUser.is
+            if userId == currentUser._id || currentUser.admin_?
+          name <- req.param("name")
+        } yield {
+          val tab = Tab(name, new ObjectId(userId), TabAppearance.defaults)
+          tab.save
+
+          ("success" -> 1) ~
+          ("tabId" -> tab._id)
         }
       } ?~! "Authentication Failed." ~> 401
 
