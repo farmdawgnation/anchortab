@@ -15,7 +15,7 @@ import net.liftweb._
     import JsonDSL._
   import mongodb.BsonDSL._
 
-import com.anchortab.model.Tab
+import com.anchortab.model.{Tab, TabAppearance}
 
 import org.bson.types.ObjectId
 
@@ -56,7 +56,7 @@ object Tabs {
     ".empty-list" #> (tabs.isEmpty ? PassThru | ClearNodes) andThen
     ".subscriber" #> (tabs.isEmpty ? ClearNodes | PassThru) andThen
     ".subscriber" #> tabs.map { tab =>
-      ".tab-name" #> tab.name
+      ".tab-name *" #> tab.name
     }
   }
 
@@ -68,7 +68,30 @@ object Tabs {
     var customText = requestTab.map(_.appearance.customText) openOr ""
 
     def submit = {
-      // TODO
+      {
+        for {
+          session <- userSession.is
+        } yield {
+          requestTabId.is match {
+            case Full(tabId) =>
+              Tab.update("_id" -> tabId, (
+                ("name" -> tabName) ~
+                ("appearance.delay" -> appearanceDelay.toInt) ~
+                ("appearance.font" -> font) ~
+                ("appearance.colorScheme" -> colorScheme) ~
+                ("appearance.customText" -> customText)
+              ))
+
+            case _ =>
+              val tab = Tab(tabName, session.userId, TabAppearance(appearanceDelay.toInt, font, colorScheme, customText))
+              tab.save
+          }
+
+          RedirectTo("/manager/tabs")
+        }
+      } openOr {
+        Alert("Something went wrong.")
+      }
     }
 
     val bind =
@@ -87,7 +110,8 @@ object Tabs {
         Tab.ColorSchemeOptions.values.toList.map(v => (v,v.toString)),
         tryo(Tab.ColorSchemeOptions.withName(colorScheme)),
         selected => colorScheme = selected.toString
-      )
+      ) &
+      ".submit" #> ajaxSubmit("Save Tab", submit _)
 
     "form" #> { ns:NodeSeq =>
       ajaxForm(bind(ns))

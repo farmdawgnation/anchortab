@@ -9,30 +9,40 @@
       <lift:pwn-if-not-logged-in />
       <h2>Edit Tab</h2>
 
-      <form class="tab-form">
-        <label for="tab-name">Tab Name:</label>
-        <input type="text" id="tab-name" />
+      <form class="lift:Tabs.tabForm tab-form">
+        <div>
+          <label for="tab-name">Tab Name:</label>
+          <input type="text" id="tab-name" />
+        </div>
 
-        <label for="appearance-delay">Appearance Delay (in seconds):</label>
-        <select id="appearance-delay">
-          <option value="10">10</option>
-          <option value="30">30</option>
-          <option value="60">60</option>
-        </select>
+        <div>
+          <label for="appearance-delay">Appearance Delay (in seconds):</label>
+          <select id="appearance-delay">
+            <option value="10">10</option>
+            <option value="30">30</option>
+            <option value="60">60</option>
+          </select>
+        </div>
 
-        <label for="font">Font:</label>
-        <select id="font">
-          <option value="arial">Arial</option>
-        </select>
+        <div>
+          <label for="font">Font:</label>
+          <select id="font">
+            <option value="arial">Arial</option>
+          </select>
+        </div>
 
-        <label for="color-scheme">Color Scheme:</label>
-        <select id="color-scheme">
-          <option value="red">Red</option>
-          <option value="blue">Blue</option>
-        </select>
+        <div>
+          <label for="color-scheme">Color Scheme:</label>
+          <select id="color-scheme">
+            <option value="red">Red</option>
+            <option value="blue">Blue</option>
+          </select>
+        </div>
 
-        <label for="custom-text">Custom Text:</label>
-        <input type="text" id="custom-text" />
+        <div>
+          <label for="custom-text">Custom Text:</label>
+          <input type="text" id="custom-text" />
+        </div>
 
         <input type="submit" class="submit" value="Save Tab" />
     </div>
