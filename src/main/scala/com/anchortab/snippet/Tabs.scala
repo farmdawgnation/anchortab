@@ -4,7 +4,10 @@ import scala.xml.NodeSeq
 
 import net.liftweb._
   import http._
+    import js._
+      import JsCmds._
     import SHtml._
+    import LiftRules._
   import common._
   import util._
     import Helpers._
@@ -20,6 +23,23 @@ object requestTabId extends RequestVar[Box[String]](Empty)
 
 object Tabs {
   def requestTab = requestTabId.is.flatMap(id => Tab.find(new ObjectId(id)))
+
+  def statelessRewrite : RewritePF = {
+    case RewriteRequest(ParsePath("manager" :: "tabs" :: "new" :: Nil, _, _, _), _, _) =>
+      RewriteResponse("manager" :: "tab" :: "form" :: Nil)
+
+    case RewriteRequest(ParsePath("manager" :: "tab" :: tabId :: "edit" :: Nil, _, _, _), _, _) =>
+      requestTabId(Full(tabId))
+      RewriteResponse("manager" :: "tab" :: "form" :: Nil)
+
+    case RewriteRequest(ParsePath("manager" :: "tab" :: tabId :: "subscribers" :: Nil, _, _, _), _, _) =>
+      requestTabId(Full(tabId))
+      RewriteResponse("manager" :: "tab" :: "subscribers" :: Nil)
+
+    case RewriteRequest(ParsePath("manager" :: "tab" :: tabId :: "subscribers" :: "export" :: Nil, _, _, _), _, _) =>
+      requestTabId(Full(tabId))
+      RewriteResponse("manager" :: "tab" :: "subscribers" :: "export" :: Nil)
+  }
 
   def tabList = {
     val tabs = {
