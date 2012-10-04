@@ -140,14 +140,17 @@ object Api extends RestHelper with Loggable {
           currentUser <- statelessUser.is
           tab <- (Tab.find(tabId):Box[Tab])
             if tab.userId == currentUser._id || currentUser.admin_?
-          delay <- req.param("delay").map(_ toInt) ?~! "Delay parameter is required." ~> 400
+          delay <- req.param("delay") ?~! "Delay parameter is required." ~> 400
+          validDelay <- Tab.validAppearanceDelay(delay) ?~! "The delay parameter was invalid." ~> 400
           font <- req.param("font") ?~! "The font parameter is required." ~> 400
+          validFont <- Tab.validFont(font) ?~! "The font parameter was invalid." ~> 400
           colorScheme <- req.param("colorScheme") ?~! "The colorScheme parameter is required." ~> 400
+          validColorScheme <- Tab.validColorScheme(colorScheme) ?~! "The colorScheme parameter was invalid." ~> 400
           customText <- req.param("customText") ?~! "the customText parameter is required." ~> 400
         } yield {
           Tab.update("_id" -> tabId, "$set" -> (
             "appearance" -> (
-              ("delay" -> delay) ~
+              ("delay" -> delay.toInt) ~
               ("font" -> font) ~
               ("colorScheme" -> colorScheme) ~
               ("customTest" -> customText)

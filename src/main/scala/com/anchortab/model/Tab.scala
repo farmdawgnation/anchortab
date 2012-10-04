@@ -7,6 +7,7 @@ import net.liftweb._
     import ext._
     import JsonDSL._
     import Extraction._
+  import util.Helpers._
 
 import org.bson.types.ObjectId
 
@@ -51,4 +52,17 @@ object Tab extends MongoDocumentMeta[Tab] {
     val Red = Value("Red")
     val Blue = Value("Blue")
   }
+
+  private def validParameter(options:Enumeration, value:String) = {
+    tryo(options.withName(value)) match {
+      case Full(_) =>
+        Full(value)
+      case _ =>
+        Empty
+    }
+  }
+
+  def validAppearanceDelay(delay:String) = validParameter(AppearanceDelayOptions, delay)
+  def validFont(font:String) = validParameter(FontOptions, font)
+  def validColorScheme(colorScheme:String) = validParameter(ColorSchemeOptions, colorScheme)
 }
