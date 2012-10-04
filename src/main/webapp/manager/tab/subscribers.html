@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+    <title>Tab Manager</title>
+  </head>
+  <body class="lift:content_id=main">
+    <div id="main" class="lift:surround?with=tab-manager;at=content">
+      <lift:pwn-if-not-logged-in />
+      <h2>Subscribers for: My Awesome Tab</h2>
+
+      <a href="/manager/tabs">Tabs List</a>
+      <a href="/manager/tab/ABC123/subscribers/export">Export Subscribers</a>
+
+      <table class="subscriber-list">
+        <tr>
+          <th>Email Address</th>
+          <th>Verified?</th>
+          <th>Date Added</th>
+        </tr>
+        <tr class="subscriber">
+          <td>justin@ciriongroup.com</td>
+          <td>Yes</td>
+          <td>10/01/2012</td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>

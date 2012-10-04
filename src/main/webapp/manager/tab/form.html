@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+    <title>Tab Manager</title>
+  </head>
+  <body class="lift:content_id=main">
+    <div id="main" class="lift:surround?with=tab-manager;at=content">
+      <lift:pwn-if-not-logged-in />
+      <h2>Edit Tab</h2>
+
+      <form class="tab-form">
+        <label for="tab-name">Tab Name:</label>
+        <input type="text" id="tab-name" />
+
+        <label for="appearance-delay">Appearance Delay (in seconds):</label>
+        <select id="appearance-delay">
+          <option value="10">10</option>
+          <option value="30">30</option>
+          <option value="60">60</option>
+        </select>
+
+        <label for="font">Font:</label>
+        <select id="font">
+          <option value="arial">Arial</option>
+        </select>
+
+        <label for="color-scheme">Color Scheme:</label>
+        <select id="color-scheme">
+          <option value="red">Red</option>
+          <option value="blue">Blue</option>
+        </select>
+
+        <label for="custom-text">Custom Text:</label>
+        <input type="text" id="custom-text" />
+
+        <input type="submit" class="submit" value="Save Tab" />
+    </div>
+  </body>
+</html>

@@ -29,4 +29,21 @@ case class Tab(name:String, userId:ObjectId, appearance:TabAppearance, service:O
     ("service" -> decompose(service))
 }
 
-object Tab extends MongoDocumentMeta[Tab]
+object Tab extends MongoDocumentMeta[Tab] {
+  object AppearanceDelayOptions extends Enumeration {
+    val Delay10 = Value("10")
+    val Delay30 = Value("30")
+    val Delay60 = Value("60")
+  }
+
+  object FontOptions extends Enumeration {
+    val Arial = Value("Arial")
+    val TimesNewRoman = Value("Times New Roman")
+    val Helvetica = Value("Helvetica")
+  }
+
+  object ColorSchemeOptions extends Enumeration {
+    val Red = Value("Red")
+    val Blue = Value("Blue")
+  }
+}
