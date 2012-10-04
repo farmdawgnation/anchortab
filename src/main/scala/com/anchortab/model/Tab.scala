@@ -4,6 +4,7 @@ import net.liftweb._
   import common._
   import mongodb._
   import json._
+    import ext._
     import JsonDSL._
     import Extraction._
 
@@ -19,17 +20,21 @@ case class TabService(serviceId:String, credentials:Map[String,String])
 case class Tab(name:String, userId:ObjectId, appearance:TabAppearance, service:Option[TabService] = None,
                _id:ObjectId = ObjectId.get) extends MongoDocument[Tab] {
   val meta = Tab
-  implicit val formats = DefaultFormats
 
   lazy val user : Box[User] = User.find(userId)
 
-  lazy val asJson =
+  lazy val asJson = {
+    implicit val formats = DefaultFormats
+
     ("name" -> name) ~
     ("appearance" -> decompose(appearance)) ~
     ("service" -> decompose(service))
+  }
 }
 
 object Tab extends MongoDocumentMeta[Tab] {
+  override def formats = allFormats ++ JodaTimeSerializers.all
+
   object AppearanceDelayOptions extends Enumeration {
     val Delay10 = Value("10")
     val Delay30 = Value("30")
