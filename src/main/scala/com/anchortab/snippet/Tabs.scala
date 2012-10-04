@@ -53,10 +53,18 @@ object Tabs {
       List()
     }
 
+    def subscribers(tabId:ObjectId)() =
+      RedirectTo("/manager/tab/" + tabId.toString + "/subscribers")
+
+    def edit(tabId:ObjectId)() =
+      RedirectTo("/manager/tab/" + tabId.toString + "/edit")
+
     ".empty-list" #> (tabs.isEmpty ? PassThru | ClearNodes) andThen
     ".subscriber" #> (tabs.isEmpty ? ClearNodes | PassThru) andThen
     ".subscriber" #> tabs.map { tab =>
-      ".tab-name *" #> tab.name
+      ".tab-name *" #> tab.name &
+      ".subscribers [onclick]" #> ajaxInvoke(subscribers(tab._id) _) &
+      ".edit-tab [onclick]" #> ajaxInvoke(edit(tab._id) _)
     }
   }
 
@@ -74,7 +82,7 @@ object Tabs {
         } yield {
           requestTabId.is match {
             case Full(tabId) =>
-              Tab.update("_id" -> tabId, (
+              Tab.update("_id" -> tabId, "$set" -> (
                 ("name" -> tabName) ~
                 ("appearance.delay" -> appearanceDelay.toInt) ~
                 ("appearance.font" -> font) ~
