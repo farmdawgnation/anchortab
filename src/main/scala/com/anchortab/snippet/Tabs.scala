@@ -59,12 +59,20 @@ object Tabs {
     def edit(tabId:ObjectId)() =
       RedirectTo("/manager/tab/" + tabId.toString + "/edit")
 
+    def delete(tabId:ObjectId)() = {
+      Tab.delete("_id" -> tabId)
+
+      Alert("Tab deleted.") &
+      Reload
+    }
+
     ".empty-list" #> (tabs.isEmpty ? PassThru | ClearNodes) andThen
     ".subscriber" #> (tabs.isEmpty ? ClearNodes | PassThru) andThen
     ".subscriber" #> tabs.map { tab =>
       ".tab-name *" #> tab.name &
       ".subscribers [onclick]" #> ajaxInvoke(subscribers(tab._id) _) &
-      ".edit-tab [onclick]" #> ajaxInvoke(edit(tab._id) _)
+      ".edit-tab [onclick]" #> ajaxInvoke(edit(tab._id) _) &
+      ".delete-tab [onclick]" #> ajaxInvoke(delete(tab._id) _)
     }
   }
 
