@@ -7,20 +7,27 @@
   <body class="lift:content_id=main">
     <div id="main" class="lift:surround?with=tab-manager;at=content">
       <lift:pwn-if-not-logged-in />
-      <h2>Subscribers for: My Awesome Tab</h2>
+      <h2>My Tabs</h2>
 
-      <a href="/manager/tabs">Tabs List</a>
+      <a href="/manager/tabs/new">New Tab</a>
 
-      <table class="subscriber-list">
+      <table class="l:Tabs.tabList tab-list">
         <tr>
-          <th>Email Address</th>
-          <th>Verified?</th>
-          <th>Date Added</th>
+          <th>Tab Name</th>
+          <th>Subscribers</th>
+          <th>Actions</th>
+        </tr>
+        <tr class="empty-list">
+          <td colspan="3">You current have no tabs.</td>
         </tr>
         <tr class="subscriber">
-          <td>justin@ciriongroup.com</td>
-          <td>Yes</td>
-          <td>10/01/2012</td>
+          <td class="tab-name">The Awesome Tab</td>
+          <td class="subscriber-count">99999999</td>
+          <td>
+            <button class="subscribers">Subscribers</button>
+            <button class="edit-tab">Edit</button>
+            <button class="delete-tab">Delete</button>
+          </td>
         </tr>
       </table>
     </div>

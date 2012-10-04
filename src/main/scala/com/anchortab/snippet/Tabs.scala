@@ -8,6 +8,9 @@ import net.liftweb._
   import common._
   import util._
     import Helpers._
+  import json._
+    import JsonDSL._
+  import mongodb.BsonDSL._
 
 import com.anchortab.model.Tab
 
@@ -17,6 +20,25 @@ object requestTabId extends RequestVar[Box[String]](Empty)
 
 object Tabs {
   def requestTab = requestTabId.is.flatMap(id => Tab.find(new ObjectId(id)))
+
+  def tabList = {
+    val tabs = {
+      for {
+        session <- userSession.is
+        userId = session.userId
+      } yield {
+        Tab.findAll("userId" -> userId)
+      }
+    } openOr {
+      List()
+    }
+
+    ".empty-list" #> (tabs.isEmpty ? PassThru | ClearNodes) andThen
+    ".subscriber" #> (tabs.isEmpty ? ClearNodes | PassThru) andThen
+    ".subscriber" #> tabs.map { tab =>
+      ".tab-name" #> tab.name
+    }
+  }
 
   def tabForm = {
     var tabName = requestTab.map(_.name) openOr ""
