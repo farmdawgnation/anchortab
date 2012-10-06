@@ -45,3 +45,7 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
     case x => old(x)
   }
 }
+
+excludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
+  cp filter {_.data.getName == "lift-json_2.9.1-2.4.jar"}
+}
