@@ -30,7 +30,8 @@ libraryDependencies ++= {
     "ch.qos.logback"    % "logback-classic"     % "1.0.6",
     "joda-time"         % "joda-time"           % "2.1",
     "org.joda"          % "joda-convert"        % "1.2",
-    "org.mindrot"       % "jbcrypt"             % "0.3m"
+    "org.mindrot"       % "jbcrypt"             % "0.3m",
+    "me.frmr.wepay-scala" %% "wepay-scala"       % "0.9-SNAPSHOT"
   )
 }
 

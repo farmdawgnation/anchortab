@@ -19,10 +19,22 @@ import com.mongodb.WriteConcern
 
 import com.anchortab.model._
 
+import me.frmr.wepay._
+  import api.Preapproval
+
 object userSession extends SessionVar[Box[UserSession]](Empty)
 object statelessUser extends RequestVar[Box[User]](Empty)
 
 object Authentication extends Loggable {
+  implicit val authenticationToken : Option[WePayToken] = {
+    for {
+      anchortabUserId <- Props.getLong("wepay.anchorTabUserId")
+      anchortabAccessToken <- Props.get("wepay.anchorTabAccessToken")
+    } yield {
+      WePayToken(anchortabUserId, anchortabAccessToken, "BEARER", None)
+    }
+  }
+
   /**
    * Handle authentication for stateless requests (the API).
   **/
@@ -132,19 +144,48 @@ object Authentication extends Loggable {
           Alert("The password and confirm password fields do not match.")
 
         case _ =>
+          var preapprovalUri : Box[String] = Empty
+
           val user : Box[User] =
             for {
               plan <- (Plan.find(selectedPlan):Box[Plan]) ?~! "Plan could not be located."
+              accountId <- Props.getLong("wepay.anchorTabAccountId")
             } yield {
+              val subscription = {
+                if (plan.free_?) {
+                  List(UserSubscription(plan._id, plan.price, 0, plan.term, status = "active"))
+                } else {
+                  val subscriptionPreapproval = Preapproval(accountId, plan.price, plan.name, plan.term.description,
+                                                            fee_payer = Some("payee"), auto_recur = Some(true)).save
+
+                  val preapprovalId = subscriptionPreapproval.map(_.preapproval_id) openOr 0l
+                  preapprovalUri = subscriptionPreapproval.flatMap(_.preapproval_uri)
+
+                  if (preapprovalId > 0l) {
+                    List(UserSubscription(plan._id, plan.price, preapprovalId, plan.term))
+                  } else {
+                    logger.error("Fail to init Preapproval: " + subscriptionPreapproval)
+                    List()
+                  }
+                }
+              }
+
               User(emailAddress, User.hashPassword(requestedPassword),
                    Some(UserProfile(Some(firstName), Some(lastName), Some(organization))),
-                   subscriptions = List(UserSubscription(plan._id, plan.price, 0, plan.term)))
+                   subscriptions = subscription)
             }
 
+          user.foreach(_.save)
+
           user match {
+            case Full(user) if preapprovalUri.isDefined =>
+              // Do login
+              processLogin(emailAddress, requestedPassword)
+
+              // Redirect to WePay
+              RedirectTo(preapprovalUri openOr "#")
+
             case Full(user) =>
-              //Use the write concern here to prevent race conditions.
-              user.save
               processLogin(emailAddress, requestedPassword)
 
             case m =>

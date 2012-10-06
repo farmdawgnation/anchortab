@@ -37,7 +37,7 @@ case class UserProfile(firstName:Option[String], lastName:Option[String],
                        organization:Option[String])
 case class UserSubscription(planId:ObjectId, price:Double, preapprovalId:Long, term:PlanTerm,
                             createdAt:DateTime = new DateTime, status:String = "new",
-                            begins:Option[DateTime] = None, ends:Option[DateTime] = None,
+                            begins:DateTime = new DateTime, ends:Option[DateTime] = None,
                             _id:ObjectId = ObjectId.get) {
   lazy val new_? = status == "new"
   lazy val active_? = status == "active"
@@ -48,7 +48,7 @@ case class UserSubscription(planId:ObjectId, price:Double, preapprovalId:Long, t
   // on your site.
   lazy val valid_? = {
     if (active_?)
-      begins.map(_ isBeforeNow).getOrElse(true) && ends.map(_ isAfterNow).getOrElse(true)
+      begins.isBeforeNow && ends.map(_ isAfterNow).getOrElse(true)
     else if (cancelled_?)
       ends.map(_ isAfterNow).getOrElse(false)
     else
