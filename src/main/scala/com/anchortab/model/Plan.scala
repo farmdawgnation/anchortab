@@ -12,6 +12,12 @@ import org.bson.types.ObjectId
 
 case class PlanTerm(description:String, abbreveation:String)
 
+/**
+ * Model for a Plan that users can subscribe to on Anchor Tab.
+ *
+ * Special note: the quotas are all per month values regardless of
+ * the term of the plan.
+**/
 case class Plan(name:String, description:String, price:Double,
                 features:Map[String,Boolean], quotas:Map[String, Long],
                 starts:Option[DateTime] = None, ends:Option[DateTime] = None,
@@ -34,13 +40,14 @@ object Plan extends MongoDocumentMeta[Plan] {
   val YearlyTerm = PlanTerm("yearly", "yr")
 
   object Quotas {
+    val NumberOfTabs = "number-of-tabs"
     val EmailSubscriptions = "email-subscriptions"
     val Views = "views"
   }
 
   object Features {
-    val ManageTabs = "tabs"
     val BasicAnalytics = "basic-analytics"
+    val WhitelabeledTabs = "whitelabeled-tabs"
   }
 
   // The DefaultPlan, or the plan you're on if you don't have a plan. If we decide to offer
