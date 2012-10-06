@@ -79,10 +79,9 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
 
   lazy val admin_? = role == Some(User.Roles.Admin)
 
-  lazy val withinQuota_? = {
+  def withinQuotaFor_?(quotaedEvent:String) = {
     {
       for {
-        quotaedEvent <- plan.quotas.keys
         quotaLimit <- plan.quotas.get(quotaedEvent)
         currentUsage <- quotaCounts.get(quotaedEvent)
       } yield {
@@ -91,7 +90,7 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
     }.foldLeft(true)(_ && _)
   }
 
-  lazy val tabsActive_? = admin_? || (validSubscription_? && withinQuota_?)
+  lazy val tabsActive_? = admin_? || (validSubscription_? && withinQuotaFor_?(Plan.Quotas.EmailSubscriptions))
 
   lazy val asJson = {
     implicit val formats = DefaultFormats
@@ -100,7 +99,7 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
     ("profile" -> decompose(profile)) ~
     ("role" -> role) ~
     ("subscriptionValid" -> validSubscription_?) ~
-    ("withinUsageLimits" -> withinQuota_?) ~
+    ("quotaCounts" -> quotaCounts) ~
     ("tabsActive" -> tabsActive_?)
   }
 }
