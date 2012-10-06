@@ -90,7 +90,7 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
     }.foldLeft(true)(_ && _)
   }
 
-  lazy val tabsActive_? = admin_? || (validSubscription_? && withinQuotaFor_?(Plan.Quotas.EmailSubscriptions))
+  lazy val tabsActive_? = admin_? || withinQuotaFor_?(Plan.Quotas.EmailSubscriptions)
 
   lazy val asJson = {
     implicit val formats = DefaultFormats
