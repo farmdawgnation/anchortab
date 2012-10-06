@@ -9,9 +9,11 @@ import org.joda.time.DateTime
 
 import org.bson.types.ObjectId
 
+case class PlanTerm(description:String, abbreveation:String)
+
 case class Plan(name:String, description:String, price:Double,
                 features:HashMap[String,Boolean], quotas:HashMap[String, Long],
-                starts:DateTime, ends:Option[DateTime] = None, term:String = "monthly",
+                starts:DateTime, ends:Option[DateTime] = None, term:PlanTerm = Plan.MonthlyTerm,
                 _id:ObjectId = ObjectId.get) extends MongoDocument[Plan] {
   val meta = Plan
 
@@ -24,6 +26,9 @@ case class Plan(name:String, description:String, price:Double,
   def quotaFor(quotaKey:String) = quotas.get(quotaKey)
 }
 object Plan extends MongoDocumentMeta[Plan] {
+  val MonthlyTerm = PlanTerm("monthly", "mo")
+  val YearlyTerm = PlanTerm("yearly", "yr")
+
   object Quotas {
     val EmailSubscriptions = "email-subscriptions"
     val Views = "views"
