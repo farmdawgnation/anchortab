@@ -75,13 +75,13 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
   lazy val subscription = subscriptions.filter(_.valid_?).lastOption
   lazy val validSubscription_? = subscription.isDefined
 
+  lazy val plan = subscription.flatMap(_.plan) getOrElse Plan.DefaultPlan
+
   lazy val admin_? = role == Some(User.Roles.Admin)
 
   lazy val withinQuota_? = {
     {
       for {
-        subscription <- subscription.toSeq
-        plan <- subscription.plan.toSeq
         quotaedEvent <- plan.quotas.keys
         quotaLimit <- plan.quotas.get(quotaedEvent)
         currentUsage <- quotaCounts.get(quotaedEvent)
