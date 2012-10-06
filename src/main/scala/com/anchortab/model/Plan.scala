@@ -20,10 +20,13 @@ case class PlanTerm(description:String, abbreveation:String)
 **/
 case class Plan(name:String, description:String, price:Double,
                 features:Map[String,Boolean], quotas:Map[String, Long],
+                visibleOnRegistration:Boolean = true,
                 starts:Option[DateTime] = None, ends:Option[DateTime] = None,
                 term:PlanTerm = Plan.MonthlyTerm, _id:ObjectId = ObjectId.get
     ) extends MongoDocument[Plan] {
   val meta = Plan
+
+  val formattedPrice = "$" + ("%1.2f" format price)
 
   def hasFeature_?(feature:String) = {
     features.get(feature) match {
@@ -32,6 +35,16 @@ case class Plan(name:String, description:String, price:Double,
     }
   }
   def quotaFor(quotaKey:String) = quotas.get(quotaKey)
+
+  lazy val registrationTitle = {
+    price match {
+      case 0 =>
+        name + " (Free)"
+
+      case _ =>
+        name + " (" + formattedPrice + "/" + term.abbreveation + ")"
+    }
+  }
 }
 object Plan extends MongoDocumentMeta[Plan] {
   override def formats = allFormats ++ JodaTimeSerializers.all

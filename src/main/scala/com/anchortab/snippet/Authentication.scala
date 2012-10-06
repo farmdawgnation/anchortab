@@ -13,6 +13,9 @@ import net.liftweb._
     import Helpers._
   import json._
     import JsonDSL._
+  import mongodb.BsonDSL._
+
+import com.mongodb.WriteConcern
 
 import com.anchortab.model._
 
@@ -105,24 +108,64 @@ object Authentication extends Loggable {
   }
 
   def registrationForm = {
-    var requestedUsername = ""
+    var emailAddress = ""
     var requestedPassword = ""
+    var requestedPasswordConfirmation = ""
     var firstName = ""
     var lastName = ""
     var organization = ""
-    var emailAddress = ""
+    var selectedPlan = ""
 
     def processRegistration = {
-      // FIXME
+      // This may be poor design, but it's better than nesting right?
+      emailAddress match {
+        case "" =>
+          Alert("Email address is required.")
+
+        case _ if requestedPassword == "" || requestedPasswordConfirmation == "" =>
+          Alert("Both password fields are required.")
+
+        case _ if User.count("email" -> emailAddress) > 0 =>
+          Alert("That email address is already in use by another user.")
+
+        case _ if requestedPassword != requestedPasswordConfirmation =>
+          Alert("The password and confirm password fields do not match.")
+
+        case _ =>
+          val user : Box[User] =
+            for {
+              plan <- (Plan.find(selectedPlan):Box[Plan]) ?~! "Plan could not be located."
+            } yield {
+              User(emailAddress, User.hashPassword(requestedPassword),
+                   Some(UserProfile(Some(firstName), Some(lastName), Some(organization))),
+                   subscriptions = List(UserSubscription(plan._id, plan.price, 0, plan.term)))
+            }
+
+          user match {
+            case Full(user) =>
+              //Use the write concern here to prevent race conditions.
+              user.save
+              processLogin(emailAddress, requestedPassword)
+
+            case m =>
+              logger.error("While registering account got: " + m)
+              Alert("Something went wrong during account creation.")
+          }
+      }
+    }
+
+    val plans = Plan.findAll("visibleOnRegistration" -> true).map { plan =>
+      (plan._id.toString, plan.registrationTitle)
     }
 
     val bind =
-      ".username" #> text(requestedUsername, requestedUsername = _) &
+      ".plan-selection" #> select(plans, Empty, selectedPlan = _) &
+      ".email-address" #> text(emailAddress, emailAddress = _) &
       ".password" #> password(requestedPassword, requestedPassword = _) &
+      ".password-confirmation" #> password(requestedPasswordConfirmation, requestedPasswordConfirmation = _) &
       ".first-name" #> text(firstName, firstName = _) &
       ".last-name" #> text(lastName, lastName = _) &
       ".organization" #> text(organization, organization = _) &
-      ".email" #> text(emailAddress, emailAddress = _) &
       ".submit" #> ajaxSubmit("Register", () => processRegistration)
 
     "form" #> { ns:NodeSeq =>
