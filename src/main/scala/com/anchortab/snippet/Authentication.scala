@@ -66,6 +66,7 @@ object Authentication extends Loggable {
     case "pwn-if-not-logged-in" :: Nil => pwnIfNotLoggedIn
     case "show-if-logged-in" :: Nil => showIfLoggedIn
     case "pwn-if-not-admin" :: Nil => pwnIfNotAdmin
+    case "show-if-admin" :: Nil => showIfAdmin
   }
 
   def redirectToDashboardIfLoggedIn(ns:NodeSeq) = {
@@ -92,6 +93,19 @@ object Authentication extends Loggable {
       }
     } openOr {
       S.redirectTo("/manager")
+    }
+  }
+
+  def showIfAdmin(ns:NodeSeq) = {
+    {
+      for {
+        session <- userSession
+        user <- User.find(session.userId) if user.admin_?
+      } yield {
+        ns
+      }
+    } openOr {
+      NodeSeq.Empty
     }
   }
 
