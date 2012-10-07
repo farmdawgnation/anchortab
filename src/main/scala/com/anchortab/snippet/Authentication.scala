@@ -92,7 +92,9 @@ object Authentication extends Loggable {
         ns
       }
     } openOr {
-      S.redirectTo("/manager")
+      // Let's be clever here and trigger a 404 so that someone doing random
+      // probes on our app will believe there simply is no /admin url.
+      throw new ResponseShortcutException(NotFoundResponse())
     }
   }
 
