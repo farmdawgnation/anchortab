@@ -35,7 +35,8 @@ case class UserAuthorizationKey(appName:String, key:String = randomString(32),
                                 createdAt:DateTime = new DateTime)
 case class UserProfile(firstName:Option[String], lastName:Option[String],
                        organization:Option[String])
-case class UserSubscription(planId:ObjectId, price:Double, preapprovalId:Long, term:PlanTerm,
+case class UserSubscription(planId:ObjectId, price:Double, term:PlanTerm,
+                            preapprovalId:Option[Long] = None, preapprovalUri:Option[String] = None,
                             createdAt:DateTime = new DateTime, status:String = "new",
                             begins:DateTime = new DateTime, ends:Option[DateTime] = None,
                             _id:ObjectId = ObjectId.get) {

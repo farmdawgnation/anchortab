@@ -128,6 +128,27 @@ object Authentication extends Loggable {
     var organization = ""
     var selectedPlan = ""
 
+    val plans = Plan.findAll("visibleOnRegistration" -> true)
+    val planSelections = plans.map { plan =>
+      (plan._id.toString, plan.registrationTitle)
+    }
+
+    def generateSubscriptionForPlan(plan:Plan) = {
+      if (plan.free_?) {
+        Full(UserSubscription(plan._id, plan.price, plan.term, status="active"))
+      } else {
+        for {
+          accountId <- Props.getLong("wepay.anchorTabAccountId") ?~! "No WePay Account ID found."
+          preapproval <- Preapproval(accountId, plan.price, plan.name, plan.term.description,
+                                    fee_payer = Some("payee"), auto_recur = Some(true)).save
+          preapprovalId = preapproval.preapproval_id
+          preapprovalUri <- preapproval.preapproval_uri
+        } yield {
+          UserSubscription(plan._id, plan.price, plan.term, Some(preapprovalId), Some(preapprovalUri))
+        }
+      }
+    }
+
     def processRegistration = {
       // This may be poor design, but it's better than nesting right?
       emailAddress match {
@@ -144,49 +165,33 @@ object Authentication extends Loggable {
           Alert("The password and confirm password fields do not match.")
 
         case _ =>
-          var preapprovalUri : Box[String] = Empty
-
           val user : Box[User] =
             for {
               plan <- (Plan.find(selectedPlan):Box[Plan]) ?~! "Plan could not be located."
-              accountId <- Props.getLong("wepay.anchorTabAccountId")
+              subscription <- generateSubscriptionForPlan(plan)
             } yield {
-              val subscription = {
-                if (plan.free_?) {
-                  List(UserSubscription(plan._id, plan.price, 0, plan.term, status = "active"))
-                } else {
-                  val subscriptionPreapproval = Preapproval(accountId, plan.price, plan.name, plan.term.description,
-                                                            fee_payer = Some("payee"), auto_recur = Some(true)).save
-
-                  val preapprovalId = subscriptionPreapproval.map(_.preapproval_id) openOr 0l
-                  preapprovalUri = subscriptionPreapproval.flatMap(_.preapproval_uri)
-
-                  if (preapprovalId > 0l) {
-                    List(UserSubscription(plan._id, plan.price, preapprovalId, plan.term))
-                  } else {
-                    logger.error("Fail to init Preapproval: " + subscriptionPreapproval)
-                    List()
-                  }
-                }
-              }
-
               User(emailAddress, User.hashPassword(requestedPassword),
                    Some(UserProfile(Some(firstName), Some(lastName), Some(organization))),
-                   subscriptions = subscription)
+                   subscriptions = List(subscription))
             }
 
           user.foreach(_.save)
 
           user match {
-            case Full(user) if preapprovalUri.isDefined =>
-              // Do login
-              processLogin(emailAddress, requestedPassword)
-
-              // Redirect to WePay
-              RedirectTo(preapprovalUri openOr "#")
-
             case Full(user) =>
-              processLogin(emailAddress, requestedPassword)
+              val loginResult = processLogin(emailAddress, requestedPassword)
+
+              if (plans.filter(_._id.toString == selectedPlan).headOption.map(_.free_?) getOrElse true) {
+                loginResult
+              } else {
+                val wepayUri =
+                  user.subscriptions.headOption.flatMap(_.preapprovalUri) getOrElse "#"
+
+                // Alert the user they're about to be redirected to WePay for payment, and
+                // then do the redirection.
+                Alert("You will now be sent to WePay to complete payment.") &
+                RedirectTo(wepayUri)
+              }
 
             case m =>
               logger.error("While registering account got: " + m)
@@ -195,12 +200,8 @@ object Authentication extends Loggable {
       }
     }
 
-    val plans = Plan.findAll("visibleOnRegistration" -> true).map { plan =>
-      (plan._id.toString, plan.registrationTitle)
-    }
-
     val bind =
-      ".plan-selection" #> select(plans, Empty, selectedPlan = _) &
+      ".plan-selection" #> select(planSelections, Empty, selectedPlan = _) &
       ".email-address" #> text(emailAddress, emailAddress = _) &
       ".password" #> password(requestedPassword, requestedPassword = _) &
       ".password-confirmation" #> password(requestedPasswordConfirmation, requestedPasswordConfirmation = _) &
