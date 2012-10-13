@@ -26,6 +26,8 @@ case class UserSession(userId:ObjectId, ip:String, userAgent:String,
                        createdAt:DateTime = new DateTime,
                        _id: ObjectId = ObjectId.get) extends MongoDocument[UserSession] {
   val meta = UserSession
+
+  lazy val user = User.find(userId)
 }
 object UserSession extends MongoDocumentMeta[UserSession] {
 }
