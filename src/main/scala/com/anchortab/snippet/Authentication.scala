@@ -18,6 +18,8 @@ import net.liftweb._
 
 import com.mongodb.WriteConcern
 
+import org.bson.types.ObjectId
+
 import com.anchortab.model._
 
 import me.frmr.wepay._
@@ -56,6 +58,26 @@ object Authentication extends Loggable {
 
       case _ =>
         // Nada
+    }
+  }
+
+  def earlyInStateful(req:Box[Req]) = {
+    (userSession.is, S.findCookie("session")) match {
+      case (Empty, Full(cookie:HTTPCookie)) =>
+        for {
+          cookieValue <- cookie.value
+          sessionId <- tryo(new ObjectId(cookieValue))
+          dbSession <- UserSession.find(sessionId)
+        } {
+          val remoteIp = S.containerRequest.map(_.remoteAddress).openOr("localhost")
+          val userAgent = S.containerRequest.flatMap(_.userAgent).openOr("unknown")
+
+          val session = UserSession(dbSession.userId, remoteIp, userAgent)
+          session.save
+          userSession(Full(session))
+        }
+
+      case _ =>
     }
   }
 

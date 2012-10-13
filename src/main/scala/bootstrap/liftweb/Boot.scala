@@ -34,6 +34,10 @@ class Boot {
     // Specify where to search for our stuff.
     LiftRules.addToPackages("com.anchortab")
 
+    // Early stateful and stateless mehtods.
+    LiftRules.earlyInStateful.prepend(Authentication.earlyInStateful)
+    LiftRules.earlyInStateless.prepend(Authentication.earlyInStateless)
+
     // Add API to dispatch
     LiftRules.statelessDispatch.append(Api)
 
