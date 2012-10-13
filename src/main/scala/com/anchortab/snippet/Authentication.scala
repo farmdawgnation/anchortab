@@ -5,6 +5,7 @@ import scala.xml.NodeSeq
 import net.liftweb._
   import common._
   import http._
+    import provider._
     import js._
       import JsCmds._
     import SHtml._
@@ -63,6 +64,15 @@ object Authentication extends Loggable {
       () => {
         userSession(Empty)
         Full(RedirectResponse("/"))
+      }
+
+    case Req("session" :: "login" :: Nil, _, _) =>
+      () => {
+        for {
+          session <- userSession.is
+        } yield {
+          RedirectResponse("/manager/dashboard", HTTPCookie("session", session._id.toString).setPath("/"))
+        }
       }
   }
 
@@ -150,7 +160,7 @@ object Authentication extends Loggable {
         session.save
         userSession(Full(session))
 
-        RedirectTo("/manager/dashboard")
+        RedirectTo("/session/login")
 
       case _ =>
         Alert("That username or password appears to be invalid.")
