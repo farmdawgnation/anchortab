@@ -58,6 +58,14 @@ object Authentication extends Loggable {
     }
   }
 
+  def dispatch : DispatchPF = {
+    case Req("session" :: "logout" :: Nil, _, _) =>
+      () => {
+        userSession(Empty)
+        Full(RedirectResponse("/"))
+      }
+  }
+
   def snippetHandlers : SnippetPF = {
     case "login-form" :: Nil => loginForm
     case "registration-form" :: Nil => registrationForm
