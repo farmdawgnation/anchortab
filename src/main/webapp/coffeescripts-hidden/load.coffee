@@ -77,7 +77,7 @@ withJQueryLoaded = (callback) ->
 ##
 ## ANCHOR TAB LOADING AND DISPLAY
 ##
-displayTab = ->
+displayTab = (tabJson) ->
   # In case of compatibility mode
   $ = jQuery
 
