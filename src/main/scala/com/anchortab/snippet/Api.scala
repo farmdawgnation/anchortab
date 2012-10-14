@@ -51,7 +51,8 @@ object Api extends RestHelper with Loggable {
         }
       } ?~! "Unknown Tab." ~> 404
 
-    case req @ Req("api" :: "v1" :: "embed" :: tabId :: Nil, _, PutRequest) =>
+    // JSONP can't be semantic. :(
+    case req @ Req("api" :: "v1" :: "embed" :: tabId :: "submit" :: Nil, _, GetRequest) =>
       {
         for {
           tab <- (Tab.find(tabId):Box[Tab]) // Force box type.
