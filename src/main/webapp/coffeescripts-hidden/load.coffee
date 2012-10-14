@@ -6,6 +6,14 @@ All Rights Reserved
 ###
 
 ##
+## Configuration - It'd be nice if we could deduce these from a props
+## file for something, but in lieu of that, this works.
+##
+googleAnalyticsAccount = "UA-35269224-4"
+apiDomain = "local.anchortab.com"
+jqVersion = "1.8.2"
+
+##
 ## BOOTSTRAPPING FUNCTIONS
 ##
 window._gaq = window._gaq || []
@@ -46,7 +54,7 @@ loadGAIfNeeded = ->
 
 withJQueryLoaded = (callback) ->
   if ! jQuery?
-    loadScript("http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js", callback)
+    loadScript("http://ajax.googleapis.com/ajax/libs/jquery/" + jqVersion + "/jquery.min.js", callback)
   else if ! /^1.[678]/.test(jQuery.fn.jquery)
     console?.error("AnchorTab is disabled because you are using an unsupported version of jQuery.")
 
@@ -96,7 +104,7 @@ loadAnchorTab = ->
 # are in place.
 oldOnload = window.onload
 window.onload = ->
-  _gaq.push ['at._setAccount', 'UA-35269224-2']
+  _gaq.push ['at._setAccount', googleAnalyticsAccount]
   _gaq.push ['at._setDomainName', 'anchortab.com']
   _gaq.push ['at._setAllowLinker', true]
   _gaq.push ["at._trackPageview"]
