@@ -8,6 +8,8 @@ All Rights Reserved
 ##
 ## BOOTSTRAPPING FUNCTIONS
 ##
+window._gaq = window._gaq || []
+
 loadScript = (url, callback) ->
   script = document.createElement("script")
   script.async = true
@@ -17,30 +19,39 @@ loadScript = (url, callback) ->
     script.onreadystatechange = ->
       if script.readyState == "loaded" || script.readyState == "complete"
         script.onreadystatechange = null
-        callback()
+        callback?()
   else # Others
     script.onload = ->
-      callback();
+      callback?();
  
   script.src = url
   document.getElementsByTagName("head")[0].appendChild(script)
 
-withGoogleAnalytics = (callback) ->
-  if ! _gaq
-    analyticsSrc = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js'
-    loadScript(analyticsSrc, callback)
-  else
-    callback()
+loadGAIfNeeded = ->
+  # Determine if GAQ was already loaded on the page by checking to see
+  # If reduce is a valid method on it. If the real _gaq has been loaded,
+  # it won't be an array, and this will return false.
+  if _gaq.reduce?
+    secure = 'https:' == document.location.protocol
+    if secure
+      domainRoot = 'https://ssl'
+    else
+      domainRoot = 'http://www'
+
+    analyticsSrc = domainRoot + '.google-analytics.com/ga.js'
+
+    # After the script is loaded, we need to make sure to reassign our local
+    # _gaq to the _gaq loaded by Google Analytics.
+    loadScript analyticsSrc
 
 withJQueryLoaded = (callback) ->
-  if ! jQuery
+  if ! jQuery?
     loadScript("http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js", callback)
   else if ! /^1.[678]/.test(jQuery.fn.jquery)
     console?.error("AnchorTab is disabled because you are using an unsupported version of jQuery.")
 
     # Track this on GA so we can see if we need to adjust this value over time.
-    withGoogleAnalytics ->
-      _gaq.push ["anchortab._trackEvent", "Bootstrap", "Incompatible jQuery Failure", jQuery.fn.jquery]
+    _gaq.push ["at._trackEvent", "Bootstrap", "Incompatible jQuery Failure", jQuery.fn.jquery]
 
   else
     callback()
@@ -77,19 +88,20 @@ loadAnchorTab = ->
   # then we'll have to refactor some of this code, I suppose.
   $ = jQuery # In case we're in compability mode.
 
-  $.ajax
-    url: 'https://anchortab.com/api/v1/embed/abc123'
+  #$.ajax
+    #url: 'https://anchortab.com/api/v1/embed/abc123'
 
 # Do the neccicary mojo to make sure we load up our goods after the
 # window is loaded. This includes making sure all our dependancies
 # are in place.
 oldOnload = window.onload
 window.onload = ->
-  withGoogleAnalytics ->
-    _gaq.push ["anchortab._setAccount", "UA-35269224-2"]
-    _gaq.push ["anchortab._setDomainName", "embed.anchortab.com"]
-    _gaq.push ["anchortab._trackPageview"]
+  _gaq.push ['at._setAccount', 'UA-35269224-2']
+  _gaq.push ['at._setDomainName', 'anchortab.com']
+  _gaq.push ['at._setAllowLinker', true]
+  _gaq.push ["at._trackPageview"]
 
+  loadGAIfNeeded()
   withJQueryLoaded(loadAnchorTab)
 
   oldOnload?()
