@@ -14,6 +14,16 @@ apiDomain = "local.anchortab.com"
 jqVersion = "1.8.2"
 
 ##
+## LIB FUNCTIONS
+##
+# http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values
+getParam = (name) ->
+  results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href)
+  if ! results
+    return 0;
+  results[1] || 0
+
+##
 ## BOOTSTRAPPING FUNCTIONS
 ##
 window._gaq = window._gaq || []
@@ -95,9 +105,15 @@ loadAnchorTab = ->
   # safely without things getting hairy. If we find out in the future that things are wonky about that
   # then we'll have to refactor some of this code, I suppose.
   $ = jQuery # In case we're in compability mode.
+  tabId = getParam "tabId"
+  tabJson = "http://" + apiDomain + "/api/v1/embed/" + tabId
 
-  #$.ajax
-    #url: 'https://anchortab.com/api/v1/embed/abc123'
+  $.ajax
+    url: tabJson
+    dataType: 'jsonp'
+    success: displayTab
+    error: (xhr, status, error) ->
+      console.error(error)
 
 # Do the neccicary mojo to make sure we load up our goods after the
 # window is loaded. This includes making sure all our dependancies
