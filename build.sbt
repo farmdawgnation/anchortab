@@ -10,11 +10,19 @@ organization := "com.anchortab"
 
 scalaVersion := "2.9.2"
 
+awsAccessKey := "0X5MZEDRXKKZWRHD9702"
+
+awsSecretKey := "u3jpTTuINs0q2suzf2WREnKTT6y69wZTFDZk6d5V"
+
+awsS3Bucket := "assets.anchortab.com"
+
 resolvers ++= Seq("snapshots"     at "http://oss.sonatype.org/content/repositories/snapshots",
                 "releases"        at "http://oss.sonatype.org/content/repositories/releases"
                 )
 
 seq(com.github.siasia.WebPlugin.webSettings :_*)
+
+seq(resourceManagementSettings :_*)
 
 scalacOptions ++= Seq("-deprecation", "-unchecked")
 
