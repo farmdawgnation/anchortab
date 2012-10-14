@@ -79,7 +79,24 @@ withJQueryLoaded = (callback) ->
 ## ANCHOR TAB LOADING AND DISPLAY
 ##
 submitEmail = (event) ->
-  # TODO
+  # In case of compatibility mode
+  $ = jQuery
+  tabId = $("#anchortab-loader").data('tab-id')
+
+  $target = $(event.target)
+  $input = $target.closest("#anchor-tab").find(".email-input")
+  email = $input.val()
+  submissionUri = "http://" + apiDomain + "/api/v1/embed/" + tabId + "/submit"
+
+  $.ajax
+    url: submissionUri
+    dataType: 'jsonp'
+    data:
+      email: email
+    success: (event) ->
+      alert("Email submitted!")
+    error: (xhr, status, error) ->
+      alert(error)
 
 displayTab = (tabJson) ->
   # In case of compatibility mode
