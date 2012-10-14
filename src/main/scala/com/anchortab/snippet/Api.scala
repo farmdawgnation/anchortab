@@ -7,6 +7,9 @@ import net.liftweb._
   import http._
     import LiftRules._
     import rest._
+    import js._
+      import JE._
+      import JsExp._
   import util._
     import Helpers._
   import json._
@@ -31,16 +34,20 @@ object Api extends RestHelper with Loggable {
     // Calls in this namespace are used by the Tab itself to retrieve the information
     // it needs to render, or to add an email address to the Tab's email list.
     //////////
-    case Req("api" :: "v1" :: "embed" :: tabId :: Nil, _, GetRequest) =>
+    case req @ Req("api" :: "v1" :: "embed" :: tabId :: Nil, _, GetRequest) =>
       {
         for {
           tab <- (Tab.find(tabId):Box[Tab])
           user <- tab.user.filter(_.tabsActive_?) ?~! "This tab has been disabled." ~> 403
+          callbackFnName <- req.param("callback") ?~! "Callback not specified." ~> 400
         } yield {
-          ("delay" -> tab.appearance.delay) ~
-          ("font" -> tab.appearance.font) ~
-          ("colorScheme" -> tab.appearance.colorScheme) ~
-          ("customText" -> tab.appearance.customText)
+          val tabJson =
+            ("delay" -> tab.appearance.delay) ~
+            ("font" -> tab.appearance.font) ~
+            ("colorScheme" -> tab.appearance.colorScheme) ~
+            ("customText" -> tab.appearance.customText)
+
+          Call(callbackFnName, tabJson)
         }
       } ?~! "Unknown Tab." ~> 404
 
