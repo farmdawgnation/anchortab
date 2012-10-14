@@ -31,7 +31,29 @@ includeJQueryIfNeeded = ->
     false
 
 anchorTabLoader = ->
-  # Load the anchor tab.
+  # Load the anchor tab. At this point we can assume that jQuery exists and that we're able to use it
+  # safely without things getting hairy. If we find out in the future that things are wonky about that
+  # then we'll have to refactor some of this code, I suppose.
+  $ = jQuery # In case we're in compability mode.
+
+  # Load the Anchor Tab stylesheet.
+  atStyleSheet =
+    $("<link />")
+      .attr("href", "http://embed.anchortab.com/stylesheets/tab.css")
+      .attr("rel", "stylesheet")
+      .attr("type", "text/css")
+
+  $("head").append atStyleSheet
+
+  # Create the tab and append to the end of the body.
+  anchorTab =
+    $("<div />")
+      .attr("id", "anchor-tab")
+      .append(
+        $("<p />").text("This is an anchor tab.")
+      )
+
+  $("body").append anchorTab
 
 # Do the neccicary mojo to make sure we load up our goods after the
 # window is loaded. This includes making sure all our dependancies
