@@ -56,11 +56,15 @@ object Api extends RestHelper with Loggable {
         for {
           tab <- (Tab.find(tabId):Box[Tab]) // Force box type.
           user <- tab.user.filter(_.tabsActive_?) ?~! "This tab has been disabled." ~> 403
+          callbackFnName <- req.param("callback") ?~! "Callback not specified." ~> 403
           email <- req.param("email") ?~! "Email was not specified." ~> 403
         } yield {
           // FIXME: Actually record the email submission.
-          ("success" -> 1) ~
-          ("email" -> email)
+          val submitResult =
+            ("success" -> 1) ~
+            ("email" -> email)
+
+          Call(callbackFnName, submitResult)
         }
       } ?~! "Unknwon Tab." ~> 404
 
