@@ -105,7 +105,7 @@ loadAnchorTab = ->
   # safely without things getting hairy. If we find out in the future that things are wonky about that
   # then we'll have to refactor some of this code, I suppose.
   $ = jQuery # In case we're in compability mode.
-  tabId = getParam "tabId"
+  tabId = $("#anchortab-loader").data('tab-id')
   tabJson = "http://" + apiDomain + "/api/v1/embed/" + tabId
 
   $.ajax
