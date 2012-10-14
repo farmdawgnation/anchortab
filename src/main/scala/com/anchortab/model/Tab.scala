@@ -42,6 +42,10 @@ case class Tab(name:String, userId:ObjectId, appearance:TabAppearance, service:O
 
   lazy val subscriberEmails = subscribers.map(_.email)
   def hasSubscriber_?(email:String) = subscriberEmails.contains(email)
+
+  val embedCode = """
+    <script type="text/javascript" data-tab-id="""" + _id + """" src="http://local.anchortab.com/javascripts/load.js"></script>
+  """
 }
 
 object Tab extends MongoDocumentMeta[Tab] {

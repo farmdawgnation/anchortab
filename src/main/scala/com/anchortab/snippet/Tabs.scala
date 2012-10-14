@@ -53,6 +53,9 @@ object Tabs {
       List()
     }
 
+    def getCode(tab:Tab)() =
+      Alert(tab.embedCode)
+
     def subscribers(tabId:ObjectId)() =
       RedirectTo("/manager/tab/" + tabId.toString + "/subscribers")
 
@@ -72,6 +75,7 @@ object Tabs {
       ".tab-name *" #> tab.name &
       ".view-count *" #> tab.stats.views &
       ".subscription-count *" #> tab.stats.submissions &
+      ".get-code [onclick]" #> ajaxInvoke(getCode(tab) _) &
       ".subscribers [onclick]" #> ajaxInvoke(subscribers(tab._id) _) &
       ".edit-tab [onclick]" #> ajaxInvoke(edit(tab._id) _) &
       ".delete-tab [onclick]" #> ajaxInvoke(delete(tab._id) _)
