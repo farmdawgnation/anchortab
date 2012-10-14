@@ -87,7 +87,7 @@ displayTab = (tabJson) ->
 
   # Pull out the various descriptors into useful information.
   font = tabJson.font
-  displayDelay = tabJson.delay
+  displayDelay = tabJson.delay * 1000
   colorScheme = tabJson.colorScheme.toLowerCase()
 
   # Load the Anchor Tab stylesheet.
@@ -120,6 +120,10 @@ displayTab = (tabJson) ->
       )
 
   $("body").append anchorTab
+
+  setTimeout ->
+    anchorTab.addClass "visible"
+  , displayDelay
 
 loadAnchorTab = ->
   # Load the anchor tab. At this point we can assume that jQuery exists and that we're able to use it
