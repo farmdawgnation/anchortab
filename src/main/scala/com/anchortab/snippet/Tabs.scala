@@ -70,6 +70,8 @@ object Tabs {
     ".subscriber" #> (tabs.isEmpty ? ClearNodes | PassThru) andThen
     ".subscriber" #> tabs.map { tab =>
       ".tab-name *" #> tab.name &
+      ".view-count *" #> tab.stats.views &
+      ".subscription-count *" #> tab.stats.submissions &
       ".subscribers [onclick]" #> ajaxInvoke(subscribers(tab._id) _) &
       ".edit-tab [onclick]" #> ajaxInvoke(edit(tab._id) _) &
       ".delete-tab [onclick]" #> ajaxInvoke(delete(tab._id) _)
