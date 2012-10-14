@@ -11,6 +11,7 @@ All Rights Reserved
 ##
 googleAnalyticsAccount = "UA-35269224-4"
 apiDomain = "local.anchortab.com"
+resourcesDomain = "local.anchortab.com"
 jqVersion = "1.8.2"
 
 ##
@@ -77,14 +78,22 @@ withJQueryLoaded = (callback) ->
 ##
 ## ANCHOR TAB LOADING AND DISPLAY
 ##
+submitEmail = (event) ->
+  # TODO
+
 displayTab = (tabJson) ->
   # In case of compatibility mode
   $ = jQuery
 
+  # Pull out the various descriptors into useful information.
+  font = tabJson.font
+  displayDelay = tabJson.delay
+  colorScheme = tabJson.colorScheme.toLowerCase()
+
   # Load the Anchor Tab stylesheet.
   atStyleSheet =
     $("<link />")
-      .attr("href", "http://embed.anchortab.com/stylesheets/tab.css")
+      .attr("href", "http://" + resourcesDomain + "/stylesheets/tab.css")
       .attr("rel", "stylesheet")
       .attr("type", "text/css")
 
@@ -94,8 +103,19 @@ displayTab = (tabJson) ->
   anchorTab =
     $("<div />")
       .attr("id", "anchor-tab")
+      .addClass(colorScheme)
       .append(
         $("<p />").text("This is an anchor tab.")
+      )
+      .append(
+        $("<input />")
+          .addClass('email-input')
+          .attr('type', 'text')
+      )
+      .append(
+        $("<button />")
+          .addClass('email-submission')
+          .click(submitEmail)
       )
 
   $("body").append anchorTab
