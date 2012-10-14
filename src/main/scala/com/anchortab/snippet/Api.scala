@@ -61,6 +61,7 @@ object Api extends RestHelper with Loggable {
           email <- req.param("email") ?~! "Email was not specified." ~> 403
         } yield {
           // FIXME: Actually record the email submission.
+          logger.info("Email address: " + email)
           val submitResult =
             ("success" -> 1) ~
             ("email" -> email)
