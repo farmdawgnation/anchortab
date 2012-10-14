@@ -14,6 +14,7 @@ import net.liftweb._
     import Helpers._
   import json._
     import JsonDSL._
+    import Extraction._
   import mongodb._
     import BsonDSL._
 
@@ -62,10 +63,18 @@ object Api extends RestHelper with Loggable {
           callbackFnName <- req.param("callback") ?~! "Callback not specified." ~> 403
           email <- req.param("email") ?~! "Email was not specified." ~> 403
         } yield {
-          Tab.update("_id" -> tab._id, "$inc" -> ("stats.submissions" -> 1))
+          // Ensure this new subscriber is unique.
+          if (! tab.hasSubscriber_?(email)) {
+            implicit val formats = Tab.formats
 
-          // FIXME: Actually record the email submission.
-          logger.info("Email address: " + email)
+            val subscriberInformation = TabSubscriber(email)
+
+            Tab.update("_id" -> tab._id, (
+              ("$inc" -> ("stats.submissions" -> 1)) ~
+              ("$addToSet" -> ("subscribers" -> decompose(subscriberInformation)))
+            ))
+          }
+
           val submitResult =
             ("success" -> 1) ~
             ("email" -> email)
