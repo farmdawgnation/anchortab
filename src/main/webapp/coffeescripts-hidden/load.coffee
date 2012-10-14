@@ -115,6 +115,7 @@ displayTab = (tabJson) ->
       .append(
         $("<button />")
           .addClass('email-submission')
+          .text("Submit Email!")
           .click(submitEmail)
       )
 
