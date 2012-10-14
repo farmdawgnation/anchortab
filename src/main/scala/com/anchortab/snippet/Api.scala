@@ -41,6 +41,8 @@ object Api extends RestHelper with Loggable {
           user <- tab.user.filter(_.tabsActive_?) ?~! "This tab has been disabled." ~> 403
           callbackFnName <- req.param("callback") ?~! "Callback not specified." ~> 400
         } yield {
+          Tab.update("_id" -> tab._id, "$inc" -> ("stats.views" -> 1))
+
           val tabJson =
             ("delay" -> tab.appearance.delay) ~
             ("font" -> tab.appearance.font) ~
@@ -60,6 +62,8 @@ object Api extends RestHelper with Loggable {
           callbackFnName <- req.param("callback") ?~! "Callback not specified." ~> 403
           email <- req.param("email") ?~! "Email was not specified." ~> 403
         } yield {
+          Tab.update("_id" -> tab._id, "$inc" -> ("stats.submissions" -> 1))
+
           // FIXME: Actually record the email submission.
           logger.info("Email address: " + email)
           val submitResult =

@@ -18,8 +18,10 @@ object TabAppearance {
 
 case class TabService(serviceId:String, credentials:Map[String,String])
 
+case class TabStats(views:Long = 0, submissions:Long = 0)
+
 case class Tab(name:String, userId:ObjectId, appearance:TabAppearance, service:Option[TabService] = None,
-               _id:ObjectId = ObjectId.get) extends MongoDocument[Tab] {
+               stats:TabStats = new TabStats, _id:ObjectId = ObjectId.get) extends MongoDocument[Tab] {
   val meta = Tab
 
   lazy val user : Box[User] = User.find(userId)
