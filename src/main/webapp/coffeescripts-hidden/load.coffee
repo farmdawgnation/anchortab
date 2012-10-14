@@ -5,32 +5,44 @@ Release 0.1
 All Rights Reserved
 ###
 
-includeAnalyticsIfNeeded = ->
+loadScript = (url, callback) ->
+  script = document.createElement("script")
+  script.async = true
+  script.type = "text/javascript"
+ 
+  if script.readyState # IE
+    script.onreadystatechange = ->
+      if script.readyState == "loaded" || script.readyState == "complete"
+        script.onreadystatechange = null
+        callback()
+  else # Others
+    script.onload = ->
+      callback();
+ 
+  script.src = url
+  document.getElementsByTagName("head")[0].appendChild(script)
+
+withGoogleAnalytics = (callback) ->
   if ! _gaq
-    # Ported from Google's embed code.
-    ga = document.createElement 'script'
-    ga.type = 'text/javascript'
-    ga.async = true
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js'
-    s = document.getElementsByTagName 'head'
-    s[0].appendChild ga
+    analyticsSrc = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js'
+    loadScript(analyticsSrc, callback)
+  else
+    callback()
 
-includeJQueryIfNeeded = ->
+withJQueryLoaded = (callback) ->
   if ! jQuery
-    # Pull down jQuery from GooleAPIs
-    jqueryUri = "http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"
-
-    jq = document.createElement 'script'
-    jq.type = 'text/javascript'
-    jq.src = jqueryUri
-    s = document.getElementsByTagName 'head'
-    s[0].appendChild jq
-    true
+    loadScript("http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js", callback)
   else if ! /^1.[678]/.test(jQuery.fn.jquery)
-    console?.error("AnchorTab is disabled. Please update your version of jQuery.")
-    false
+    console?.error("AnchorTab is disabled because you are using an unsupported version of jQuery.")
 
-anchorTabLoader = ->
+    # Track this on GA so we can see if we need to adjust this value over time.
+    withGoogleAnalytics ->
+      _gaq.push ["anchortab._trackEvent", "Bootstrap", "Incompatible jQuery Failure", jQuery.fn.jquery]
+
+  else
+    callback()
+
+loadAnchorTab = ->
   # Load the anchor tab. At this point we can assume that jQuery exists and that we're able to use it
   # safely without things getting hairy. If we find out in the future that things are wonky about that
   # then we'll have to refactor some of this code, I suppose.
@@ -60,12 +72,11 @@ anchorTabLoader = ->
 # are in place.
 oldOnload = window.onload
 window.onload = ->
-  includeAnalyticsIfNeeded()
+  withGoogleAnalytics ->
+    _gaq.push ["anchortab._setAccount", "UA-35269224-2"]
+    _gaq.push ["anchortab._setDomainName", "embed.anchortab.com"]
+    _gaq.push ["anchortab._trackPageview"]
 
-  # We only proceed to load the tab if the jQuery load was successful.
-  # If we found an ancient version of jQuery on the page, we bunk and don't
-  # load the tab.
-  if includeJQueryIfNeeded()
-    anchorTabLoader()
+  withJQueryLoaded(loadAnchorTab)
 
   oldOnload?()
