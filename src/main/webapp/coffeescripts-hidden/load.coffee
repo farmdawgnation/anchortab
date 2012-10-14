@@ -5,6 +5,9 @@ Release 0.1
 All Rights Reserved
 ###
 
+##
+## BOOTSTRAPPING FUNCTIONS
+##
 loadScript = (url, callback) ->
   script = document.createElement("script")
   script.async = true
@@ -42,11 +45,12 @@ withJQueryLoaded = (callback) ->
   else
     callback()
 
-loadAnchorTab = ->
-  # Load the anchor tab. At this point we can assume that jQuery exists and that we're able to use it
-  # safely without things getting hairy. If we find out in the future that things are wonky about that
-  # then we'll have to refactor some of this code, I suppose.
-  $ = jQuery # In case we're in compability mode.
+##
+## ANCHOR TAB LOADING AND DISPLAY
+##
+displayTab = ->
+  # In case of compatibility mode
+  $ = jQuery
 
   # Load the Anchor Tab stylesheet.
   atStyleSheet =
@@ -66,6 +70,15 @@ loadAnchorTab = ->
       )
 
   $("body").append anchorTab
+
+loadAnchorTab = ->
+  # Load the anchor tab. At this point we can assume that jQuery exists and that we're able to use it
+  # safely without things getting hairy. If we find out in the future that things are wonky about that
+  # then we'll have to refactor some of this code, I suppose.
+  $ = jQuery # In case we're in compability mode.
+
+  $.ajax
+    url: 'https://anchortab.com/api/v1/embed/abc123'
 
 # Do the neccicary mojo to make sure we load up our goods after the
 # window is loaded. This includes making sure all our dependancies
