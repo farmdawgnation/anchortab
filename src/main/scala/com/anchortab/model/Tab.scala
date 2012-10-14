@@ -37,6 +37,8 @@ object Tab extends MongoDocumentMeta[Tab] {
   override def formats = allFormats ++ JodaTimeSerializers.all
 
   object AppearanceDelayOptions extends Enumeration {
+    val Delay0 = Value("0")
+    val Delay2 = Value("2")
     val Delay10 = Value("10")
     val Delay30 = Value("30")
     val Delay60 = Value("60")
