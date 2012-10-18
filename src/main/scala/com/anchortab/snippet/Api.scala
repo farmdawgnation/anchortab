@@ -21,6 +21,7 @@ import net.liftweb._
 import org.bson.types.ObjectId
 
 import com.anchortab.model._
+import com.anchortab.actor.{EventActor, TrackEvent}
 
 object Api extends RestHelper with Loggable {
   def statelessRewrite : RewritePF = {
@@ -42,7 +43,21 @@ object Api extends RestHelper with Loggable {
           user <- tab.user.filter(_.tabsActive_?) ?~! "This tab has been disabled." ~> 403
           callbackFnName <- req.param("callback") ?~! "Callback not specified." ~> 400
         } yield {
+          val remoteIp = req.header("X-Forwarded-For") openOr req.remoteAddr
+          val userAgent = req.userAgent openOr "unknown"
+
+          val cookieId =
+            S.cookieValue("unique-event-actor") match {
+              case Full(uniqueEventActorId) => uniqueEventActorId
+              case _ =>
+                val uniqueEventActor = UniqueEventActor(remoteIp, userAgent, tab._id)
+                // TODO WRITE CONCERN ME
+                uniqueEventActor.save
+                uniqueEventActor.cookieId
+            }
+
           Tab.update("_id" -> tab._id, "$inc" -> ("stats.views" -> 1))
+          EventActor ! TrackEvent(Event.Types.TabView, remoteIp, userAgent, user._id, tab._id, Some(cookieId))
 
           val tabJson =
             ("delay" -> tab.appearance.delay) ~
