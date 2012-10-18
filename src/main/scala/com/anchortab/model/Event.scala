@@ -26,7 +26,7 @@ object UniqueEventActor extends MongoDocumentMeta[UniqueEventActor] {
 
 case class Event(eventType:String, ip:String, userAgent:String, userId:ObjectId,
                  tabId:ObjectId, email:Option[String] = None,
-                 uniqueEventActorId:ObjectId,
+                 uniqueEventActorId:Option[ObjectId] = None,
                  createdAt:DateTime = new DateTime, _id:ObjectId = ObjectId.get)
     extends MongoDocument[Event] {
   val meta = Event
@@ -46,13 +46,16 @@ object EventLog {
   def track(eventType:String, ip:String, userAgent:String, userId:ObjectId, tabId:ObjectId, cookieId:Option[String], email:Option[String] = None) {
     val uniqueEventActor =
       UniqueEventActor.find("cookieId" -> cookieId) match {
-        case Some(actor:UniqueEventActor) => actor
+        case Some(actor:UniqueEventActor) => Some(actor)
+        case None if cookieId.isDefined =>
+          // Something funky is up. We had a cookie but no corresponding entry in the DB.
+          None
         case _ =>
           val actor = UniqueEventActor(ip, userAgent, tabId)
           actor.save
-          actor
+          Some(actor)
       }
 
-    Event(eventType, ip, userAgent, userId, tabId, email, uniqueEventActor._id).save
+    Event(eventType, ip, userAgent, userId, tabId, email, uniqueEventActor.map(_._id)).save
   }
 }
