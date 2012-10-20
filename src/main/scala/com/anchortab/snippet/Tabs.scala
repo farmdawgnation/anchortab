@@ -2,6 +2,8 @@ package com.anchortab.snippet
 
 import scala.xml.NodeSeq
 
+import java.text.SimpleDateFormat
+
 import net.liftweb._
   import http._
     import js._
@@ -22,6 +24,8 @@ import org.bson.types.ObjectId
 object requestTabId extends RequestVar[Box[String]](Empty)
 
 object Tabs {
+  val dateAndTimeFormatter = new SimpleDateFormat("MM/dd/yyyy hh:mm aa")
+
   def requestTab = requestTabId.is.flatMap(id => Tab.find(new ObjectId(id)))
 
   def statelessRewrite : RewritePF = {
@@ -156,7 +160,7 @@ object Tabs {
         val subscriberInformation = requestTab.subscribers.map { subscriber =>
           ".email *" #> subscriber.email &
           ".verified *" #> (subscriber.verified ? "Yes" | "No") &
-          ".date *" #> subscriber.createdAt.toDate.toString &
+          ".date *" #> dateAndTimeFormatter.format(subscriber.createdAt.toDate) &
           ".delete-subscriber [onclick]" #> ajaxInvoke(deleteSubscriber(subscriber.email) _)
         }
 
