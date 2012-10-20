@@ -139,4 +139,34 @@ object Tabs {
       ajaxForm(bind(ns))
     }
   }
+
+  def subscriberTable = {
+    {
+      for {
+        tabId <- requestTabId.is
+        requestTab <- Tab.find(tabId)
+      } yield {
+        def deleteSubscriber(email:String)() = {
+          Tab.update("_id" -> tabId, "$pull" -> ("subscribers" -> ("email" -> email)))
+
+          Alert("Subscriber deleted.") &
+          Reload
+        }
+
+        val subscriberInformation = requestTab.subscribers.map { subscriber =>
+          ".email *" #> subscriber.email &
+          ".verified *" #> (subscriber.verified ? "Yes" | "No") &
+          ".date *" #> subscriber.createdAt.toDate.toString &
+          ".delete-subscriber [onclick]" #> ajaxInvoke(deleteSubscriber(subscriber.email) _)
+        }
+
+        if (subscriberInformation.nonEmpty)
+          ".subscriber" #> subscriberInformation
+        else
+          ".subscriber" #> <tr><td colspan="4">No subscribers.</td></tr>
+      }
+    } openOr {
+      throw new ResponseShortcutException(NotFoundResponse("Tab not found."))
+    }
+  }
 }
