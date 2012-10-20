@@ -30,6 +30,7 @@ case class UserSession(userId:ObjectId, ip:String, userAgent:String,
   lazy val user = User.find(userId)
 }
 object UserSession extends MongoDocumentMeta[UserSession] {
+  override def formats = allFormats ++ JodaTimeSerializers.all
 }
 
 // User model helper classes
