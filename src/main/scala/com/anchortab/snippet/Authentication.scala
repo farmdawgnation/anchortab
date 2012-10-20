@@ -85,7 +85,7 @@ object Authentication extends Loggable {
     case Req("session" :: "logout" :: Nil, _, _) =>
       () => {
         userSession(Empty)
-        Full(RedirectResponse("/"))
+        Full(RedirectResponse("/", HTTPCookie("session", "deleted").setPath("/").setMaxAge(-100)))
       }
 
     case Req("session" :: "login" :: Nil, _, _) =>
