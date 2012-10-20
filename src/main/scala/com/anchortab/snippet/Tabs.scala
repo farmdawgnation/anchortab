@@ -3,6 +3,7 @@ package com.anchortab.snippet
 import scala.xml.NodeSeq
 
 import java.text.SimpleDateFormat
+import java.util.Date
 
 import net.liftweb._
   import http._
@@ -25,6 +26,7 @@ object requestTabId extends RequestVar[Box[String]](Empty)
 
 object Tabs {
   val dateAndTimeFormatter = new SimpleDateFormat("MM/dd/yyyy hh:mm aa")
+  val dateFormatter = new SimpleDateFormat("MM/dd/yyyy")
 
   def requestTab = requestTabId.is.flatMap(id => Tab.find(new ObjectId(id)))
 
@@ -186,6 +188,24 @@ object Tabs {
       }
     } openOr {
       throw new ResponseShortcutException(NotFoundResponse("Tab not found."))
+    }
+  }
+
+  def exportForm = {
+    var exportStartDate = dateFormatter.format(new Date())
+    var exportEndDate = dateFormatter.format(new Date())
+
+    def submit = {
+      // TODO
+    }
+
+    val bind =
+      ".export-begin-date" #> text(exportStartDate, exportStartDate = _) &
+      ".export-end-date" #> text(exportEndDate, exportEndDate = _) &
+      ".export-submit" #> ajaxSubmit("Export", submit _)
+
+    "form" #> { ns:NodeSeq =>
+      ajaxForm(bind(ns))
     }
   }
 }
