@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+    <title>Tab Manager</title>
+  </head>
+  <body class="lift:content_id=main">
+    <div id="main" class="lift:surround?with=tab-manager;at=content">
+      <lift:pwn-if-not-logged-in />
+      <h2>Subscriber Export for: My Awesome Tab</h2>
+
+      <a href="/manager/tabs">Tabs List</a>
+
+      <form>
+        <div>
+          <label>Begin Date:</label>
+          <input type="text" class="export-begin-date">
+        </div>
+        <div>
+          <label>End Date:</label>
+          <input type="text" class="export-end-date">
+        </div>
+        <div>
+          <input type="submit" class="export-submit" value="Export">
+        </div>
+      </form>
+    </div>
+  </body>
+</html>
