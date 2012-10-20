@@ -144,6 +144,21 @@ object Tabs {
     }
   }
 
+  def subscriberExportLink(ns:NodeSeq) = {
+    val transform =
+      {
+        for {
+          tabId <- requestTabId.is
+        } yield {
+          "a [href]" #> ("/manager/tab/" + tabId.toString + "/subscribers/export")
+        }
+      } openOr {
+        "a [href]" #> "#"
+      }
+
+    transform(ns)
+  }
+
   def subscriberTable = {
     {
       for {
