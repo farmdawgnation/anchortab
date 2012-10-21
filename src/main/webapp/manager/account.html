@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+    <title>Tab Manager</title>
+  </head>
+  <body class="lift:content_id=main">
+    <div id="main" class="lift:surround?with=tab-manager;at=content">
+      <lift:pwn-if-not-logged-in />
+      <h2>Profile Details</h2>
+
+      <form>
+        <div>
+          <label>First Name</label>
+          <input type="text" class="first-name">
+        </div>
+
+        <div>
+          <label>Last Name</label>
+          <input type="text" class="last-name">
+        </div>
+
+        <div>
+          <label>Organization</label>
+          <input type="text" class="organization">
+        </div>
+
+        <div>
+          <label>E-Mail</label>
+          <input type="text" class="email">
+        </div>
+
+        <div>
+          <label>Change Password</label>
+          <input type="password" class="change-password">
+        </div>
+
+        <div>
+          <label>Confirm Password</label>
+          <input type="password" class="confirm-password">
+        </div>
+
+        <div>
+          <input type="submit" value="Change Profile">
+        </div>
+      </form>
+
+      <h2>Change Plan</h2>
+
+      <table>
+        <tr>
+          <th>Plan</th>
+          <th>Select</th>
+        </tr>
+        <tr>
+          <td>Freeloader</td>
+          <td><button>Select</button></td>
+        </tr>
+        <tr>
+          <td>Amateur</td>
+          <td>Current Plan</td>
+        </tr>
+        <tr>
+          <td>Professional</td>
+          <td><button>Select</button></td>
+        </tr>
+      </table>
+
+      <h2>Billing Information</h2>
+
+      <p>
+        Your billing information is one file and you were last billed on October 20th, 2012.
+        <a href="#">Update your billing information.</a>
+      </p>
+
+      <table>
+        <tr>
+          <th>Date</th>
+          <th>Summary</th>
+          <th>Price</th>
+        </tr>
+        <tr>
+          <td>10/20/2012</td>
+          <td>Amateur Plan</td>
+          <td>$20.00</td>
+        </tr>
+        <tr>
+          <td>09/20/2012</td>
+          <td>Amateur Plan</td>
+          <td>$20.00</td>
+        </tr>
+        <tr>
+          <td>08/20/2012</td>
+          <td>Amateur Plan</td>
+          <td>$20.00</td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>
