@@ -176,6 +176,8 @@ object Authentication extends Loggable {
     }
   }
 
+  // This actually does need to be a first-class citizen because we use it in
+  // multiple places. :(
   private def processLogin(username:String, password:String) = {
     User.attemptLogin(username, password) match {
       case Full(user) =>
