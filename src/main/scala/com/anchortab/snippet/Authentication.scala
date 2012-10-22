@@ -162,13 +162,17 @@ object Authentication extends Loggable {
     var submittedUsername = ""
     var submittedPassword = ""
 
-    val bind =
-      ".username" #> text(submittedUsername, submittedUsername = _) &
-      ".password" #> password(submittedPassword, submittedPassword = _) &
-      ".submit" #> ajaxSubmit("Log In", () => processLogin(submittedUsername, submittedPassword))
+    if (userSession.is.isDefined) {
+      "form" #> <p>You appear to be logged in. <a href="/manager">Go to the manager &raquo;</a></p>
+    } else {
+      val bind =
+        ".username" #> text(submittedUsername, submittedUsername = _) &
+        ".password" #> password(submittedPassword, submittedPassword = _) &
+        ".submit" #> ajaxSubmit("Log In", () => processLogin(submittedUsername, submittedPassword))
 
-    "form" #> { ns:NodeSeq =>
-      ajaxForm(bind(ns))
+      "form" #> { ns:NodeSeq =>
+        ajaxForm(bind(ns))
+      }
     }
   }
 
