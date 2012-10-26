@@ -1,3 +1,4 @@
+require 'susy'
 # Compass configuration
 #http_path = (environment == :production) ? "http://local.openstudy.com/" : "/"
 project_path = "src/main/webapp"

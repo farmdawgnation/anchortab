@@ -1,0 +1,46 @@
+@import 'base'
+
+// Susy settings
+$total-cols: 10
+$col-width: 4.5em
+$gutter-width: 1.1875em
+$side-gutter-width: 2.125em
+
+// Import the susy.
+@import susy
+
+@import "compass/typography/text/replacement"
+
+#landing
+  +container
+
+  > .im-on-a-boat
+    background-image: image-url('im-on-a-boat.png')
+    background-repeat: no-repeat
+    height: 496px
+    padding-top: 1.2rem
+
+    h1
+      +columns(6)
+      +replace-text('logo-beta.png')
+      height: 125px
+
+    h2
+      +columns(7)
+      +pad(1,1)
+      font-size: 3.75rem
+      font-family: 'Open Sans'
+      font-weight: 800
+
+      color: $light-blue
+
+      margin-top: 2rem
+      text-transform: uppercase
+
+      small
+        font-size: 2.5rem
+        display: block
+        font-family: 'Damion', cursive
+        text-transform: none
+
+        color: $dark-blue
