@@ -49,6 +49,8 @@ class Boot {
     LiftRules.statelessRewrite.append(Tabs.statelessRewrite)
 
     // Add Snippet handlers
+    LiftRules.snippets.append(Bundles.snippetHandlers)
+    LiftRules.snippets.append(Util.snippetHandlers)
     LiftRules.snippets.append(Authentication.snippetHandlers)
     LiftRules.snippets.append(Accounts.snippetHandlers)
 
