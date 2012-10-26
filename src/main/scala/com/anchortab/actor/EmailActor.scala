@@ -14,6 +14,6 @@ import org.bson.types.ObjectId
 
 object EmailActor extends LiftActor {
   def messageHandler = {
-    // TODO
+    case _ =>
   }
 }
