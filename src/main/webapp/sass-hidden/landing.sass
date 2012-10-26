@@ -1,41 +1,91 @@
 @import 'base'
 
-// Susy settings
-$total-cols: 10
-$col-width: 4.5em
-$gutter-width: 1.1875em
-$side-gutter-width: 2.125em
-
-// Import the susy.
-@import susy
-
 @import "compass/typography/text/replacement"
+@import "compass/css3/box-sizing"
+@import "compass/css3/border-radius"
+@import "compass/css3/images"
+@import "compass/css3/transition"
 
 #landing
-  +container
+  > section
+    width: 100%
+
+    > .section-content
+      width: 907px
+      margin-right: auto
+      margin-left: auto
+      position: relative
 
   > .im-on-a-boat
     background-image: image-url('im-on-a-boat.png')
     background-repeat: no-repeat
-    height: 496px
-    padding-top: 1.2rem
+    background-position: center
+    height: 486px
+
+    .login-container
+      position: absolute
+      right: 20px
+      top: 15px
+
+      > .social
+        text-align: right
+
+      > .login
+        margin-top: 15px
+
+        input
+          font-family: 'Open Sans', Ariel, sans-serif
+          font-size: 16px
+          height: 38px
+          width: 154px
+          padding: 12px
+
+          border: 1px solid $light-gray
+
+          +box-sizing(border-box)
+          +border-radius(5px)
+
+        button.submit
+          height: 38px
+          width: 84px
+          vertical-align: top
+
+          cursor: pointer
+
+          +box-sizing(border-box)
+          border: 0
+          +border-radius(5px)
+
+          +background(linear-gradient($login-button-blue-top, $login-button-blue-bottom))
+          color: white
+
+          font-family: 'Open Sans', Ariel, sans-serif
+          font-size: 16px
+
+          &:hover
+            +background(linear-gradient($login-button-blue-bottom, $login-button-blue-top))
 
     h1
-      +columns(6)
       +replace-text('logo-beta.png')
+
+      display: inline-block
+      width: 397px
       height: 125px
 
+      margin-top: 20px
+
     h2
-      +columns(7)
-      +pad(1,1)
       font-size: 3.75rem
       font-family: 'Open Sans'
       font-weight: 800
 
       color: $light-blue
 
-      margin-top: 2rem
+      margin-top: 40px
       text-transform: uppercase
+
+      &.headline
+        width: 600px
 
       small
         font-size: 2.5rem
@@ -44,3 +94,7 @@ $side-gutter-width: 2.125em
         text-transform: none
 
         color: $dark-blue
+
+    p
+      color: $light-black
+      width: 630px
