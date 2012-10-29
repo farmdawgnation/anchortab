@@ -9,18 +9,65 @@
 #landing
   > section
     width: 100%
+    position: relative
 
-    > .section-content
+    > *
       width: 907px
       margin-right: auto
       margin-left: auto
       position: relative
+
+    h3
+      font-family: 'Open Sans', 'Arial', sans-serif
+      font-size: 36px
+      font-weight: bold
+      text-transform: uppercase
+      text-align: center
+
+      margin-bottom: 50px
+
+      &:before, &:after
+        content: ''
+        background-image: image-url('rope.png')
+        display: inline-block
+        width: 260px
+        height: 24px
+
+        background-repeat: repeat-x
+        background-position: 0 50%
+
+      &:before
+        margin-right: 20px
+
+      &:after
+        margin-left: 20px
+
+    h4
+      font-family: 'Damion', cursive
+      font-size: 36px
+
+      line-height: 1.2em
+
+    .get-started-now
+      +stylish-button
+
+      display: block
+      margin-right: auto
+      margin-left: auto
 
   > .im-on-a-boat
     background-image: image-url('im-on-a-boat.png')
     background-repeat: no-repeat
     background-position: center
     height: 486px
+
+    .get-started-now
+      position: relative
+      top: 82px
+      z-index: 2
+
+      &:hover
+        top: 78px
 
     .login-container
       position: absolute
@@ -95,6 +142,77 @@
 
         color: $dark-blue
 
-    p
+    p.description
       color: $light-black
       width: 630px
+
+  > .how-it-works
+    background-image: image-url('textures/texture1.png')
+    border-bottom: 5px solid #a9a9a9
+
+    color: white
+
+    padding-top: 96px
+
+    .get-started-now
+      position: relative
+      top: 30px
+      z-index: 2
+
+      &:hover
+        top: 26px
+
+    > .create-slide
+      background-image: image-url('how-it-works/create.png')
+      background-repeat: no-repeat
+      background-position: 100% 100%
+
+      width: 725px
+      margin-right: auto
+      margin-left: auto
+
+      p
+        font-family: 'Open Sans', Arial, sans-serif
+        font-size: 14px
+        line-height: 1.7em
+
+        margin-right: 32%
+
+    ol.pages
+      width: auto
+      text-align: center
+      margin-top: 40px
+
+      li
+        display: inline-block
+        font-family: 'Open Sans', Arial, sans-serif
+        font-size: 14px
+        margin-right: 18px
+
+        a
+          text-decoration: none
+          color: #187bda
+
+          +transition(color 500ms)
+
+          &:hover
+            color: white
+
+        &.selected a
+          color: white
+
+        &.omega
+          margin-right: 0
+
+  > .features
+    background-image: image-url('textures/texture2.png')
+
+    padding-top: 96px
+
+  > .plans-and-pricing
+    background-image: image-url('textures/texture3b.png')
+
+    padding-top: 96px
+
+  > footer
+    background-image: image-url('textures/texture1.png')
