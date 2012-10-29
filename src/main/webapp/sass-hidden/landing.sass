@@ -209,6 +209,34 @@
 
     padding-top: 96px
 
+    h3
+      &:before, &:after
+        width: 340px
+
+    > .feature-list-container
+      position: relative
+
+      & > ul
+        li
+          display: inline-block
+          background-image: image-url('feature-anchor.png')
+          background-repeat: no-repeat
+
+          padding-left: 88px
+          width: 40%
+
+          h4
+            color: #187bda
+
+      & > .coming-soon
+        position: absolute
+        bottom: 15px
+        text-align: center
+        width: 100%
+
+        h4
+          color: #187bda
+
   > .plans-and-pricing
     background-image: image-url('textures/texture3b.png')
 
