@@ -375,12 +375,52 @@
 
   > .plans-and-pricing
     background-image: image-url('textures/texture3b.png')
-
+    text-align: center
     padding-top: 96px
 
     > h3.light-rope
       &:before, &:after
         width: 240px
+
+    > table.plans-table
+      width: 790px
+      text-align: left
+
+      font-family: 'Open Sans', 'Arial', sans-serif
+
+      border-bottom: 1px solid #cacaca
+
+      tr
+        border-left: 1px solid #cacaca
+        border-right: 1px solid #cacaca
+
+        &:nth-child(odd)
+          background: white
+
+          &.headers
+            background: transparent
+            border-left: none
+            border-right: none
+
+        &:nth-child(even)
+          background: #ebebeb
+
+          &.cost
+            border-top: 1px solid #cacaca
+
+        th
+          font-family: 'Damion', cursive
+          font-size: 24px
+          font-size: 1.75rem
+          text-align: center
+
+          padding: 10px 30px
+
+        td
+          width: 140px
+
+          &.enterprise
+            background: white
 
   > footer
     background-image: image-url('textures/texture1.png')
