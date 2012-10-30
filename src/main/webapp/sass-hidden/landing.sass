@@ -390,6 +390,19 @@
 
       border-bottom: 1px solid #cacaca
 
+      margin-bottom: 3rem
+
+      tr.signup td
+        height: 18px
+
+        button
+          +stylish-button
+          padding: 12px 15px
+
+          position: absolute
+          left: auto
+          right: auto
+
       tr
         border-left: 1px solid #cacaca
         border-right: 1px solid #cacaca
@@ -408,19 +421,53 @@
           &.cost
             border-top: 1px solid #cacaca
 
+            td
+              font-weight: 600
+
+            td.influencer
+              border-top: 1px solid #363636
+
         th
           font-family: 'Damion', cursive
           font-size: 24px
           font-size: 1.75rem
           text-align: center
 
-          padding: 10px 30px
+          padding: 10px 8px
+
+          &.influencer
+            background-color: #363636
+            color: white
 
         td
           width: 140px
+          padding: 12px 12px
+          text-align: center
+
+          position: relative
+
+          &.feature-label
+            width: 232px
+            text-align: left
 
           &.enterprise
             background: white
+            font-size: 12px
+            font-size: 0.85rem
+
+            line-height: 17px
+            line-height: 1.25rem
+
+          &.influencer
+            background: #363636
+            color: white
+
+    > .free-plan
+      margin-bottom: 20px
+
+    > h4
+      color: #187bda
+      padding-bottom: 60px
 
   > footer
     background-image: image-url('textures/texture1.png')
