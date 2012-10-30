@@ -20,16 +20,27 @@ object Start {
     val webapp = new WebAppContext
     webapp.setServer(server)
     webapp.setContextPath("/")
+
+    /* use embeded webapp dir as source of the web content -> webapp
+     * this is the dir within jar where we have put stuff with zip.
+     * it was in a directory created by package-war, in target (also
+     * named webapp), which was outside the jar. now, thanks to zip
+     * it's inside so we need to use method bellow to get to it.
+     * web.xml is in default location, of that embedded webapp dir,
+     * so we don't have do webctx.setDescriptor */
+    val webappDirInsideJar = webapp.getClass.getClassLoader.getResource("webapp").toExternalForm
+    webapp.setWar(webappDirInsideJar)
+
     /* use resource base to avoid mixing your webapp files on the top level
      * of the executable jar, with all the included libraries etc
      * here I used webapp dir as it matches target dir of package-war task and makes
      * merging of webapp dir with output of assembly easier */
-    webapp.setResourceBase("webapp")
+    //webapp.setResourceBase("webapp")
     /* also include webapp dir in path to web.xml */
-    webapp.setDescriptor(location.toExternalForm() + "/webapp/WEB-INF/web.xml")
+    //webapp.setDescriptor(location.toExternalForm() + "/webapp/WEB-INF/web.xml")
 
     webapp.setServer(server)
-    webapp.setWar(location.toExternalForm())
+    //webapp.setWar(location.toExternalForm())
 
     // (Optional) Set the directory the war will extract to.
     // If not set, java.io.tmpdir will be used, which can cause problems
