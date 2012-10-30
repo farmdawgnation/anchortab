@@ -66,6 +66,28 @@
   &:hover
     cursor: pointer
 
+=h3rope($dark: false)
+  $rope: 'light-rope.png'
+
+  @if $dark
+    $rope: 'rope.png'
+
+  &:before, &:after
+    content: ''
+    background-image: image-url($rope)
+    display: inline-block
+    width: 260px
+    height: 24px
+
+    background-repeat: repeat-x
+    background-position: 0 50%
+
+  &:before
+    margin-right: 20px
+
+  &:after
+    margin-left: 20px
+
 #landing
   > section
     width: 100%
@@ -86,21 +108,11 @@
 
       margin-bottom: 50px
 
-      &:before, &:after
-        content: ''
-        background-image: image-url('rope.png')
-        display: inline-block
-        width: 260px
-        height: 24px
+      &.dark-rope
+        +h3rope(true)
 
-        background-repeat: repeat-x
-        background-position: 0 50%
-
-      &:before
-        margin-right: 20px
-
-      &:after
-        margin-left: 20px
+      &.light-rope
+        +h3rope
 
     h4
       font-family: 'Damion', cursive
@@ -284,7 +296,7 @@
 
     border-bottom: 5px solid white
 
-    h3
+    > h3.light-rope
       &:before, &:after
         width: 340px
 
@@ -366,7 +378,7 @@
 
     padding-top: 96px
 
-    h3
+    > h3.light-rope
       &:before, &:after
         width: 240px
 
