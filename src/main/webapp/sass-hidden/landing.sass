@@ -43,6 +43,29 @@
     background-position: $hoverPositionX $hoverPositionY
     cursor: pointer
 
+=header-social-sprite($name)
+  $positionX: 0
+
+  @if $name == 'facebook'
+    $positionX: 0
+  @if $name == 'twitter'
+    $positionX: -20px
+  @if $name == 'github'
+    $positionX: -40px
+
+  text-indent: -999999px
+  text-align: left
+  display: inline-block
+  width: 17px
+  height: 16px
+  margin-top: 18px
+
+  background-image: image-url('header-social-sprite.png')
+  background-position: $positionX 0
+
+  &:hover
+    cursor: pointer
+
 #landing
   > section
     width: 100%
@@ -113,6 +136,15 @@
 
       > .social
         text-align: right
+
+        > .facebook
+          +header-social-sprite('facebook')
+
+        > .twitter
+          +header-social-sprite('twitter')
+
+        > .github
+          +header-social-sprite('github')
 
       > .login
         margin-top: 15px
