@@ -6,6 +6,43 @@
 @import "compass/css3/images"
 @import "compass/css3/transition"
 
+=mail-service-sprite($name)
+  $height: 0
+  $width: 0
+  $hoverPositionX: 0
+  $hoverPositionY: 0
+  $positionX: 0
+  $positionY: 0
+
+  @if $name == 'constant-contact'
+    $height: 56px
+    $width: 148px
+    $hoverPositionX: 0px
+    $hoverPositionY: 0px
+    $positionX: -148px
+    $positionY: 0px
+
+  @if $name == 'mailchimp'
+    $height: 36px
+    $width: 148px
+    $hoverPositionX: 0px
+    $hoverPositionY: -56px
+    $positionX: -148px
+    $positionY: -56px
+
+  text-indent: -9999999px
+  display: block
+  float: right
+  width: $width
+  height: $height
+  background-position: $positionX $positionY
+
+  background-image: image-url('mail-service-sprite.png')
+
+  &:hover
+    background-position: $hoverPositionX $hoverPositionY
+    cursor: pointer
+
 #landing
   > section
     width: 100%
@@ -209,6 +246,8 @@
 
     padding-top: 96px
 
+    border-bottom: 5px solid white
+
     h3
       &:before, &:after
         width: 340px
@@ -217,18 +256,31 @@
       position: relative
 
       & > ul
+        text-align: center
+
+        li:nth-child(odd)
+          margin-right: 47px
+
         li
           display: inline-block
           background-image: image-url('feature-anchor.png')
           background-repeat: no-repeat
 
           padding-left: 88px
-          width: 40%
+          width: 37%
+
+          font-family: 'Open Sans', 'Arial', sans-serif
+          font-size: 12px
+          line-height: 2em
+          text-align: left
+
+          margin-bottom: 32px
 
           h4
             color: #187bda
 
       & > .coming-soon
+        display: none
         position: absolute
         bottom: 15px
         text-align: center
@@ -237,10 +289,51 @@
         h4
           color: #187bda
 
+    .email-service
+      position: relative
+      background: white
+      border: 1px solid #f0f0f0
+      padding: 30px 30px 30px 30px
+      margin-bottom: 85px
+
+      h4
+        font-family: 'Open Sans', 'Arial', sans-serif
+        font-size: 23px
+        font-weight: bold
+
+        color: #187bda
+
+        margin-bottom: 14px
+
+      .email-services
+        position: absolute
+        right: 30px
+        top: 30px
+        width: 148px
+
+        a
+          display: block
+
+      p
+        margin-right: 200px
+        font-size: 14px
+        line-height: 1.5em
+
+      .constant-contact
+        +mail-service-sprite('constant-contact')
+        margin-bottom: 20px
+
+      .mailchimp
+        +mail-service-sprite('mailchimp')
+
   > .plans-and-pricing
     background-image: image-url('textures/texture3b.png')
 
     padding-top: 96px
+
+    h3
+      &:before, &:after
+        width: 240px
 
   > footer
     background-image: image-url('textures/texture1.png')
