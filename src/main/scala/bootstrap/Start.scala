@@ -6,9 +6,19 @@ import org.eclipse.jetty.webapp.WebAppContext
 import net.liftweb.util.Props
 
 object Start {
-
   def main(args: Array[String]): Unit = {
-    
+    /* Calculate run.mode dependent path to logback configuration file.
+    * Use same naming scheme as for props files.  */
+    val logbackConfFile = {
+     val propsDir = "props"
+     val fileNameTail = "default.logback.xml"
+     val mode = System.getProperty("run.mode")
+     if (mode != null) propsDir + "/" + mode + "." + fileNameTail
+     else propsDir + "/" + fileNameTail
+    }
+    /* set logback config file appropriately */
+    System.setProperty("logback.configurationFile", logbackConfFile)
+
     /* choose different port for each of your webapps deployed on single server
      * you may use it in nginx proxy-pass directive, to target virtual hosts */
     val port = Props.getInt("port", 8090)
