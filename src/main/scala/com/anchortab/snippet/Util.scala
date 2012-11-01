@@ -1,5 +1,7 @@
 package com.anchortab.snippet
 
+import scala.xml._
+
 import net.liftweb._
   import common._
   import http._
@@ -18,7 +20,13 @@ import net.liftweb._
 
 object Util extends Loggable {
   def snippetHandlers : SnippetPF = {
+    case "ie-conditional" :: Nil => ieConditional _
     case "jquery" :: Nil => jquery
+  }
+
+  def ieConditional(xhtml:NodeSeq) = {
+    val ieVersion = S.attr("version") openOr "IE"
+    Unparsed("<!--[if " + ieVersion + "]>") ++ xhtml ++ Unparsed("<![endif]-->")
   }
 
   def jquery =
