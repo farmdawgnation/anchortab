@@ -388,9 +388,7 @@
 
       font-family: 'Open Sans', 'Arial', sans-serif
 
-      border-bottom: 1px solid #cacaca
-
-      margin-bottom: 3rem
+      margin-bottom: 4rem
 
       tr.signup td
         height: 18px
@@ -399,7 +397,7 @@
         &.influencer
           // This guy has to change depending on the length of the table.
           // Which sucks, but whatever.
-          box-shadow: 0px 42px 0px #323232
+          box-shadow: 0px 39px 0px #323232
 
         button
           +stylish-button
@@ -407,11 +405,11 @@
 
           position: absolute
           display: block
-          left: 20px
-          top: 16px
+          left: 4px
+          top: -6px
 
           &:hover
-            top: 12px
+            top: -10px
 
       tr
         border-left: 1px solid #cacaca
@@ -439,6 +437,12 @@
 
             td.influencer
               border-top: 1px solid #363636
+
+        &:last-child
+          border-bottom: 1px solid #cacaca
+
+          td.influencer
+            border-bottom: 1px solid #323232
 
         th
           font-family: 'Damion', cursive
@@ -469,6 +473,9 @@
           padding: 12px 12px
           text-align: center
 
+          .firefox-sucks
+            position: relative
+
           .ss-icon
             font-size: 20px
             font-size: 1.42rem
@@ -477,8 +484,6 @@
 
             &.included-feature
               color: #368ecd
-
-          position: relative
 
           &.feature-label
             width: 232px
