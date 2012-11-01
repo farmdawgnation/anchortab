@@ -482,8 +482,13 @@
       margin-bottom: 20px
 
       a
-        text-decoration: none
         color: #187bda
+
+        &:link, &:visited
+          text-decoration: none
+
+        &:hover
+          text-decoration: underline
 
     > h4
       color: #187bda
@@ -508,10 +513,14 @@
       font-size: 0.85rem
 
       a
-        color: white
         text-decoration: none
-
         line-height: 20px
+
+        &:link, &:visited
+          color: white
+
+        &:hover
+          color: #187bda
 
       p
         font-size: 12px
