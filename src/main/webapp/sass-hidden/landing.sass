@@ -66,6 +66,54 @@
   &:hover
     cursor: pointer
 
+=social-footer-sprite($name)
+  $positionX: 0
+  $positionY: 0
+  $hoverPositionX: 0
+  $height: 0
+  $width: 0
+  $left: 0
+
+  @if $name == 'email'
+    $positionX: 0
+    $positionY: 0
+    $hoverPositionX: -22px
+    $height: 17px
+    $width: 21px
+  @if $name == 'facebook'
+    $positionX: -3px
+    $positionY: -17px
+    $hoverPositionX: -25px
+    $height: 17px
+    $width: 17px
+    $left: 2px
+  @if $name == 'twitter'
+    $positionX: -3px
+    $positionY: -33px
+    $hoverPositionX: -25px
+    $height: 16px
+    $width: 17px
+    $left: 2px
+
+  &:link
+    margin-left: 35px
+
+    &:before
+      content: ''
+      display: block
+      height: $height
+      width: $width
+
+      background-image: image-url('footer-social-sprite.png')
+      background-position: $positionX $positionY
+
+      position: absolute
+      left: $left
+
+  &:hover
+    &:before
+      background-position: $hoverPositionX $positionY
+
 =h3rope($dark: false)
   $rope: 'light-rope.png'
 
@@ -541,6 +589,31 @@
 
       font-size: 12px
       font-size: 0.85rem
+
+      background-image: image-url('footer-rope.png')
+      background-repeat: no-repeat
+      background-position-y: 135px
+
+      p.attribution
+        color: #a1a1a1
+        font-size: 12px
+        font-size: 0.85rem
+        font-style: italic
+
+      li
+        position: relative
+
+        &.email, &.facebook, &.twitter
+          margin-bottom: 11px
+
+        &.email a
+          +social-footer-sprite('email')
+
+        &.facebook a
+          +social-footer-sprite('facebook')
+
+        &.twitter a
+          +social-footer-sprite('twitter')
 
       a
         text-decoration: none
