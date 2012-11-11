@@ -304,17 +304,46 @@
       &:hover
         top: 26px
 
-    > .create-slide
-      background-image: image-url('how-it-works/create.png')
-      background-repeat: no-repeat
-      background-position: 100% 100%
+    .slide-strip-container
+      overflow: hidden
 
-      width: 725px
-      margin-right: auto
-      margin-left: auto
+      .slide-strip-view
+        width: 725px
+        margin: 0 auto
+        overflow: hidden
 
-      p
-        margin-right: 32%
+        .slide-strip
+          width: 4000px
+          position: relative
+          left: 0
+
+          +transition(left 1s)
+
+          > .slide
+            width: 725px
+
+            background-repeat: no-repeat
+            background-position: 100% 100%
+
+            display: inline-block
+
+            p
+              margin-right: 32%
+
+          > .create-slide
+            background-image: image-url('how-it-works/create.png')
+
+          > .embed-slide
+            background-image: image-url('how-it-works/embed.png')
+
+          > .collect-slide
+            background-image: image-url('how-it-works/collect.png')
+
+          > .analyze-slide
+            background-image: image-url('how-it-works/analyze.png')
+
+          > .expand-influence-slide
+            background-image: image-url('how-it-works/expand-influence.png')
 
     ol.pages
       width: auto
