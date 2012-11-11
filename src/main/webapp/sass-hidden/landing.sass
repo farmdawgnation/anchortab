@@ -136,6 +136,25 @@
   &:after
     margin-left: 20px
 
+=arrow-sprite($which)
+  $positionX: 0
+
+  @if $which == 'previous'
+    $positionX: 0
+  @if $which == 'next'
+    $positionX: -26px
+
+  z-index: 3
+  text-indent: -9999999px
+  background-image: image-url('how-it-works/arrows-sprite.png')
+  background-position: $positionX 0
+
+  width: 17px
+  height: 26px
+
+  &:hover
+    background-position: $positionX -27px
+
 #landing
   > section
     width: 100%
@@ -295,6 +314,20 @@
     color: white
 
     padding-top: 96px
+
+    .slide-strip-navigator
+      position: relative
+
+      .slide-previous
+        position: absolute
+        top: 110px
+        +arrow-sprite('previous')
+
+      .slide-next
+        position: absolute
+        top: 110px
+        left: 890px
+        +arrow-sprite('next')
 
     .get-started-now
       position: relative
