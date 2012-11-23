@@ -8,6 +8,9 @@ libraryDependencies <+= sbtVersion(v => v match {
   case x if (x.startsWith("0.12")) => "com.github.siasia" %% "xsbt-web-plugin" % "0.12.0-0.2.11.1"
 })
 
+// Yui compressor (for resource management)
+libraryDependencies += "com.yahoo.platform.yui" % "yuicompressor"  % "2.4.7"
+
 // SBT Assembly Plugin.
 resolvers += Resolver.url("artifactory", url("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases"))(Resolver.ivyStylePatterns)
 
