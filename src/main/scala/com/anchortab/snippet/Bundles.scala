@@ -13,7 +13,7 @@ import net.liftweb.util._
 case class BundleInfo(name:String, checksumInFilename:Boolean,
                       parts:List[String], version:String, bucket:String)
 object Bundles {
-  val assetDomain = "devsets.openstudy.com"
+  val assetDomain = "assets.anchortab.com"
 
   private def readResource(resourcePath:String) : Box[String] = {
     for {
