@@ -29,3 +29,7 @@ $(document).ready ->
     scrollableElem = scrollableElement('html', 'body')
 
     $(scrollableElem).animate({scrollTop: targetTop}, 600)
+
+  getTwitters 'tweet-container',
+    id: 'anchortab',
+    template: '<p>%text%</p><p class="attribution"><a href="http://twitter.com/%user_screen_name%/statuses/%id_str%/">%time%</a> &middot; @%user_screen_name%</p>'
