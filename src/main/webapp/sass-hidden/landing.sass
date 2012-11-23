@@ -6,6 +6,40 @@
 @import "compass/css3/images"
 @import "compass/css3/transition"
 
+=pretty-input
+  font-family: 'Open Sans', Ariel, sans-serif
+  font-size: 16px
+  height: 38px
+  width: 154px
+  padding: 12px
+
+  border: 1px solid $light-gray
+
+  +box-sizing(border-box)
+  +border-radius(5px)
+
+=pretty-button
+  height: 38px
+  width: 84px
+  vertical-align: top
+
+  cursor: pointer
+
+  +box-sizing(border-box)
+  border: 0
+  +border-radius(5px)
+
+  background: $login-button-blue-top
+  +background(linear-gradient($login-button-blue-top, $login-button-blue-bottom))
+  color: white
+
+  font-family: 'Open Sans', Ariel, sans-serif
+  font-size: 16px
+
+  &:hover
+    background: $login-button-blue-bottom
+    +background(linear-gradient($login-button-blue-bottom, $login-button-blue-top))
+
 =mail-service-sprite($name)
   $height: 0
   $width: 0
@@ -232,38 +266,10 @@
         margin-top: 15px
 
         input
-          font-family: 'Open Sans', Ariel, sans-serif
-          font-size: 16px
-          height: 38px
-          width: 154px
-          padding: 12px
-
-          border: 1px solid $light-gray
-
-          +box-sizing(border-box)
-          +border-radius(5px)
+          +pretty-input
 
         button.submit
-          height: 38px
-          width: 84px
-          vertical-align: top
-
-          cursor: pointer
-
-          +box-sizing(border-box)
-          border: 0
-          +border-radius(5px)
-
-          background: $login-button-blue-top
-          +background(linear-gradient($login-button-blue-top, $login-button-blue-bottom))
-          color: white
-
-          font-family: 'Open Sans', Ariel, sans-serif
-          font-size: 16px
-
-          &:hover
-            background: $login-button-blue-bottom
-            +background(linear-gradient($login-button-blue-bottom, $login-button-blue-top))
+          +pretty-button
 
     h1
       +replace-text('logo-beta.png')
@@ -499,6 +505,21 @@
     > h3.light-rope
       &:before, &:after
         width: 240px
+
+    > h4.beta-subscription-header
+      margin-top: 110px
+      padding-bottom: 20px
+
+      & ~ .beta-subscribe
+        margin-top: 10px
+        padding-bottom: 180px
+
+        input
+          +pretty-input
+          width: 30rem
+
+        button.submit
+          +pretty-button
 
     > table.plans-table
       width: 790px
