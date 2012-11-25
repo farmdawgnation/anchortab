@@ -3,7 +3,7 @@
 #
 currentSlide = 0
 slideStripViewWidth = 0
-numberOfSlides = 0
+numberOfSlides = 4
 slideWidth = 725
 
 changePageIndicatorTo = (page) ->
@@ -21,6 +21,12 @@ nextSlide = ->
 
   $('.slide-strip').css 'left', offset
   changePageIndicatorTo(currentSlide + 1)
+
+  if currentSlide == (numberOfSlides - 1)
+    $('.slide-next').css 'display', 'none'
+
+  $('.slide-previous').css 'display', 'block'
+
   return false
 
 previousSlide = ->
@@ -32,6 +38,12 @@ previousSlide = ->
 
   $('.slide-strip').css 'left', offset
   changePageIndicatorTo(currentSlide + 1)
+
+  if currentSlide == 0
+    $('.slide-previous').css 'display', 'none'
+
+  $('.slide-next').css 'display', 'block'
+
   return false
 
 jumpToSlide = (event) ->
