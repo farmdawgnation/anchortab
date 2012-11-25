@@ -1,0 +1,16 @@
+mongodb.host=127.0.0.1
+mongodb.port=27017
+mongodb.database=anchortab
+
+# WePay Properties
+wepay.clientId=88119
+wepay.clientSecret=22ede51741
+wepay.userAgent=AnchorTabServer/0.1
+wepay.anchorTabAccessToken=1fdd120f71e0865f56ed3e2ff1bb1bee6c7504eeaadd80a5a55ff9816518a125
+wepay.anchorTabUserId=0
+wepay.anchorTabAccountId=1670008
+wepay.oauthPermissions=collect_payments
+wepay.oauthRedirectUrl=http://anchortab.com
+
+# Production jQuery
+jquery.url=//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js
