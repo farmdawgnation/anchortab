@@ -5,8 +5,18 @@ import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.webapp.WebAppContext
 import net.liftweb.util.Props
 
+import sun.misc.Signal
+import sun.misc.SignalHandler
+
 object Start {
   def main(args: Array[String]): Unit = {
+    // Register the signal handler for USR2, which triggers a reload.
+    Signal.handle(new Signal("USR2"), new SignalHandler {
+      def handle(signal:Signal) {
+        println("USR2")
+      }
+    })
+
     /* Calculate run.mode dependent path to logback configuration file.
     * Use same naming scheme as for props files.  */
     val logbackConfFile = {
