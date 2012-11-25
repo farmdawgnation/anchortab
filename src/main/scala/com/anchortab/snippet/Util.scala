@@ -21,7 +21,7 @@ import net.liftweb._
 object Util extends Loggable {
   def snippetHandlers : SnippetPF = {
     case "ie-conditional" :: Nil => ieConditional _
-    case "jquery" :: Nil => jquery
+    case "jquery" :: Nil => jquery _
   }
 
   def ieConditional(xhtml:NodeSeq) = {
@@ -29,6 +29,13 @@ object Util extends Loggable {
     Unparsed("<!--[if " + ieVersion + "]>") ++ xhtml ++ Unparsed("<![endif]-->")
   }
 
-  def jquery =
-    "script" #> <script src="/javascripts/jquery-1.8.2.js" type="text/javascript"></script>
+  def jquery(xhtml:NodeSeq) = {
+    val jQueryUrl = Props.get("jquery.url")
+
+    jQueryUrl.map { url =>
+      ("script [src]" #> url).apply(xhtml)
+    } openOr {
+      xhtml
+    }
+  }
 }
