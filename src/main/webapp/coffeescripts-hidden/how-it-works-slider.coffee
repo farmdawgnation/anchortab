@@ -57,6 +57,17 @@ jumpToSlide = (event) ->
 
   $(".slide-strip").css 'left', offset
   changePageIndicatorTo(page)
+
+  if currentSlide == 0
+    $('.slide-previous').css 'display', 'none'
+  else
+    $('.slide-previous').css 'display', 'block'
+
+  if currentSlide == (numberOfSlides - 1)
+    $('.slide-next').css 'display', 'none'
+  else
+    $('.slide-next').css 'display', 'block'
+
   return false
 
 $(document).on 'ready', ->
