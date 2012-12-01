@@ -1,22 +1,79 @@
-@import "compass/css3/transition"
+@import "compass/css3"
 
 #anchor-tab
   position: fixed
   bottom: -75px
   right: 0
   left: 0
+  border-top: 5px solid white
+  color: white
+
+  font-family: 'Open Sans', 'Arial', sans-serif
+  font-size: 13px
 
   text-align: center
 
-  padding: 6px 0
+  padding: 4.5px 0
 
   +transition(bottom 800ms)
 
+  .anchortab-stamp
+    text-indent: -999999999px
+    background-image: image-url('anchortab-stamp.png')
+    display: block
+    width: 35px
+    height: 36px
+
+    position: absolute
+    left: 10px
+    bottom: 1.5px
+
+  .minimize
+    position: absolute
+    right: 10px
+    bottom: 14px
+    border: 0
+    color: transparent
+
+    width: 18px
+    height: 13px
+
+    background: image-url('tab-minimize.png')
+    text-align: left
+
+    cursor: pointer
+
+  .email-input
+    +border-radius(5px)
+    border: 0
+    padding: 7px
+    font-family: 'Open Sans', 'Arial', sans-serif
+    width: 193px
+
+  .email-submission
+    color: white
+    border: 0
+    +background(linear-gradient(#706f6f, #262625))
+    padding: 4px
+    +border-radius(5px)
+
+    font-family: 'Open Sans', 'Arial', sans-serif
+    padding: 8px 4px
+    cursor: pointer
+
+    margin-left: 10px
+
+  &.gray
+    +background(linear-gradient(#848484, #5e5e5e))
+
+  &.green
+    +background(linear-gradient(#39bd42, #2b8a31))
+
   &.red
-    background-color: red
+    +background(linear-gradient(#db2f2d, #9b2220))
 
   &.blue
-    background-color: blue
+    +background(linear-gradient(#2d8bd6, #226aa3))
 
   &.visible
     bottom: 0

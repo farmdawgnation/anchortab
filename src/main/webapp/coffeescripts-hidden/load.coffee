@@ -122,18 +122,30 @@ displayTab = (tabJson) ->
       .attr("id", "anchor-tab")
       .addClass(colorScheme)
       .append(
+        $("<a />")
+          .addClass("anchortab-stamp")
+          .attr('href', "http://anchortab.com")
+          .attr('target', '_blank')
+      )
+      .append(
         $("<p />").text("This is an anchor tab.")
       )
       .append(
         $("<input />")
           .addClass('email-input')
           .attr('type', 'text')
+          .attr('placeholder', "email address")
       )
       .append(
         $("<button />")
           .addClass('email-submission')
-          .text("Submit Email!")
+          .text("Submit")
           .click(submitEmail)
+      )
+      .append(
+        $("<button />")
+          .addClass('minimize')
+          .text("Minimize Anchor Tab")
       )
 
   $("body").append anchorTab
@@ -141,6 +153,11 @@ displayTab = (tabJson) ->
   setTimeout ->
     anchorTab.addClass "visible"
   , displayDelay
+
+  $("#anchor-tab")
+    .on('click', '.minimize', ->
+      $("#anchor-tab").removeClass("visible")
+    )
 
 loadAnchorTab = ->
   # Load the anchor tab. At this point we can assume that jQuery exists and that we're able to use it
