@@ -1,86 +1,92 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:lift="http://liftweb.net/">
+<html>
   <head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-    <meta name="description" content="" />
-    <meta name="keywords" content="" />
-    <title class="lift:Menu.title">App: </title>
-    <style class="lift:CSS.blueprint"></style>
-    <style class="lift:CSS.fancyType"></style>
-    <script id="jquery" src="/classpath/jquery.js" type="text/javascript"></script>
-    <script id="json" src="/classpath/json.js" type="text/javascript"></script>
-    <style type="text/css">
-/* <![CDATA[ */
-.edit_error_class {
-  display: block;
-  color: red;
-}
+    <title>Anchor Tab</title>
 
-.sidebar ul {
-	margin:0;
-	padding:0;
-	border-bottom:1px solid #ccc;
-}
-	 
-
-.sidebar ul li {
-	margin:0;
-	padding:0;
-	list-style:none;
-	border:1px solid #ccc;
-	border-bottom:none;
-}
-
-.sidebar ul li a {
-	display:block;
-	padding:3px;
-	text-indent:30px;
-	text-decoration:none;
-}
-
-.sidebar ul li span {
-	display:block;
-	padding:3px;
-	text-indent:30px;
-	text-decoration:none;
-}
-
-.sidebar ul li a:hover {
-	background-color: #eee;
-}
-
-
-  /* ]]> */
-  </style>
+    <l:head>
+      <l:ie-conditional version="lte IE 8" eager_eval="true">
+        <l:script-bundle name="ie8-lah-de-dah"></l:script-bundle>
+      </l:ie-conditional>
+      <link href="/fonts/ss-standard/ss-standard.css" rel="stylesheet" type="text/css">
+      <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,800,700,600|Damion' rel='stylesheet' type='text/css'>
+      <script class="l:jquery" src="/javascripts/jquery-1.8.2.js"></script>
+      <l:style-bundle name="default"></l:style-bundle>
+      <l:script-bundle name="default"></l:script-bundle>
+      <link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+    </l:head>
   </head>
-  <body>
-    <div class="container">
-      <div class="column span-12 last" style="text-align: right">
-        <h1 class="alt">Anchor Tab</h1>
+  <body id="landing">
+    <section class="mast-head">
+      <div class="section-container">
+        <h1 class="logo">Anchor Tab</h1>
+
+        <div class="login-container">
+          <div class="social">
+            <a href="https://www.facebook.com/pages/Anchor-Tab/437154312988960" class="facebook" target="_blank">Facebook</a>
+            <a href="http://twitter.com/anchortab" class="twitter" target="_blank">Twitter</a>
+            <a href="http://github.com/anchortab" class="github" target="_blank">Github</a>
+          </div>
+
+          <div class="l:login-form login">
+            <form>
+              <input type="text" class="email" placeholder="Email">
+              <input type="password" class="password" placeholder="Password">
+              <button class="submit">Login</button>
+            </form>
+          </div>
+        </div>
+    </section>
+
+    <section id="content">
+     </section>
+
+    <footer>
+      <div class="section-container">
+        <div class="navigation">
+          <h5>Navigation</h5>
+          <ul class="footer-navigation">
+            <li><a href="#" title="Oops. This isn't ready yet. ;)">Manager Login</a></li>
+            <li><a href="#" title="Oops. This isn't ready yet. ;)">About Us</a></li>
+            <li><a href="#" title="Oops. This isn't ready yet. ;)">Terms of Service</a></li>
+            <li><a href="#" title="Oops. This isn't ready yet. ;)">Privacy Policy</a></li>
+          </ul>
+        </div>
+
+        <div class="twitter-feed">
+          <h5>What we're talking about</h5>
+
+          <section id="tweet-container">
+            <p>How do you create content on a regular basis? #inspiration</p>
+            <p class="attribution">4 hours ago &middot; @anchortab</p>
+          </section>
+        </div>
+
+        <div class="contact-us">
+          <h5>Contact Us</h5>
+
+          <ul>
+            <li class="email"><a href="mailto:hello@anchortab.com">hello@anchortab.com</a></li>
+            <li class="facebook"><a href="https://www.facebook.com/pages/Anchor-Tab/437154312988960?fref=ts">Anchor Tab on Facebook</a></li>
+            <li class="twitter"><a href="http://twitter.com/anchortab">Anchor Tab on Twitter</a></li>
+          </ul>
+        </div>
+
+        <p class="copyright">Copyright ©2012 <a href="http://farmdawgnation.com" target="_blank">Matt Farmer</a> and <a href="http://ciriongroup.com" target="_blank">Cirion Group</a>. All rights reserved.</p>
+        <p class="love">Brewed with love in The Classic City and ATL.</p>
       </div>
+    </footer>
+    <script type="text/javascript">
 
-      <hr>
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-35269224-1']);
+      _gaq.push(['_trackPageview']);
 
-      <div class="column span-6 colborder sidebar">
-        <hr class="space" >
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
 
-	<span class="lift:Menu.builder"></span>
-
-        <div class="lift:Msgs?showAll=true"></div>
-        <hr class="space" />
-      </div>
-
-      <div class="column span-17 last">
-        <div id="content">The main content will get bound here</div>
-      </div>
-
-      <hr />
-      <div class="column span-23 last" style="text-align: center">
-        <h4 class="alt">
-          <a href="http://www.liftweb.net"><i>Lift</i></a> 
-	  is Copyright 2007-2012 WorldWide Conferencing, LLC.
-	  Distributed under an Apache 2.0 License.</h4>
-      </div>
-    </div>
+    </script>
   </body>
 </html>
