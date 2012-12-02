@@ -18,7 +18,7 @@ import net.liftweb._
   import mongodb._
     import BsonDSL._
 
-class SimpleAnchorTabEvent(eventName:String) extends JsExp {
+class SimpleAnchorTabEvent(eventName:String) extends JsCmd {
   import Serialization._
 
   implicit def typeHints = Serialization.formats(NoTypeHints)
