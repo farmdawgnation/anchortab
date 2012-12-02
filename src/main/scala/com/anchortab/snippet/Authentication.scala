@@ -25,6 +25,8 @@ import com.anchortab.model._
 import me.frmr.wepay._
   import api.Preapproval
 
+case object LoginFailed extends SimpleAnchorTabEvent("login-failed")
+
 object userSession extends SessionVar[Box[UserSession]](Empty)
 object statelessUser extends RequestVar[Box[User]](Empty)
 
@@ -191,7 +193,7 @@ object Authentication extends Loggable {
         RedirectTo("/session/login")
 
       case _ =>
-        Alert("That username or password appears to be invalid.")
+        LoginFailed
     }
   }
 
