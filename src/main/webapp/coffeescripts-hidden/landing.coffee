@@ -30,6 +30,12 @@ $(document).ready ->
 
     $(scrollableElem).animate({scrollTop: targetTop}, 600)
 
+  $('.login').on 'click', '.submit', (event) ->
+    $(event.target).closest(".login").find("input").removeClass("error")
+
+  $(document).on 'login-failed', ->
+    $(".login input").addClass("error")
+
   getTwitters 'tweet-container',
     id: 'anchortab',
     template: '<p>%text%</p><p class="attribution"><a href="http://twitter.com/%user_screen_name%/statuses/%id_str%/">%time%</a> &middot; @%user_screen_name%</p>'
