@@ -18,6 +18,21 @@ import net.liftweb._
   import mongodb._
     import BsonDSL._
 
+class SimpleAnchorTabEvent(eventName:String) extends JsExp {
+  import Serialization._
+
+  implicit def typeHints = Serialization.formats(NoTypeHints)
+
+  def toJsCmd = {
+    Call("anchortab.event", eventName, decompose(this)).cmd.toJsCmd
+  }
+}
+class AnchorTabEvent(eventName:String, parameters:JObject) extends JsCmd {
+  def toJsCmd = {
+    Call("anchortab.event", eventName, parameters).cmd.toJsCmd
+  }
+}
+
 object Util extends Loggable {
   def snippetHandlers : SnippetPF = {
     case "ie-conditional" :: Nil => ieConditional _
