@@ -139,6 +139,7 @@ object Tabs {
         tryo(Tab.ColorSchemeOptions.withName(colorScheme)),
         selected => colorScheme = selected.toString
       ) &
+      "#custom-text" #> text(customText, customText = _) &
       ".submit" #> ajaxSubmit("Save Tab", submit _)
 
     "form" #> { ns:NodeSeq =>
