@@ -24,6 +24,10 @@ setStateCookie = (state) ->
   expire.setTime(today.getTime() + 3600000*24*nDays)
   document.cookie = "anchorTabState=" + state + ";path=/;expires=" + expire.toGMTString()
 
+getStateCookie = ->
+  cookieMatch = document.cookie.match(/anchorTabState=([a-z]+)(;)?/)
+  cookieMatch[1]
+
 # http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values
 getParam = (name) ->
   results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href)
@@ -163,7 +167,10 @@ displayTab = (tabJson) ->
   $("body").append anchorTab
 
   setTimeout ->
-    anchorTab.addClass "visible"
+    if getStateCookie() == 'minimized'
+      anchorTab.addClass "minimized"
+    else
+      anchorTab.addClass "visible"
   , displayDelay
 
   $("#anchor-tab")
