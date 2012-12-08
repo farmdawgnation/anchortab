@@ -9,9 +9,9 @@ All Rights Reserved
 ## Configuration - It'd be nice if we could deduce these from a props
 ## file for something, but in lieu of that, this works.
 ##
-googleAnalyticsAccount = "UA-35269224-4"
-apiDomain = "local.anchortab.com"
-resourcesDomain = "local.anchortab.com"
+googleAnalyticsAccount = "UA-35269224-2"
+apiDomain = "anchortab.com"
+resourcesDomain = "embed.anchortab.com"
 jqVersion = "1.8.2"
 
 ##
