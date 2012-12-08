@@ -76,7 +76,7 @@ object Api extends RestHelper with Loggable {
           tab <- (Tab.find(tabId):Box[Tab]) // Force box type.
           user <- tab.user.filter(_.tabsActive_?) ?~! "This tab has been disabled." ~> 403
           callbackFnName <- req.param("callback") ?~! "Callback not specified." ~> 403
-          email <- req.param("email") ?~! "Email was not specified." ~> 403
+          email <- req.param("email").filter(_.trim.nonEmpty) ?~! "Email was not specified." ~> 403
         } yield {
           // Ensure this new subscriber is unique.
           if (! tab.hasSubscriber_?(email)) {
