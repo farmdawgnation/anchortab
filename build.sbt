@@ -27,11 +27,11 @@ seq(resourceManagementSettings :_*)
 scalacOptions ++= Seq("-deprecation", "-unchecked")
 
 libraryDependencies ++= {
-  val liftVersion = "2.5-M2"
+  val liftVersion = "2.5-M3"
   Seq(
     "net.liftweb"       %% "lift-webkit"        % liftVersion        % "compile",
     "net.liftweb"       %% "lift-mongodb"       % liftVersion        % "compile",
-    "net.liftmodules"   %% "lift-jquery-module" % (liftVersion + "-1.0"),
+    "net.liftmodules"   %% "lift-jquery-module" % (liftVersion + "-2.0"),
     "javax.servlet"     %  "servlet-api"        % "2.5" % "provided",
     "org.eclipse.jetty" % "jetty-webapp"        % "8.1.7.v20120910"  % "compile,container",
     "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016" % "provided,compile,container" artifacts Artifact("javax.servlet", "jar", "jar"),
