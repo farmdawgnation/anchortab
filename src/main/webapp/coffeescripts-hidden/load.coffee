@@ -134,6 +134,7 @@ displayTab = (tabJson) ->
   font = tabJson.font
   displayDelay = tabJson.delay * 1000
   colorScheme = tabJson.colorScheme.toLowerCase()
+  customMessage = tabJson.customText
 
   # Load the Anchor Tab stylesheet.
   atStyleSheet =
@@ -158,7 +159,7 @@ displayTab = (tabJson) ->
       .append(
         $("<p />")
           .addClass("custom-message")
-          .text("This is an anchor tab.")
+          .text(customMessage)
       )
       .append(
         $("<input />")
