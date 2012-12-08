@@ -17,6 +17,13 @@ jqVersion = "1.8.2"
 ##
 ## LIB FUNCTIONS
 ##
+setStateCookie = (state) ->
+  nDays = 30
+  today = new Date()
+  expire = new Date()
+  expire.setTime(today.getTime() + 3600000*24*nDays)
+  document.cookie = "anchorTabState=" + state + ";path=/;expires=" + expire.toGMTString()
+
 # http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values
 getParam = (name) ->
   results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href)
@@ -162,9 +169,11 @@ displayTab = (tabJson) ->
   $("#anchor-tab")
     .on('click', '.minimize', ->
       $("#anchor-tab").removeClass("visible").addClass("minimized")
+      setStateCookie 'minimized'
     )
     .on('click', '.maximize', ->
       $("#anchor-tab").removeClass("minimized").addClass("visible")
+      setStateCookie 'visible'
     )
 
 loadAnchorTab = ->
