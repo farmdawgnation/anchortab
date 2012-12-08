@@ -197,7 +197,7 @@ object Tabs {
     var exportEndDate = dateFormatter.format(new Date())
 
     def submit = {
-      // TODO
+      Alert("This hasn't been implemented yet.")
     }
 
     val bind =
