@@ -68,6 +68,8 @@ object Tab extends MongoDocumentMeta[Tab] {
   object ColorSchemeOptions extends Enumeration {
     val Red = Value("Red")
     val Blue = Value("Blue")
+    val Green = Value("Green")
+    val Gray = Value("Gray")
   }
 
   private def validParameter(options:Enumeration, value:String) = {
