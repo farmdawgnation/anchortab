@@ -26,7 +26,7 @@ setStateCookie = (state) ->
 
 getStateCookie = ->
   cookieMatch = document.cookie.match(/anchorTabState=([a-z]+)(;)?/)
-  cookieMatch[1]
+  cookieMatch?[1]
 
 # http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values
 getParam = (name) ->
