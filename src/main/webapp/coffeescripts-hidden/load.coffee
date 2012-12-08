@@ -147,6 +147,11 @@ displayTab = (tabJson) ->
           .addClass('minimize')
           .text("Minimize Anchor Tab")
       )
+      .append(
+        $("<button />")
+          .addClass("maximize")
+          .text("Maximize Anchor Tab")
+      )
 
   $("body").append anchorTab
 
@@ -156,7 +161,10 @@ displayTab = (tabJson) ->
 
   $("#anchor-tab")
     .on('click', '.minimize', ->
-      $("#anchor-tab").removeClass("visible")
+      $("#anchor-tab").removeClass("visible").addClass("minimized")
+    )
+    .on('click', '.maximize', ->
+      $("#anchor-tab").removeClass("minimized").addClass("visible")
     )
 
 loadAnchorTab = ->

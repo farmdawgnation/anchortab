@@ -17,6 +17,12 @@
 
   +transition(bottom 800ms)
 
+  &.minimized
+    bottom: -75px
+
+    .maximize
+      bottom: 89px
+
   .anchortab-stamp
     text-indent: -999999999px
     background-image: image-url('anchortab-stamp.png')
@@ -40,6 +46,23 @@
 
     background: image-url('tab-minimize.png')
     text-align: left
+
+    cursor: pointer
+
+  .maximize
+    +transition(bottom 800ms)
+
+    position: absolute
+    right: 10px
+    bottom: -200px
+    border: 0
+    color: transparent
+
+    width: 18px
+    height: 13px
+
+    background: image-url('tab-maximize.png')
+    test-align: left
 
     cursor: pointer
 
@@ -81,3 +104,19 @@
   > p
     margin: 4px 4px
     display: inline-block
+
+    &:after
+      display: inline-block
+      content: ''
+
+      vertical-align: bottom
+
+      width: 2px
+      height: 20px
+      position: relative
+      top: 2px
+
+      margin-right: 5px
+      margin-left: 7px
+
+      background: image-url('tab-divider.png')
