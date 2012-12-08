@@ -17,6 +17,13 @@
 
   +transition(bottom 800ms)
 
+  &.success
+    .custom-message, .email-input, .email-submission
+      display: none
+
+    .success-message
+      display: inline-block
+
   &.minimized
     bottom: -75px
 
@@ -104,6 +111,13 @@
   > p
     margin: 4px 4px
     display: inline-block
+
+    &.success-message
+      display: none
+      margin: 8.5px 4px
+
+      &:after
+        display: none
 
     &:after
       display: inline-block

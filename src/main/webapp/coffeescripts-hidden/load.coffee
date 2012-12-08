@@ -96,6 +96,10 @@ submitEmail = (event) ->
 
   $target = $(event.target)
   $input = $target.closest("#anchor-tab").find(".email-input")
+
+  $target.attr('disabled', 'disabled')
+  $input.attr('disabled', 'disabled')
+
   email = $input.val()
   submissionUri = "http://" + apiDomain + "/api/v1/embed/" + tabId + "/submit"
 
@@ -105,7 +109,17 @@ submitEmail = (event) ->
     data:
       email: email
     success: (event) ->
-      alert("Email submitted!")
+      $("#anchor-tab").addClass("success")
+
+      setTimeout ->
+        $("#anchor-tab")
+          .removeClass("visible")
+          .removeClass("success")
+          .addClass("minimized")
+
+        setStateCookie "minimized"
+      , 4000
+
     error: (xhr, status, error) ->
       alert(error)
 
@@ -139,7 +153,9 @@ displayTab = (tabJson) ->
           .attr('target', '_blank')
       )
       .append(
-        $("<p />").text("This is an anchor tab.")
+        $("<p />")
+          .addClass("custom-message")
+          .text("This is an anchor tab.")
       )
       .append(
         $("<input />")
@@ -162,6 +178,11 @@ displayTab = (tabJson) ->
         $("<button />")
           .addClass("maximize")
           .text("Maximize Anchor Tab")
+      )
+      .append(
+        $("<p />")
+          .addClass("success-message")
+          .text("Thank you for adding your email to our list! Expect to hear from us soon!")
       )
 
   $("body").append anchorTab
