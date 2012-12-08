@@ -44,7 +44,7 @@ case class Tab(name:String, userId:ObjectId, appearance:TabAppearance, service:O
   def hasSubscriber_?(email:String) = subscriberEmails.contains(email)
 
   val embedCode = """
-    <script type="text/javascript" data-tab-id="""" + _id + """" src="http://local.anchortab.com/javascripts/load.js"></script>
+    <script id="anchortab-loader" type="text/javascript" data-tab-id="""" + _id + """" src="http://local.anchortab.com/javascripts/load.js"></script>
   """
 }
 
