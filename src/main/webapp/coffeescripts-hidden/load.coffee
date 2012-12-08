@@ -117,11 +117,14 @@ submitEmail = (event) ->
           .removeClass("success")
           .addClass("minimized")
 
+        $("#anchor-tab [disabled]").removeAttr("disabled")
+
         setStateCookie "minimized"
       , 4000
 
     error: (xhr, status, error) ->
-      alert(error)
+      $("#anchor-tab [disabled]").removeAttr("disabled")
+      alert("Something went wrong submitting your email. Please contact us if you continue to see this error.")
 
 displayTab = (tabJson) ->
   # In case of compatibility mode
