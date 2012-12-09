@@ -191,11 +191,14 @@
     background-position: $positionX -27px
 
 body
-  background-image: image-url('im-on-a-boat.jpg')
-  background-repeat: no-repeat
-  background-position: top center
+  background-image: image-url('textures/texture1.png')
 
   .mast-head
+    background-color: white
+    background-image: image-url('secondary-page-boat.jpg')
+    background-position: top center
+    background-repeat: no-repeat
+
     .login-container
       position: absolute
       right: 20px
@@ -252,6 +255,7 @@ body
       text-align: center
 
       margin-bottom: 50px
+      margin-top: 50px
 
       &.dark-rope
         +h3rope(true)
@@ -276,6 +280,7 @@ body
       width: 242px
 
   > .im-on-a-boat
+
     height: 486px
 
     .get-started-now
@@ -755,3 +760,26 @@ body
           font-family: 'Damion', cursive
 
           margin-bottom: 65px
+
+#content
+  padding-bottom: 86px
+
+  p
+    padding-bottom: 20px
+
+    a
+      color: #2F2F2F
+
+  ul
+    list-style: disc
+    margin-left: 30px
+    padding-bottom: 20px
+
+    li
+      font-size: 14px
+      font-size: 1rem
+
+      line-height: 24px
+      line-height: 1.75rem
+
+      font-family: 'Open Sans', 'Arial', sans-serif

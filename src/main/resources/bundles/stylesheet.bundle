@@ -2,7 +2,11 @@ tab->embed.anchortab.com
 tab.css
 
 default
+tipsy.css
 default.css
+
+about-us
+about-us.css
 
 landing
 landing.css
