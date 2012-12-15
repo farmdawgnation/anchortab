@@ -18,7 +18,7 @@ import net.liftweb._
     import JsonDSL._
   import mongodb.BsonDSL._
 
-import com.anchortab.model.{Tab, TabAppearance}
+import com.anchortab.model._
 
 import org.bson.types.ObjectId
 
@@ -95,27 +95,62 @@ object Tabs {
     var colorScheme = requestTab.map(_.appearance.colorScheme) openOr ""
     var customText = requestTab.map(_.appearance.customText) openOr ""
 
+    var mailChimpApiKey = ""
+    var mailChimpListId = ""
+    var service : Tab.EmailServices.Value = {
+      requestTab.map(_.service).openOr(None) match {
+        case Some(mcsw:MailChimpServiceWrapper) =>
+          mailChimpApiKey = mcsw.apiKey
+          mailChimpListId = mcsw.listId
+
+          Tab.EmailServices.MailChimp
+
+        case _ => Tab.EmailServices.None
+      }
+    }
+
     def submit = {
       {
+        // Build the object that will represent the association between this
+        // tab and a remote service.
+        val serviceWrapper = {
+          service match {
+            case Tab.EmailServices.MailChimp =>
+              Some(MailChimpServiceWrapper(mailChimpApiKey, mailChimpListId))
+            case _ => None
+          }
+        }
+
         for {
           session <- userSession.is
         } yield {
-          requestTabId.is match {
-            case Full(tabId) =>
-              Tab.update("_id" -> tabId, "$set" -> (
-                ("name" -> tabName) ~
-                ("appearance.delay" -> appearanceDelay.toInt) ~
-                ("appearance.font" -> font) ~
-                ("appearance.colorScheme" -> colorScheme) ~
-                ("appearance.customText" -> customText)
-              ))
+          serviceWrapper.map(_.credentialsValid_?) match {
+            case Some(false) =>
+              Alert("Looks like your service API key or list id might be wrong.")
 
             case _ =>
-              val tab = Tab(tabName, session.userId, TabAppearance(appearanceDelay.toInt, font, colorScheme, customText))
-              tab.save
-          }
+              requestTab match {
+                case Full(tab) =>
+                  tab.copy(
+                    name = tabName,
+                    appearance = TabAppearance(
+                      delay = appearanceDelay.toInt,
+                      font = font,
+                      colorScheme = colorScheme,
+                      customText = customText
+                    ),
+                    service = serviceWrapper
+                  ).save
 
-          RedirectTo("/manager/tabs")
+                case _ =>
+                  val tab = Tab(tabName, session.userId,
+                      TabAppearance(appearanceDelay.toInt, font, colorScheme, customText),
+                      serviceWrapper)
+                  tab.save
+              }
+
+            RedirectTo("/manager/tabs")
+          }
         }
       } openOr {
         Alert("Something went wrong.")
@@ -140,6 +175,13 @@ object Tabs {
         selected => colorScheme = selected.toString
       ) &
       "#custom-text" #> text(customText, customText = _) &
+      "#service" #> selectObj[Tab.EmailServices.Value](
+        Tab.EmailServices.values.toList.map(v => (v,v.toString)),
+        Full(service),
+        selected => service = selected
+      ) &
+      "#mailchimp-apikey" #> text(mailChimpApiKey, mailChimpApiKey = _) &
+      "#mailchimp-listid" #> text(mailChimpListId, mailChimpListId = _) &
       ".submit" #> ajaxSubmit("Save Tab", submit _)
 
     "form" #> { ns:NodeSeq =>

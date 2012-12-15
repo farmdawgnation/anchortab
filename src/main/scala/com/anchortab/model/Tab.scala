@@ -71,6 +71,11 @@ object Tab extends MongoDocumentMeta[Tab] {
     val Gray = Value("Gray")
   }
 
+  object EmailServices extends Enumeration {
+    val None = Value("None")
+    val MailChimp = Value("MailChimp")
+  }
+
   private def validParameter(options:Enumeration, value:String) = {
     tryo(options.withName(value)) match {
       case Full(_) =>
