@@ -88,6 +88,13 @@ object Api extends RestHelper with Loggable {
               ("$inc" -> ("stats.submissions" -> 1)) ~
               ("$addToSet" -> ("subscribers" -> decompose(subscriberInformation)))
             ))
+
+            tab.service.flatMap(_.subscribeEmail(email)) match {
+              case Failure(msg, _, _) =>
+                logger.error("ServiceWrapper subscribe for " + tab._id + " failed for " + email + ": " + msg)
+
+              case _ =>
+            }
           }
 
           val submitResult =
