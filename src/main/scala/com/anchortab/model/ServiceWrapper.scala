@@ -4,6 +4,7 @@ import net.liftweb._
   import common._
   import mongodb._
   import util.Helpers._
+  import json._
 
 import org.joda.time._
 
@@ -19,6 +20,9 @@ import com.ecwid.mailchimp._
 sealed trait ServiceWrapper {
   def subscribeEmail(email:String) : Box[Boolean]
   def unsubscribeEmail(email:String) : Box[Boolean]
+}
+object ServiceWrapper {
+  val typeHints = ShortTypeHints(List(classOf[MailChimpServiceWrapper]))
 }
 
 case class MailChimpServiceWrapper(apiKey:String, listId:String) extends ServiceWrapper {

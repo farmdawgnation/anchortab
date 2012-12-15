@@ -89,8 +89,8 @@ object Api extends RestHelper with Loggable {
               ("$addToSet" -> ("subscribers" -> decompose(subscriberInformation)))
             ))
 
-            tab.service.flatMap(_.subscribeEmail(email)) match {
-              case Failure(msg, _, _) =>
+            tab.service.map(_.subscribeEmail(email)) match {
+              case Some(Failure(msg, _, _)) =>
                 logger.error("ServiceWrapper subscribe for " + tab._id + " failed for " + email + ": " + msg)
 
               case _ =>

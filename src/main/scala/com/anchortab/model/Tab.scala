@@ -23,7 +23,7 @@ case class TabStats(views:Long = 0, submissions:Long = 0)
 case class TabSubscriber(email:String, verified:Boolean = false, createdAt:DateTime = new DateTime(),
                          _id:ObjectId = ObjectId.get)
 
-case class Tab(name:String, userId:ObjectId, appearance:TabAppearance, service:Box[ServiceWrapper] = Empty,
+case class Tab(name:String, userId:ObjectId, appearance:TabAppearance, service:Option[ServiceWrapper] = Empty,
                stats:TabStats = new TabStats, subscribers:List[TabSubscriber] = List(),
                _id:ObjectId = ObjectId.get) extends MongoDocument[Tab] {
   val meta = Tab
@@ -47,7 +47,8 @@ case class Tab(name:String, userId:ObjectId, appearance:TabAppearance, service:B
 }
 
 object Tab extends MongoDocumentMeta[Tab] {
-  override def formats = allFormats ++ JodaTimeSerializers.all
+  override def formats = (allFormats ++ JodaTimeSerializers.all) +
+    ServiceWrapper.typeHints
 
   object AppearanceDelayOptions extends Enumeration {
     val Delay0 = Value("0")
