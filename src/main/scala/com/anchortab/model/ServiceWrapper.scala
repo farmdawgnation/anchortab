@@ -18,6 +18,7 @@ import com.ecwid.mailchimp._
  * those operations are irrelevent to the parent interface.
 **/
 sealed trait ServiceWrapper {
+  def credentialsValid_? : Boolean
   def subscribeEmail(email:String) : Box[Boolean]
   def unsubscribeEmail(email:String) : Box[Boolean]
 }
@@ -25,7 +26,26 @@ object ServiceWrapper {
   val typeHints = ShortTypeHints(List(classOf[MailChimpServiceWrapper]))
 }
 
-case class MailChimpServiceWrapper(apiKey:String, listId:String) extends ServiceWrapper {
+case class MailChimpServiceWrapper(apiKey:String, listId:String) extends ServiceWrapper with Loggable {
+  def credentialsValid_? = {
+    // Instantiate a MailChimpClient
+    val mcClient = new MailChimpClient
+
+    // Build a dummy request
+    val listMembersCall = new ListMembersMethod
+    listMembersCall.apikey = apiKey
+    listMembersCall.id = listId
+
+    //Try to execute it
+    tryo(mcClient.execute(listMembersCall)) match {
+      case Full(_:ListMembersResult) => true
+      case Failure(msg, _, _) =>
+        logger.error("MailChimp exception during authentication check: " + msg)
+        false
+      case _ => false
+    }
+  }
+
   def subscribeEmail(email:String) = {
     // Instantiate a MailChimpClient
     val mcClient = new MailChimpClient
