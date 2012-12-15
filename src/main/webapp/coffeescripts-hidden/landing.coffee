@@ -16,13 +16,6 @@ scrollableElement = (els) ->
   return [];
 
 $(document).ready ->
-  $('.footer-navigation a')
-    .click(false)
-    .tipsy
-      gravity: 'w'
-      fade: true
-      opacity: 0.9
-
   $('body').on 'click', '.get-started-now', ->
     $targetElem = $("section.plans-and-pricing")
     targetTop = $targetElem.offset().top

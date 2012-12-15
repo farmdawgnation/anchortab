@@ -88,6 +88,13 @@ object Api extends RestHelper with Loggable {
               ("$inc" -> ("stats.submissions" -> 1)) ~
               ("$addToSet" -> ("subscribers" -> decompose(subscriberInformation)))
             ))
+
+            tab.service.map(_.subscribeEmail(email)) match {
+              case Some(Failure(msg, _, _)) =>
+                logger.error("ServiceWrapper subscribe for " + tab._id + " failed for " + email + ": " + msg)
+
+              case _ =>
+            }
           }
 
           val submitResult =
@@ -96,7 +103,7 @@ object Api extends RestHelper with Loggable {
 
           Call(callbackFnName, submitResult)
         }
-      } ?~! "Unknwon Tab." ~> 404
+      }
 
     //////////
     // API "user" resource.

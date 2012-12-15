@@ -33,10 +33,14 @@ class AnchorTabEvent(eventName:String, parameters:JObject) extends JsCmd {
   }
 }
 
+object currentPageTitle extends RequestVar[Box[String]](Empty)
+
 object Util extends Loggable {
   def snippetHandlers : SnippetPF = {
     case "ie-conditional" :: Nil => ieConditional _
     case "jquery" :: Nil => jquery _
+    case "set-page-title" :: Nil => setPageTitle _
+    case "page-title" :: Nil => pageTitle _
   }
 
   def ieConditional(xhtml:NodeSeq) = {
@@ -52,5 +56,23 @@ object Util extends Loggable {
     } openOr {
       xhtml
     }
+  }
+
+  def setPageTitle(xhtml:NodeSeq) = {
+    currentPageTitle(Full(xhtml.text))
+    NodeSeq.Empty
+  }
+
+  def pageTitle(xhtml:NodeSeq) = {
+    val currentTitle = xhtml.text
+    val newTitle = {
+      currentPageTitle.is.map { pageTitle =>
+        pageTitle + " | " + currentTitle
+      }
+    } openOr {
+      currentTitle
+    }
+
+    ("title *" #> newTitle).apply(xhtml)
   }
 }

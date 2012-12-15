@@ -39,7 +39,8 @@ libraryDependencies ++= {
     "joda-time"         % "joda-time"           % "2.1",
     "org.joda"          % "joda-convert"        % "1.2",
     "org.mindrot"       % "jbcrypt"             % "0.3m",
-    "me.frmr.wepay-scala" %% "wepay-scala"       % "0.9-SNAPSHOT"
+    "me.frmr.wepay-scala" %% "wepay-scala"       % "0.9-SNAPSHOT",
+    "com.ecwid"         % "ecwid-mailchimp"     % "1.3.0.4"
   )
 }
 
