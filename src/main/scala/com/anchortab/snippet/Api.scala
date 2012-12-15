@@ -103,7 +103,7 @@ object Api extends RestHelper with Loggable {
 
           Call(callbackFnName, submitResult)
         }
-      } ?~! "Unknwon Tab." ~> 404
+      }
 
     //////////
     // API "user" resource.
