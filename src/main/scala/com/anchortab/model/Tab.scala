@@ -18,14 +18,12 @@ object TabAppearance {
   val defaults = TabAppearance(30, "Arial", "red", "")
 }
 
-case class TabService(serviceId:String, credentials:Map[String,String])
-
 case class TabStats(views:Long = 0, submissions:Long = 0)
 
 case class TabSubscriber(email:String, verified:Boolean = false, createdAt:DateTime = new DateTime(),
                          _id:ObjectId = ObjectId.get)
 
-case class Tab(name:String, userId:ObjectId, appearance:TabAppearance, service:Option[TabService] = None,
+case class Tab(name:String, userId:ObjectId, appearance:TabAppearance, service:Option[ServiceWrapper] = None,
                stats:TabStats = new TabStats, subscribers:List[TabSubscriber] = List(),
                _id:ObjectId = ObjectId.get) extends MongoDocument[Tab] {
   val meta = Tab
