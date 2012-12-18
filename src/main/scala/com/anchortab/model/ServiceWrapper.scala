@@ -26,6 +26,21 @@ object ServiceWrapper {
   val typeHints = ShortTypeHints(List(classOf[MailChimpServiceWrapper]))
 }
 
+case class ConstantContactServiceWrapper(username:String, accessToken:String, listId:Int) extends ServiceWrapper with Loggable {
+  // This is an OAuth-based API wrapper, making the checking of valid credentials unneeded for the moment
+  val credentialsValid_? = true
+
+  def subscribeEmail(email:String) = {
+    // TODO
+    Failure("Not yet implemented.")
+  }
+
+  def unsubscribeEmail(email:String) = {
+    // TODO
+    Failure("Not yet implemented.")
+  }
+}
+
 case class MailChimpServiceWrapper(apiKey:String, listId:String) extends ServiceWrapper with Loggable {
   def credentialsValid_? = {
     // Instantiate a MailChimpClient
