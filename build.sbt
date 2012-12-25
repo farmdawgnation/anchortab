@@ -58,3 +58,13 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
 excludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
   cp filter {_.data.getName == "lift-json_2.9.1-2.4.jar"}
 }
+
+initialCommands := """
+import com.anchortab.model._
+import com.anchortab.constantcontact._
+import com.anchortab.constantcontact.model._
+import net.liftweb.json._
+import Extraction._
+val boot = new bootstrap.liftweb.Boot
+boot.boot
+"""
