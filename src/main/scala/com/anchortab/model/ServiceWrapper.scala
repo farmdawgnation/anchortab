@@ -27,17 +27,29 @@ object ServiceWrapper {
 }
 
 case class ConstantContactServiceWrapper(username:String, accessToken:String, listId:Int) extends ServiceWrapper with Loggable {
+  import com.anchortab.constantcontact.model.Contacts._
+
   // This is an OAuth-based API wrapper, making the checking of valid credentials unneeded for the moment
   val credentialsValid_? = true
 
   def subscribeEmail(email:String) = {
-    // TODO
-    Failure("Not yet implemented.")
+    val contact = Contact(EmailAddress(email) :: Nil, ActionBy.Visitor)
+
+    for {
+      contact <- contact.save
+      listResult <- contact.addToLists(listId.toLong :: Nil)
+    } yield {
+      true
+    }
   }
 
   def unsubscribeEmail(email:String) = {
-    // TODO
-    Failure("Not yet implemented.")
+    for {
+      contact <- Contact.find(email)
+      deleteResult <- contact.delete
+    } yield {
+      true
+    }
   }
 }
 

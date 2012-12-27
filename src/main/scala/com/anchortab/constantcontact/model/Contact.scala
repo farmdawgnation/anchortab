@@ -5,11 +5,15 @@ import net.liftweb._
     import ext._
     import Extraction._
     import JsonDSL._
+  import util._
+    import Helpers._
 
 import org.joda.time._
 
-object Contact {
-  val formats = List(
+import com.anchortab.constantcontact.ConstantContact
+
+object Contacts {
+  implicit val formats = DefaultFormats ++ List(
     ActionBySerializer,
     AddressTypeSerializer,
     ContactListStatusSerializer,
@@ -141,6 +145,48 @@ object Contact {
                             cell_phone:Option[String] = None)
   case class ContactName( first_name:Option[String] = None, middle_name:Option[String] = None,
                           last_name:Option[String] = None)
+
+  object Contact {
+    def find(id:Long) = {
+      ConstantContact.get("contacts/" + id).flatMap { json =>
+        tryo(json.extract[Contact])
+      }
+    }
+
+    def find(email:String) = {
+      ConstantContact.get("contacts", Map("email" -> email)).flatMap { json =>
+        tryo(json.extract[Contact])
+      }
+    }
+
+    def delete(id:Long) = {
+      ConstantContact.delete("contacts/" + id).flatMap { json =>
+        tryo(json.extract[Boolean])
+      }
+    }
+
+    def save(contactJson:JValue, id:Long = 0) = {
+      id match {
+        case 0 =>
+          ConstantContact.post("contacts", contactJson).flatMap{ json =>
+            tryo(json.extract[Contact])
+          }
+
+        case _ =>
+          ConstantContact.put("contacts/" + id, contactJson).flatMap { json =>
+            tryo(json.extract[Contact])
+          }
+      }
+    }
+
+    def addToLists(listIds:List[Long], id:Long = 0) = {
+      val listIdsJson = listIds.map { listId =>
+        ("id" -> listId)
+      }
+
+      ConstantContact.post("contacts/" + id + "/lists", listIdsJson)
+    }
+  }
   case class Contact(email_addresses:List[EmailAddress], action_by:ActionBy.Value, id:Long = 0,
                       status:Option[Status.Value] = None, prefix_name:Option[String] = None,
                       name:Option[ContactName] = None, job_title:Option[String] = None,
@@ -151,7 +197,20 @@ object Contact {
                       insert_time:Option[DateTime] = None, last_update_time:Option[DateTime] = None,
                       lists:List[ContactList] = List(), source:Option[String] = None,
                       source_details:Option[String] = None, source_is_url:Option[Boolean] = None,
-                      web_url:Option[String] = None)
+                      web_url:Option[String] = None) {
+    def delete = {
+      Contact.delete(id)
+    }
+
+    def save = {
+      Contact.save(decompose(this), id)
+    }
+
+    def addToLists(listIds:List[Long]) = {
+      Contact.addToLists(listIds, id)
+    }
+
+  }
 
   object ContactSerializer extends Serializer[Contact] {
     private val Class = classOf[Contact]
