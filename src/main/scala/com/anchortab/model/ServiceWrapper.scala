@@ -26,7 +26,7 @@ object ServiceWrapper {
   val typeHints = ShortTypeHints(List(classOf[MailChimpServiceWrapper]))
 }
 
-case class ConstantContactServiceWrapper(username:String, accessToken:String, listId:Int) extends ServiceWrapper with Loggable {
+case class ConstantContactServiceWrapper(username:String, implicit val accessToken:String, listId:Int) extends ServiceWrapper with Loggable {
   import com.anchortab.constantcontact.model.Contacts._
 
   // This is an OAuth-based API wrapper, making the checking of valid credentials unneeded for the moment

@@ -39,6 +39,7 @@ object ConstantContact {
 
   def retrieveAccessTokenForCode(code:String) = {
     implicit val formats = DefaultFormats
+    implicit val accessToken = "" // Don't need this for oauth
 
     val tokenResponse = runRequest {
       (host(oauthBase) / "oauth2" / "oauth" / "token") <<?
@@ -54,8 +55,7 @@ object ConstantContact {
     }
   }
 
-  private def runRequest(request:RequestBuilder) : Box[JValue] = {
-    // Execute the request and retrieve a CodeJsonResponse
+  private def runRequest(request:RequestBuilder)(implicit accessToken:String) : Box[JValue] = {
     val response = Http(request.secure > AsCodeJsonResponse).either
 
     // For the promise to materialize and generate a result based on what we got
@@ -72,29 +72,29 @@ object ConstantContact {
     }
   }
 
-  private[constantcontact] def get(resource:String, params:Map[String,String] = Map.empty) : Box[JValue] = {
+  private[constantcontact] def get(resource:String, params:Map[String,String] = Map.empty)(implicit accessToken:String) : Box[JValue] = {
     runRequest {
-      host(endpointBase) / endpointVersion / resource <<? params
+      host(endpointBase) / endpointVersion / resource <<? (params + ("access_token" -> accessToken))
     }
   }
 
-  private[constantcontact] def post(resource:String, body:JValue) : Box[JValue] = {
+  private[constantcontact] def post(resource:String, body:JValue)(implicit accessToken:String) : Box[JValue] = {
     runRequest {
       val requestBody = compact(render(body))
-      host(endpointBase) / endpointVersion / resource << requestBody
+      host(endpointBase) / endpointVersion / resource << requestBody <<? Map("access_token" -> accessToken)
     }
   }
 
-  private[constantcontact] def put(resource:String, body:JValue) : Box[JValue] = {
+  private[constantcontact] def put(resource:String, body:JValue)(implicit accessToken:String) : Box[JValue] = {
     runRequest {
       val requestBody = compact(render(body))
-      (host(endpointBase) / endpointVersion / resource).PUT.setBody(requestBody)
+      (host(endpointBase) / endpointVersion / resource).PUT.setBody(requestBody) <<? Map("access_token" -> accessToken)
     }
   }
 
-  private[constantcontact] def delete(resource:String) : Box[JValue] = {
+  private[constantcontact] def delete(resource:String)(implicit accessToken:String) : Box[JValue] = {
     runRequest {
-      (host(endpointBase) / endpointVersion / resource).DELETE
+      (host(endpointBase) / endpointVersion / resource).DELETE <<? Map("access_token" -> accessToken)
     }
   }
 }

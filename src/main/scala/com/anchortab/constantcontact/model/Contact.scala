@@ -147,25 +147,25 @@ object Contacts {
                           last_name:Option[String] = None)
 
   object Contact {
-    def find(id:Long) = {
+    def find(id:Long)(implicit accessToken:String) = {
       ConstantContact.get("contacts/" + id).flatMap { json =>
         tryo(json.extract[Contact])
       }
     }
 
-    def find(email:String) = {
+    def find(email:String)(implicit accessToken:String) = {
       ConstantContact.get("contacts", Map("email" -> email)).flatMap { json =>
         tryo(json.extract[Contact])
       }
     }
 
-    def delete(id:Long) = {
+    def delete(id:Long)(implicit accessToken:String) = {
       ConstantContact.delete("contacts/" + id).flatMap { json =>
         tryo(json.extract[Boolean])
       }
     }
 
-    def save(contactJson:JValue, id:Long = 0) = {
+    def save(contactJson:JValue, id:Long = 0)(implicit accessToken:String) = {
       id match {
         case 0 =>
           ConstantContact.post("contacts", contactJson).flatMap{ json =>
@@ -179,7 +179,7 @@ object Contacts {
       }
     }
 
-    def addToLists(listIds:List[Long], id:Long = 0) = {
+    def addToLists(listIds:List[Long], id:Long = 0)(implicit accessToken:String) = {
       val listIdsJson = listIds.map { listId =>
         ("id" -> listId)
       }
@@ -198,15 +198,15 @@ object Contacts {
                       lists:List[ContactList] = List(), source:Option[String] = None,
                       source_details:Option[String] = None, source_is_url:Option[Boolean] = None,
                       web_url:Option[String] = None) {
-    def delete = {
+    def delete(implicit accessToken:String) = {
       Contact.delete(id)
     }
 
-    def save = {
+    def save(implicit accessToken:String) = {
       Contact.save(decompose(this), id)
     }
 
-    def addToLists(listIds:List[Long]) = {
+    def addToLists(listIds:List[Long])(implicit accessToken:String) = {
       Contact.addToLists(listIds, id)
     }
 
