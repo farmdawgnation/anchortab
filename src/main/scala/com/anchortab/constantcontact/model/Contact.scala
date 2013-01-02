@@ -13,22 +13,22 @@ import org.joda.time._
 import com.anchortab.constantcontact.ConstantContact
 
 object Contacts {
-  implicit val formats = DefaultFormats ++ List(
+  implicit val formats = (DefaultFormats ++ List(
     ActionBySerializer,
     AddressTypeSerializer,
     ContactListStatusSerializer,
     EmailConfirmStatusSerializer,
     StatusSerializer,
     ContactSerializer
-  )
+  )) ++ JodaTimeSerializers.all
 
-  val nonContactFormats = List(
+  val nonContactFormats = (DefaultFormats ++ List(
     ActionBySerializer,
     AddressTypeSerializer,
     ContactListStatusSerializer,
     EmailConfirmStatusSerializer,
     StatusSerializer
-  )
+  )) ++ JodaTimeSerializers.all
 
   object ActionBy extends Enumeration {
     val Visitor = Value("ACTION_BY_VISITOR")
@@ -217,7 +217,7 @@ object Contacts {
 
     def deserialize(implicit format: Formats): PartialFunction[(TypeInfo, JValue), Contact] = {
       case (TypeInfo(Class, _), json) =>
-        implicit val formats = DefaultFormats ++ nonContactFormats
+        implicit val formats = nonContactFormats
 
         val contactName = {
           val extractedName = json.extract[ContactName](formats, manifest[ContactName])
@@ -241,7 +241,7 @@ object Contacts {
     def serialize(implicit format: Formats): PartialFunction[Any, JValue] = {
       case x:Contact =>
         // Decompose as a normal case class.
-        implicit val formats = DefaultFormats ++ nonContactFormats
+        implicit val formats = nonContactFormats
         var contactJson = decompose(x)(formats)
 
         // Extract names and phone numbers
