@@ -192,10 +192,10 @@ object Contacts {
                       name:Option[ContactName] = None, job_title:Option[String] = None,
                       department_name:Option[String] = None, company_name:Option[String] = None,
                       phone:Option[ContactPhones] = None, fax:Option[String] = None,
-                      addresses:List[Address] = List(), notes:List[Note] = List(),
-                      custom_fields:List[CustomField] = List(), confirmed:Option[Boolean] = None,
+                      addresses:Option[List[Address]] = None, notes:Option[List[Note]] = None,
+                      custom_fields:Option[List[CustomField]] = None, confirmed:Option[Boolean] = None,
                       insert_time:Option[DateTime] = None, last_update_time:Option[DateTime] = None,
-                      lists:List[ContactList] = List(), source:Option[String] = None,
+                      lists:Option[List[ContactList]] = None, source:Option[String] = None,
                       source_details:Option[String] = None, source_is_url:Option[Boolean] = None,
                       web_url:Option[String] = None) {
     def delete(implicit accessToken:String) = {
