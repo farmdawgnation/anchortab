@@ -19,6 +19,8 @@ object ConstantContact {
   private val clientSecret = "ea69bae4fcf349fd9d413baed8e362c6"
   private val redirectUrl = "https://anchortab.com/oauth/constant-contact"
 
+  case class ConstantContactError(error_key: String, error_message: String)
+
   case class CodeJsonResponse(code:Int, json:Box[JValue])
 
   protected object AsCodeJsonResponse extends (Response => CodeJsonResponse) {
@@ -66,7 +68,15 @@ object ConstantContact {
         Failure("ConstantContact response was not valid JSON.", Empty, parseError)
 
       case Right(CodeJsonResponse(401, _)) => Failure("Authentication with ConstantContact failed.")
-      case Right(CodeJsonResponse(code, _)) => Failure("ConstantContact returned code " + code)
+
+      case Right(CodeJsonResponse(code, Full(json))) =>
+        implicit val formats = DefaultFormats
+        val errorList = json.extract[List[ConstantContactError]]
+        val errorStrings = errorList.map(_.error_message)
+
+        Failure("ConstantContact returned code " + code + " with errors: " + errorStrings)
+
+      case Right(CodeJsonResponse(code, _)) => Failure("ConstantContact returned code: " + code)
 
       case Left(error) => Failure("Dispatch error: " + error)
     }
