@@ -64,6 +64,7 @@ object ConstantContact {
     // back from dispatch/the remote service.
     response() match {
       case Right(CodeJsonResponse(code, Full(json))) if code < 300 => Full(json)
+
       case Right(CodeJsonResponse(code, parseError:Failure)) if code < 300 =>
         Failure("ConstantContact response was not valid JSON.", Empty, parseError)
 
