@@ -15,9 +15,11 @@ import net.liftweb._
     import Helpers._
   import json._
     import JsonDSL._
+    import Extraction._
   import mongodb.BsonDSL._
 
-import com.anchortab.model.{User}
+import com.anchortab.model.{User, UserProfile}
+import com.anchortab.constantcontact.ConstantContact
 
 import org.bson.types.ObjectId
 
@@ -27,6 +29,29 @@ object Accounts {
 
   def snippetHandlers : SnippetPF = {
     case "profile-form" :: Nil => profileForm
+    case "new-oauth-accounts" :: Nil => newOAuthAccounts
+    case "user-service-credentials" :: Nil => userServiceCredentials
+  }
+
+  def userServiceCredentials = {
+    {
+      for {
+        session <- userSession.is
+        user <- User.find(session.userId)
+      } yield {
+        ".service-credential" #> user.serviceCredentials.map { serviceCredential =>
+          ".service-name *" #> serviceCredential.serviceName &
+          ".service-user-identifier *" #> serviceCredential.userIdentifier
+        }
+      }
+    } openOr {
+      "form" #> ClearNodes
+    }
+  }
+
+  def newOAuthAccounts = {
+    ".constantcontact [href]" #> ConstantContact.oauthAuthorizeUrl &
+    ".mailchimp [href]" #> ""
   }
 
   def profileForm = {
