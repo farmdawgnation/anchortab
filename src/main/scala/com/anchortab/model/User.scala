@@ -64,6 +64,8 @@ case class UserSubscription(planId:ObjectId, price:Double, term:PlanTerm,
 case class UserInvoice(subscriptionId:ObjectId, price:Double, status:String, date:DateTime,
                        _id:ObjectId = ObjectId.get)
 
+case class UserServiceCredentials(serviceName:String, userIdentifier:String, serviceCredentials:Map[String, String])
+
 /**
  * User model. This class represnts a distinct user on the system.
 **/
@@ -71,6 +73,7 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
                 authorizations:List[UserAuthorizationKey] = List(),
                 subscriptions:List[UserSubscription] = List(),
                 invoices:List[UserInvoice] = List(),
+                serviceCredentials:List[UserServiceCredentials] = List(),
                 quotaCounts:Map[String, Long] = Map.empty,
                 role:Option[String] = None, createdAt:DateTime = new DateTime,
                 _id:ObjectId = ObjectId.get) extends MongoDocument[User] {
