@@ -33,7 +33,7 @@ object Accounts {
     {
       for {
         session <- userSession.is
-        user <- session.user
+        user <- User.find(session.userId)
       } yield {
         var firstName = user.profile.flatMap(_.firstName) getOrElse ""
         var lastName = user.profile.flatMap(_.lastName) getOrElse ""
@@ -43,7 +43,65 @@ object Accounts {
         var confirmPassword = ""
 
         def submit() = {
+          implicit val formats = DefaultFormats
 
+          val firstNameOpt = {
+            firstName match {
+              case "" => None
+              case s => Some(s)
+            }
+          }
+          val lastNameOpt = {
+            lastName match {
+              case "" => None
+              case s => Some(s)
+            }
+          }
+          val organizationOpt = {
+            organization match {
+              case "" => None
+              case s => Some(s)
+            }
+          }
+
+          val passwordChange = {
+            (changePassword, confirmPassword) match {
+              case ("", "") => Empty
+
+              case (p1, p2) if p1 != p2 =>
+                Failure("The passwords you selected do not match.")
+
+              case (p1, p2) =>
+                Full(("password" -> User.hashPassword(p1)))
+            }
+          }
+
+          val userProfile = UserProfile(firstNameOpt, lastNameOpt, organizationOpt)
+
+          (email, passwordChange) match {
+            case ("", _) =>
+              Alert("Email is a required field. It must have a value.")
+
+            case (_, Failure(msg, _, _)) =>
+              Alert(msg)
+
+            case (_, Empty) =>
+              User.update("_id" -> user._id, "$set" -> (
+                ("email" -> email) ~
+                ("profile" -> decompose(userProfile))
+              ))
+
+              Alert("Profile updated.")
+
+            case (_, Full(pw)) =>
+              User.update("_id" -> user._id, "$set" -> (
+                ("email" -> email) ~
+                ("profile" -> decompose(userProfile)) ~
+                pw
+              ))
+
+              Alert("Profile updated.")
+          }
         }
 
         val bind =
