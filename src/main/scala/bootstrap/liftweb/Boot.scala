@@ -43,6 +43,7 @@ class Boot {
 
     // Authentication dispatch.
     LiftRules.dispatch.append(Authentication.dispatch)
+    LiftRules.dispatch.append(OAuth.dispatch)
 
     // Add API to stateless rewrites
     LiftRules.statelessRewrite.append(Api.statelessRewrite)
