@@ -15,9 +15,9 @@ object ConstantContact {
 
   private val oauthBase = "oauth2.constantcontact.com"
 
-  private val clientId = "16589cf8-86ae-4fda-82c6-9b4111d3ff98"
-  private val clientSecret = "ea69bae4fcf349fd9d413baed8e362c6"
-  private val redirectUrl = "https://anchortab.com/oauth/constant-contact"
+  private val clientId = Props.get("constantcontact.clientId") openOr "b234e86f-abd1-4cd2-b8a6-9c41d82f7322"
+  private val clientSecret = Props.get("constantcontact.clientSecret") openOr "05427000467048d4b9ebfe83119185a4"
+  private val redirectUrl = Props.get("constantcontact.redirectUrl") openOr "http://local.anchortab.com/oauth2/constant-contact"
 
   case class ConstantContactError(error_key: String, error_message: String)
 
