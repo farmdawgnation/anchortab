@@ -23,7 +23,7 @@ sealed trait ServiceWrapper {
   def unsubscribeEmail(email:String) : Box[Boolean]
 }
 object ServiceWrapper {
-  val typeHints = ShortTypeHints(List(classOf[MailChimpServiceWrapper]))
+  val typeHints = ShortTypeHints(classOf[MailChimpServiceWrapper] :: classOf[ConstantContactServiceWrapper] :: Nil)
 }
 
 case class ConstantContactServiceWrapper(username:String, implicit val accessToken:String, listId:Int) extends ServiceWrapper with Loggable {
