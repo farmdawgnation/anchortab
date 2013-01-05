@@ -13,6 +13,8 @@ import org.joda.time._
 import com.anchortab.constantcontact.ConstantContact
 
 object Contacts {
+  import ContactLists._
+
   implicit val formats = (DefaultFormats + ContactSerializer) ++ JodaTimeSerializers.all
 
   val nonContactFormats = DefaultFormats ++ JodaTimeSerializers.all
@@ -26,11 +28,6 @@ object Contacts {
     val Business = "BUSINESS"
     val Personal = "PERSONAL"
     val Unknown = "UNKNOWN"
-  }
-
-  object ContactListStatus {
-    val Active = "ACTIVE"
-    val Hidden = "HIDDEN"
   }
 
   object EmailConfirmStatus {
@@ -59,9 +56,6 @@ object Contacts {
   case class Note(note:String, id:Long, created_on:String)
 
   case class CustomField(name:String, value:String)
-
-  case class ContactList( id:Long, name:String, contact_count:Int, status:String,
-                          opt_in_default:Boolean)
 
   case class ContactPhones( home_phone:Option[String] = None, work_phone:Option[String] = None,
                             cell_phone:Option[String] = None)
