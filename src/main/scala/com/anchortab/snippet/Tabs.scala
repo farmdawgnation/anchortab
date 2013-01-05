@@ -107,6 +107,9 @@ object Tabs {
 
           Tab.EmailServices.MailChimp
 
+        case Some(ccsw:ConstantContactServiceWrapper) =>
+          Tab.EmailServices.ConstantContact
+
         case _ => Tab.EmailServices.None
       }
     }
@@ -115,13 +118,19 @@ object Tabs {
       {
         // Build the object that will represent the association between this
         // tab and a remote service.
-        val serviceWrapper = {
+        val serviceWrapper : Option[ServiceWrapper] = {
           service match {
             case Tab.EmailServices.MailChimp =>
               Some(MailChimpServiceWrapper(mailChimpApiKey, mailChimpListId))
             case Tab.EmailServices.ConstantContact =>
-              //TODO
-              None
+              for {
+                session <- userSession.is
+                user <- User.find(session.userId)
+                credentials <- user.credentialsFor("Constant Contact")
+                token <- credentials.serviceCredentials.get("token")
+              } yield {
+                ConstantContactServiceWrapper(credentials.userIdentifier, token, constantContactListId.toLong)
+              }
             case _ => None
           }
         }
