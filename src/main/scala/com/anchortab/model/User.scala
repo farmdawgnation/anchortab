@@ -86,6 +86,10 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
 
   lazy val admin_? = role == Some(User.Roles.Admin)
 
+  def credentialsFor(serviceName:String) = {
+    serviceCredentials.filter(_.serviceName == serviceName).headOption
+  }
+
   def withinQuotaFor_?(quotaedEvent:String) = {
     {
       for {

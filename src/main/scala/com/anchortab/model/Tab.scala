@@ -74,6 +74,7 @@ object Tab extends MongoDocumentMeta[Tab] {
   object EmailServices extends Enumeration {
     val None = Value("None")
     val MailChimp = Value("MailChimp")
+    val ConstantContact = Value("Constant Contact")
   }
 
   private def validParameter(options:Enumeration, value:String) = {
