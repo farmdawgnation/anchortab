@@ -1,3 +1,4 @@
 target
 src/main/webapp/stylesheets/*.css
 src/main/webapp/.sass-cache
+.DS_Store

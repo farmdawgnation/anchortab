@@ -1,0 +1,124 @@
+@import "compass/reset"
+@import "compass/typography/text/replacement"
+@import "compass/css3/box-sizing"
+@import "compass/css3/border-radius"
+@import "compass/css3/images"
+@import "compass/css3/transition"
+
+body#manager
+  background-image: image-url('textures/texture1.png')
+
+  font-family: 'Open Sans', Arial, sans-serif
+  font-size: 12px
+  line-height: 1.5em
+
+  #manager-container
+    width: 946px
+    background-color: #d5d5d5
+
+    margin-right: auto
+    margin-left: auto
+    margin-top: 70px
+
+    +border-radius(5px)
+    padding: 15px
+
+    > header
+      position: relative
+
+      > h1.logo
+        +replace-text('manager/logo.png')
+        width: 193px
+        height: 35px
+
+      > .user-info
+        position: absolute
+        top: 0
+        right: 0
+
+        text-align: right
+        vertical-align: bottom
+
+        .action
+          display: block
+
+        .user-info-picture
+          float: right
+          width: 60px
+          height: 60px
+
+          margin-left: 15px
+          margin-right: 80px
+
+          position: relative
+          top: -25px
+
+          border: 2px solid white
+
+    > #content-container-wrapper
+      display: table
+      margin-top: 12px
+
+      > nav
+        background-color: #3f3f3e
+        width: 208px
+        display: table-cell
+
+        vertical-align: top
+
+        font-size: 14px
+        font-size: 1.15em
+        font-weight: bold
+
+        text-transform: uppercase
+
+        color: white
+
+        a
+          color: white
+          text-decoration: none
+
+        li
+          padding: 14px 0
+
+        .top-nav
+          background-color: #343433
+
+          ul
+            background-color: #3f3f3e
+
+      > #content-container
+        display: table-cell
+        width: 700px
+        background-color: white
+
+        padding: 26px
+
+        p
+          margin-bottom: 14px
+
+        h2
+          font-family: 'Damion', cursive
+          font-size: 36px
+          color: #1c92d6
+
+          padding-bottom: 15px
+          margin-bottom: 15px
+
+          border-bottom: 3px solid #dadada
+
+        h3
+          color: white
+
+          font-size: 14px
+          font-size: 1.15em
+
+          font-weight: bold
+
+          padding: 6px 12px
+          margin-top: 14px
+          margin-bottom: 14px
+          +border-radius(5px)
+
+          background: #3f3f3e
+          +background(linear-gradient(#5b5b5b, #3f3f3e))
