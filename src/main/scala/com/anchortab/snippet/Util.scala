@@ -41,6 +41,38 @@ object Util extends Loggable {
     case "jquery" :: Nil => jquery _
     case "set-page-title" :: Nil => setPageTitle _
     case "page-title" :: Nil => pageTitle _
+    case "highlight-active-navigation" :: Nil => highlightActiveNavigation _
+  }
+
+  def highlightActiveNavigation(xhtml:NodeSeq) = {
+    val highlightFunc = {
+      S.uri match {
+        case "/manager/dashboard" =>
+          Some(".dashboard [class+]" #> "selected")
+
+        case s if s.startsWith("/manager/tab") =>
+          Some(".manage-tabs [class+]" #> "selected")
+
+        case s if s.startsWith("/manager/subscribers") =>
+          Some(".subscribers [class+]" #> "selected")
+
+        case "/manager/analytics" =>
+          Some(".analytics [class+]" #> "selected")
+
+        case "/manager/account" =>
+          Some(".profile [class+]" #> "selected")
+
+        case "/manager/subscription" =>
+          Some(".subscription [class+]" #> "selected")
+
+        case "/manager/services" =>
+          Some(".connected-services [class+]" #> "selected")
+
+        case _ => None
+      }
+    }
+
+    highlightFunc.map(_.apply(xhtml)) getOrElse xhtml
   }
 
   def ieConditional(xhtml:NodeSeq) = {
