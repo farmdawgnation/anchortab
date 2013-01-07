@@ -28,29 +28,40 @@
       </header>
 
       <section id="content-container-wrapper">
-        <nav>
+        <nav class="l:highlight-active-navigation">
           <ul class="top-nav">
-            <li><a href="#">Dashboard</a></li>
-            <li>
-              Tab Management
+            <li class="dashboard"><a href="/manager/dashboard">Dashboard</a></li>
+            <li>Tab Management</li>
+            <li class="submenu-container">
               <ul>
-                <li><a href="#">Manage Tabs</a></li>
-                <li><a href="#">Subscribers</a></li>
+                <li class="manage-tabs"><a href="/manager/tabs"><span class="ss-icon">&#xE9A1;</span> Manage Tabs</a></li>
+                <li class="subscribers"><a href="/manager/subscribers"><span class="ss-icon">&#x1F465;</span> Subscribers</a></li>
               </ul>
             </li>
-            <li><a href="#">Analytics</a></li>
-            <li>
-              Account Settings
+            <li>Analytics</li>
+            <li class="submenu-container">
               <ul>
-                <li><a href="#">Profile</a></li>
-                <li><a href="#">Subscription</a></li>
-                <li><a href="#">Connected Services</a></li>
+                <li class="analytics"><a href="/manager/analytics"><span class="ss-icon">&#x1F4CA;</span> Overview</a></li>
+              </ul>
+            </li>
+            <li>Account Settings</li>
+            <li class="submenu-container">
+              <ul>
+                <li class="profile"><a href="/manager/account"><span class="ss-icon">&#x1F464;</span> Profile</a></li>
+                <li class="subscription"><a href="/manager/subscription"><span class="ss-icon">&#x1F4B2;</span> Subscription</a></li>
+                <li class="connected-services"><a href="/manager/services"><span class="ss-icon">&#xE350;</span> Connected Services</a></li>
+              </ul>
+            </li>
+            <li class="l:show-if-admin">Administration</li>
+            <li class="l:show-if-admin submenu-container">
+              <ul>
+                <li><a href="/admin"><span class="ss-icon">&#x2699;</span> Administration</a></li>
               </ul>
             </li>
           </ul>
         </nav>
 
-        <div id="content-container">
+        <div id="content" class="content-container">
           <h2>The Dashboard</h2>
 
           <p>
