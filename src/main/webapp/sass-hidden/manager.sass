@@ -1,9 +1,73 @@
+@import "base"
 @import "compass/reset"
 @import "compass/typography/text/replacement"
 @import "compass/css3/box-sizing"
 @import "compass/css3/border-radius"
 @import "compass/css3/images"
 @import "compass/css3/transition"
+
+=pretty-table
+  width: 100%
+
+  tr.header
+    th
+      color: white
+      font-weight: 600
+
+      font-size: 14px
+      font-size: 1.15em
+
+      padding: 5px 5px
+
+      background: #3f3f3e
+      +background(linear-gradient(#5b5b5b, #3f3f3e))
+
+      &:first-child
+        +border-top-left-radius(5px)
+        +border-bottom-left-radius(5px)
+
+      &:last-child
+        +border-bottom-right-radius(5px)
+        +border-top-right-radius(5px)
+
+=pretty-form
+  width: 100%
+
+  div
+    clear: both
+    position: relative
+
+  label
+    font-weight: bold
+    position: absolute
+    top: 2em
+
+  input, select, .customSelect
+    margin-left: 170px
+    margin-top: 1.0em
+    margin-bottom: 1.0em
+
+    background-color: white
+
+    border: 1px solid #e2e2e2
+    padding: 10px
+
+    font-family: 'Open Sans', Arial, sans-serif
+
+    +border-radius(5px)
+
+    width: 200px
+
+  input.submit
+    color: white
+    width: auto
+    background-color: #1d93d6
+
+    font-size: 14px
+    font-size: 1.15em
+    font-weight: 600
+
+    cursor: pointer
 
 body#manager
   background-image: image-url('textures/texture1.png')
@@ -117,7 +181,7 @@ body#manager
       > .content-container
         display: table-cell
         width: 700px
-        background-color: white
+        background-color: #f7f7f7
 
         padding: 26px
 
@@ -149,3 +213,37 @@ body#manager
 
           background: #3f3f3e
           +background(linear-gradient(#5b5b5b, #3f3f3e))
+
+        .tab-list
+          +pretty-table
+
+          td
+            padding: 5px
+
+            &:last-child
+              text-align: right
+
+            &:first-child
+              font-weight: bold
+
+            .get-code, .subscribers, .edit-tab, .delete-tab
+              background-color: #1a86d8
+              border: 0
+              +border-radius(300px)
+              color: white
+
+              cursor: pointer
+              vertical-align: middle
+              font-size: 14px
+              font-size: 1.15em
+
+              .ss-icon
+                position: relative
+                top: 1px
+                left: 0px
+
+          tr:nth-child(odd)
+            background-color: #e4e4e4
+
+        .tab-form
+          +pretty-form
