@@ -35,7 +35,7 @@ object OAuth extends Loggable {
             ("serviceCredentials" -> decompose(serviceCredential))
           ))
 
-          RedirectResponse("/manager/account")
+          RedirectResponse("/manager/services")
         }
       }
   }

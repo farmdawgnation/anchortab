@@ -29,29 +29,50 @@ object Accounts {
 
   def snippetHandlers : SnippetPF = {
     case "profile-form" :: Nil => profileForm
-    case "new-oauth-accounts" :: Nil => newOAuthAccounts
-    case "user-service-credentials" :: Nil => userServiceCredentials
+    case "constant-contact-connection" :: Nil => constantContactConnection _
+    case "mailchimp-connection" :: Nil => mailchimpConnection _
   }
 
-  def userServiceCredentials = {
-    {
-      for {
-        session <- userSession.is
-        user <- User.find(session.userId)
-      } yield {
-        ".service-credential" #> user.serviceCredentials.map { serviceCredential =>
-          ".service-name *" #> serviceCredential.serviceName &
-          ".service-user-identifier *" #> serviceCredential.userIdentifier
-        }
-      }
-    } openOr {
-      "form" #> ClearNodes
+  def mailchimpConnection(xhtml:NodeSeq) = {
+    (".disconnect-service" #> ClearNodes).apply(xhtml)
+  }
+
+  def constantContactConnection(xhtml:NodeSeq) = {
+    def startConstantContactOauth(s:String) = {
+      RedirectTo(ConstantContact.oauthAuthorizeUrl)
     }
-  }
 
-  def newOAuthAccounts = {
-    ".constantcontact [href]" #> ConstantContact.oauthAuthorizeUrl &
-    ".mailchimp [href]" #> ""
+    def disconnectConstantContactOauth(s:String) = {
+      {
+        for {
+          session <- userSession.is
+        } yield {
+          User.update("_id" -> session.userId, "$pull" -> ("serviceCredentials" -> ("serviceName" -> "Constant Contact")))
+          Reload
+        }
+      } openOr {
+        Alert("Something went wrong.")
+      }
+    }
+
+    val connectionTransform =
+      {
+        for {
+          session <- userSession.is
+          user <- User.find(session.userId)
+          credentials <- user.credentialsFor("Constant Contact")
+          username = credentials.userIdentifier
+        } yield {
+          ".connection-status *" #> ("Connected to " + username) &
+          ".connect-service" #> ClearNodes &
+          ".disconnect-service [onclick]" #> onEvent(disconnectConstantContactOauth _)
+        }
+      } openOr {
+        ".disconnect-service" #> ClearNodes &
+        ".connect-service [onclick]" #> onEvent(startConstantContactOauth _)
+      }
+
+    connectionTransform.apply(xhtml)
   }
 
   def profileForm = {

@@ -6,8 +6,32 @@
 @import "compass/css3/images"
 @import "compass/css3/transition"
 
+=pretty-button
+  color: white
+  width: auto
+  background-color: #1d93d6
+  border: 0
+
+  font-size: 14px
+  font-size: 1.15em
+  font-weight: 600
+
+  cursor: pointer
+
+  +border-radius(5px)
+  padding: 5px
+
 =pretty-table
   width: 100%
+
+  td
+    padding: 5px
+
+    &:first-child
+      font-weight: bold
+
+  tr:nth-child(odd)
+    background-color: #e4e4e4
 
   tr.header
     th
@@ -58,18 +82,27 @@
 
     width: 200px
 
+    &.error
+      border: 1px solid red
+
   input.submit
-    color: white
-    width: auto
-    background-color: #1d93d6
+    +pretty-button
 
-    font-size: 14px
-    font-size: 1.15em
-    font-weight: 600
+body#manager-narrow
+  #manager-container
+    width: 450px
 
-    cursor: pointer
+    > header > h1.logo
+      margin-right: auto
+      margin-left: auto
 
-body#manager
+  .login-form
+    +pretty-form
+
+    input
+      margin-left: 80px
+
+body
   background-image: image-url('textures/texture1.png')
 
   font-family: 'Open Sans', Arial, sans-serif
@@ -188,6 +221,9 @@ body#manager
         p
           margin-bottom: 14px
 
+        a
+          color: black
+
         h2
           font-family: 'Damion', cursive
           font-size: 36px
@@ -195,6 +231,7 @@ body#manager
 
           padding-bottom: 15px
           margin-bottom: 15px
+          margin-top: 15px
 
           border-bottom: 3px solid #dadada
 
@@ -218,13 +255,8 @@ body#manager
           +pretty-table
 
           td
-            padding: 5px
-
             &:last-child
               text-align: right
-
-            &:first-child
-              font-weight: bold
 
             .get-code, .subscribers, .edit-tab, .delete-tab
               background-color: #1a86d8
@@ -242,8 +274,39 @@ body#manager
                 top: 1px
                 left: 0px
 
-          tr:nth-child(odd)
-            background-color: #e4e4e4
-
-        .tab-form
+        .tab-form, .profile-form
           +pretty-form
+
+        .plan-selection
+          +pretty-table
+
+          tr td
+            height: 39px
+
+            &:last-child
+              text-align: right
+
+          .select-plan
+            +pretty-button
+
+        .billing-summary
+          +pretty-table
+
+        .subscriber-list
+          +pretty-table
+
+          .delete-subscriber
+            +pretty-button
+
+        .connected-services-summary
+          +pretty-table
+
+          small
+            display: block
+            font-weight: normal
+
+          td:last-child
+            text-align: right
+
+          .connect-service, .disconnect-service
+            +pretty-button

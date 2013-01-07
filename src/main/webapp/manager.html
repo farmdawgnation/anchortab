@@ -5,15 +5,28 @@
     <title>Tab Manager</title>
   </head>
   <body class="lift:content_id=main">
-    <div id="main" class="lift:surround?with=tab-manager;at=content">
+    <div id="main" class="lift:surround?with=tab-manager-narrow;at=content">
       <lift:redirect-to-dashboard-if-logged-in />
-      <h2>Tab Manager Login</h2>
+
+      <p>
+        Please log in to your Anchor Tab account to continue.
+      </p>
 
       <div class="l:login-form">
-        <form>
-          <label>Email:</label> <input type="text" class="email">
-          <label>Password:</label> <input type="password" class="password">
-          <input type="submit" value="Log In" class="submit">
+        <form class="login-form">
+          <div>
+            <label>Email:</label>
+            <input type="text" class="email">
+          </div>
+
+          <div>
+            <label>Password:</label>
+            <input type="password" class="password">
+          </div>
+
+          <div>
+            <input type="submit" value="Log In" class="submit">
+          </div>
         </form>
       </div>
     </div>

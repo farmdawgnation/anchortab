@@ -15,7 +15,7 @@
       <link rel="shortcut icon" type="image/png" href="/images/favicon.png">
     </l:head>
   </head>
-  <body id="manager">
+  <body id="manager-narrow">
     <section id="manager-container">
       <header>
         <h1 class="logo">Anchor Tab</h1>
@@ -23,44 +23,11 @@
         <div class="l:show-if-logged-in user-info">
           <img class="l:user-gravatar user-info-picture" src="http://www.gravatar.com/avatar/07f5810e1ab035acc499630a24c08a51.jpg?s=60">
           <span class="l:user-name">Burt Reynolds</span>
-          <a href="/session/logout" class="action">Log Out</a>
+          <a href="/manager/logout" class="action">Log Out</a>
         </div>
       </header>
 
       <section id="content-container-wrapper">
-        <nav class="l:highlight-active-navigation">
-          <ul class="l:show-if-logged-in top-nav">
-            <li class="dashboard"><a href="/manager/dashboard">Dashboard</a></li>
-            <li>Tab Management</li>
-            <li class="submenu-container">
-              <ul>
-                <li class="manage-tabs"><a href="/manager/tabs"><span class="ss-icon">&#xE9A1;</span> Manage Tabs</a></li>
-                <li class="subscribers"><a href="/manager/subscribers"><span class="ss-icon">&#x1F465;</span> Subscribers</a></li>
-              </ul>
-            </li>
-            <li class="l:show-if-admin">Analytics</li>
-            <li class="l:show-if-admin submenu-container">
-              <ul>
-                <li class="analytics"><a href="/manager/analytics"><span class="ss-icon">&#x1F4CA;</span> Overview</a></li>
-              </ul>
-            </li>
-            <li>Account Settings</li>
-            <li class="submenu-container">
-              <ul>
-                <li class="profile"><a href="/manager/account"><span class="ss-icon">&#x1F464;</span> Profile</a></li>
-                <li class="subscription"><a href="/manager/subscription"><span class="ss-icon">&#x1F4B2;</span> Subscription</a></li>
-                <li class="connected-services"><a href="/manager/services"><span class="ss-icon">&#xE350;</span> Connected Services</a></li>
-              </ul>
-            </li>
-            <li class="l:show-if-admin">Administration</li>
-            <li class="l:show-if-admin submenu-container">
-              <ul>
-                <li><a href="/admin"><span class="ss-icon">&#x2699;</span> Administration</a></li>
-              </ul>
-            </li>
-          </ul>
-        </nav>
-
         <div id="content" class="content-container">
           <h2>The Dashboard</h2>
 
