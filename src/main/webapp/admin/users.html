@@ -8,8 +8,27 @@
     <div id="main" class="lift:surround?with=tab-manager;at=content">
       <h2>User Administration</h2>
 
-      <p>Welcome to the Admin Console. Please use the menu to the left to navigate
-         to the various sections of the admin console.</p>
+      <p>
+        Welcome to the User Administration panel. From here you can add new users and edit
+        existing users.
+      </p>
+
+      <button class="new-user" title="New User">New User</button>
+
+      <table class="user-table">
+        <tr class="header">
+          <th>Email</th>
+          <th>Name</th>
+          <th>&nbsp;</th>
+        </tr>
+        <tr class="user-row">
+          <td>bacon@frmr.me</td>
+          <td>Bacon Sammich</td>
+          <td>
+            <button class="edit-user" title="Edit User">Edit</button>
+          </td>
+        </tr>
+      </table>
     </div>
   </body>
 </html>
