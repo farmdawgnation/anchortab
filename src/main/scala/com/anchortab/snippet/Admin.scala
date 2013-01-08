@@ -23,6 +23,7 @@ import com.anchortab.model._
 import org.bson.types.ObjectId
 
 object requestUserId extends RequestVar[Box[String]](Empty)
+object requestPlanId extends RequestVar[Box[String]](Empty)
 
 object Admin {
   val shortDateFormatter = new SimpleDateFormat("MM/dd/yyyy")
@@ -35,6 +36,13 @@ object Admin {
 
     case RewriteRequest(ParsePath("admin" :: "users" :: "new" :: Nil, _, _, _), _, _) =>
       RewriteResponse("admin" :: "user" :: "form" :: Nil)
+
+    case RewriteRequest(ParsePath("admin" :: "plan" :: planId :: "edit" :: Nil, _, _, _), _, _) =>
+      requestPlanId(Full(planId))
+      RewriteResponse("admin" :: "plan" :: "form" :: Nil)
+
+    case RewriteRequest(ParsePath("admin" :: "plans" :: "new" :: Nil, _, _, _), _, _) =>
+      RewriteResponse("admin" :: "plan" :: "form" :: Nil)
   }
 
   def snippetHandlers : SnippetPF = {
@@ -42,6 +50,31 @@ object Admin {
     case "edit-user-form" :: Nil => editUserForm
 
     case "admin-plans-list" :: Nil => adminPlansList _
+    case "edit-plan-form" :: Nil => editPlanForm
+  }
+
+  def editPlanForm = {
+    var planName = ""
+    var planDescription = ""
+    var planTerm = ""
+    var visible = false
+    var featureBasicAnalytics = false
+    var featureWhitelabeledTabs = false
+    var quotaNumberOfTabs = ""
+    var quotaEmailSubscriptions = ""
+    var quotaViews = ""
+
+    ".plan-name" #> text(planName, planName = _) &
+    ".plan-description" #> text(planDescription, planDescription = _) &
+    //".plan-term" #> select(
+    //  
+    //) &
+    ".plan-visible" #> checkbox(visible, visible = _) &
+    ".feature-basic-analytics" #> checkbox(featureBasicAnalytics, featureBasicAnalytics = _) &
+    ".feature-whitelabeled-tabs" #> checkbox(featureWhitelabeledTabs, featureWhitelabeledTabs = _) &
+    ".quota-number-of-tabs" #> text(quotaNumberOfTabs, quotaNumberOfTabs = _) &
+    ".quota-email-subscriptions" #> text(quotaEmailSubscriptions, quotaEmailSubscriptions = _) &
+    ".quota-views" #> text(quotaViews, quotaViews = _)
   }
 
   def adminPlansList(xhtml:NodeSeq) = {
