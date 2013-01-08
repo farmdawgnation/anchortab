@@ -86,6 +86,34 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
 
   lazy val admin_? = role == Some(User.Roles.Admin)
 
+  lazy val name = {
+    val firstName =
+      {
+        for {
+          profile <- profile
+          firstName <- profile.firstName
+        } yield {
+          firstName
+        }
+      } getOrElse {
+        ""
+      }
+
+    val lastName =
+      {
+        for {
+          profile <- profile
+          lastName <- profile.lastName
+        } yield {
+          lastName
+        }
+      } getOrElse {
+        ""
+      }
+
+    firstName + " " + lastName
+  }
+
   def credentialsFor(serviceName:String) = {
     serviceCredentials.filter(_.serviceName == serviceName).headOption
   }
