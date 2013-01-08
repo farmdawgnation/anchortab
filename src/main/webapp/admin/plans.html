@@ -8,8 +8,33 @@
     <div id="main" class="lift:surround?with=tab-manager;at=content">
       <h2>Plan Administration</h2>
 
-      <p>Welcome to the Admin Console. Please use the menu to the left to navigate
-         to the various sections of the admin console.</p>
+      <p>
+        Below are the plans that exist in the system and their price. By default they
+        are visible on the registration and in the change subscription panel. If you do
+        not want them to be visible there, then you'll need to make sure that box is unchecked.
+      </p>
+
+      <p>
+        <button class="new-plan">New Plan</button>
+      </p>
+
+      <table class="l:admin-plans-list plans-list">
+        <tr class="header">
+          <th>Plan Name</th>
+          <th>Price</th>
+          <th>Term</th>
+          <th>&nbsp;</th>
+        </tr>
+        <tr class="plan-row">
+          <td class="plan-name">Awesome Super Plan</td>
+          <td class="plan-price">$9000.00</td>
+          <td class="plan-term">Monthly</td>
+          <td>
+            <button class="edit-plan">Edit</button>
+            <button class="delete-plan">Delete</button>
+          </td>
+        </tr>
+      </table>
     </div>
   </body>
 </html>

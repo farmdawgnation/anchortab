@@ -18,7 +18,7 @@ import net.liftweb._
     import Extraction._
   import mongodb.BsonDSL._
 
-import com.anchortab.model.{User, UserProfile}
+import com.anchortab.model._
 
 import org.bson.types.ObjectId
 
@@ -40,6 +40,21 @@ object Admin {
   def snippetHandlers : SnippetPF = {
     case "admin-user-list" :: Nil => adminUserList _
     case "edit-user-form" :: Nil => editUserForm
+
+    case "admin-plans-list" :: Nil => adminPlansList _
+  }
+
+  def adminPlansList(xhtml:NodeSeq) = {
+    val plans = Plan.findAll
+
+    val planTransform =
+      ".plan-row" #> plans.map { plan =>
+        ".plan-name *" #> plan.name &
+        ".plan-price *" #> plan.price.toString &
+        ".plan-term *" #> plan.term.description
+      }
+
+    planTransform.apply(xhtml)
   }
 
   def editUserForm = {
