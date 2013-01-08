@@ -48,6 +48,7 @@ class Boot {
     // Add API to stateless rewrites
     LiftRules.statelessRewrite.append(Api.statelessRewrite)
     LiftRules.statelessRewrite.append(Tabs.statelessRewrite)
+    LiftRules.statelessRewrite.append(Admin.statelessRewrite)
 
     // Add Snippet handlers
     LiftRules.snippets.append(Bundles.snippetHandlers)

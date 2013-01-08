@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+    <title>Tab Manager</title>
+  </head>
+  <body class="lift:content_id=main">
+    <div id="main" class="lift:surround?with=tab-manager;at=content">
+      <lift:pwn-if-not-admin />
+      <h2>Editing User</h2>
+
+      <form class="l:edit-user-form profile-form">
+        <div>
+          <label>First Name</label>
+          <input type="text" class="first-name">
+        </div>
+
+        <div>
+          <label>Last Name</label>
+          <input type="text" class="last-name">
+        </div>
+
+        <div>
+          <label>Organization</label>
+          <input type="text" class="organization">
+        </div>
+
+        <div>
+          <label>E-Mail</label>
+          <input type="text" class="email">
+        </div>
+
+        <div>
+          <label>Change Password</label>
+          <input type="password" class="change-password">
+        </div>
+
+        <div>
+          <label>Confirm Password</label>
+          <input type="password" class="confirm-password">
+        </div>
+
+        <div>
+          <label>Admin?</label>
+          <input type="checkbox" class="admin-checkbox">
+        </div>
+
+        <div>
+          <input type="submit" class="submit" value="Update Profile">
+        </div>
+      </form>
+    </div>
+  </body>
+</html>

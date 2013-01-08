@@ -6,3 +6,6 @@ $(document).ready ->
 
   $('.login-form .submit').on 'click', ->
     $('.email, .password').removeClass('error')
+
+  $('button.new-user').on 'click', ->
+    document.location = "/admin/users/new"
