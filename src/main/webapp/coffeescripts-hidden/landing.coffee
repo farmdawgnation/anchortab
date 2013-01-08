@@ -23,6 +23,9 @@ $(document).ready ->
 
     $(scrollableElem).animate({scrollTop: targetTop}, 600)
 
+  $(".go-to-manager").on 'click', ->
+    document.location = "/manager/dashboard"
+
   $('.login').on 'click', '.submit', (event) ->
     $(event.target).closest(".login").find("input").removeClass("error")
 
