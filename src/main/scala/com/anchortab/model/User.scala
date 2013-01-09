@@ -42,11 +42,13 @@ case class UserSubscription(planId:ObjectId, price:Double, term:PlanTerm,
                             preapprovalId:Option[Long] = None, preapprovalUri:Option[String] = None,
                             createdAt:DateTime = new DateTime, status:String = "new",
                             begins:DateTime = new DateTime, ends:Option[DateTime] = None,
+                            miracleFrom:Option[ObjectId] = None,
                             _id:ObjectId = ObjectId.get) {
   lazy val new_? = status == "new"
   lazy val active_? = status == "active"
   lazy val cancelled_? = status == "cancelled"
   lazy val stopped_? = status == "stopped"
+  lazy val miracle_? = miracleFrom.isDefined
 
   // A valid subscription is any subscription that allows your tabs to display
   // on your site.
