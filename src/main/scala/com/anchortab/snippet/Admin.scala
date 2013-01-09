@@ -52,6 +52,43 @@ object Admin {
 
     case "admin-plans-list" :: Nil => adminPlansList _
     case "edit-plan-form" :: Nil => editPlanForm
+
+    case "grant-miracle-form" :: Nil => grantMiracleForm
+  }
+
+  def grantMiracleForm = {
+    var userEmail = ""
+    var plan = Plan.DefaultPlan
+
+    def submitMiracle() = {
+      implicit val formats = User.formats
+
+      {
+        for {
+          session <- userSession.is
+          user <- User.findAll(("email" -> userEmail)).headOption
+        } yield {
+          val subscription = UserSubscription(plan._id, 0.0, plan.term, status = "active", miracleFrom = Some(session.userId))
+          User.update("_id" -> user._id, "$push" -> ("subscriptions" -> decompose(subscription)))
+          Alert("Miracle granted.")
+        }
+      } getOrElse {
+        Alert("Something went wrong. Please ensure you entered the correct email.")
+      }
+    }
+
+    val bind =
+      ".user-email" #> text(userEmail, userEmail = _) &
+      ".plan" #> selectObj[Plan](
+        Plan.findAll.map(p => (p, p.name)),
+        Empty,
+        plan = _
+      ) &
+      ".submit" #> ajaxSubmit("Grant Miracle", submitMiracle _)
+
+    "form" #> { ns:NodeSeq =>
+      ajaxForm(bind(ns))
+    }
   }
 
   def editPlanForm = {
