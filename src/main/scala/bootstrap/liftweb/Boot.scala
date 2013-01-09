@@ -43,16 +43,19 @@ class Boot {
 
     // Authentication dispatch.
     LiftRules.dispatch.append(Authentication.dispatch)
+    LiftRules.dispatch.append(OAuth.dispatch)
 
     // Add API to stateless rewrites
     LiftRules.statelessRewrite.append(Api.statelessRewrite)
     LiftRules.statelessRewrite.append(Tabs.statelessRewrite)
+    LiftRules.statelessRewrite.append(Admin.statelessRewrite)
 
     // Add Snippet handlers
     LiftRules.snippets.append(Bundles.snippetHandlers)
     LiftRules.snippets.append(Util.snippetHandlers)
     LiftRules.snippets.append(Authentication.snippetHandlers)
     LiftRules.snippets.append(Accounts.snippetHandlers)
+    LiftRules.snippets.append(Admin.snippetHandlers)
 
     //Init the jQuery module, see http://liftweb.net/jquery for more information.
     LiftRules.jsArtifacts = JQueryArtifacts

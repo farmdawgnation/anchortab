@@ -42,11 +42,13 @@ case class UserSubscription(planId:ObjectId, price:Double, term:PlanTerm,
                             preapprovalId:Option[Long] = None, preapprovalUri:Option[String] = None,
                             createdAt:DateTime = new DateTime, status:String = "new",
                             begins:DateTime = new DateTime, ends:Option[DateTime] = None,
+                            miracleFrom:Option[ObjectId] = None,
                             _id:ObjectId = ObjectId.get) {
   lazy val new_? = status == "new"
   lazy val active_? = status == "active"
   lazy val cancelled_? = status == "cancelled"
   lazy val stopped_? = status == "stopped"
+  lazy val miracle_? = miracleFrom.isDefined
 
   // A valid subscription is any subscription that allows your tabs to display
   // on your site.
@@ -64,6 +66,8 @@ case class UserSubscription(planId:ObjectId, price:Double, term:PlanTerm,
 case class UserInvoice(subscriptionId:ObjectId, price:Double, status:String, date:DateTime,
                        _id:ObjectId = ObjectId.get)
 
+case class UserServiceCredentials(serviceName:String, userIdentifier:String, serviceCredentials:Map[String, String])
+
 /**
  * User model. This class represnts a distinct user on the system.
 **/
@@ -71,6 +75,7 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
                 authorizations:List[UserAuthorizationKey] = List(),
                 subscriptions:List[UserSubscription] = List(),
                 invoices:List[UserInvoice] = List(),
+                serviceCredentials:List[UserServiceCredentials] = List(),
                 quotaCounts:Map[String, Long] = Map.empty,
                 role:Option[String] = None, createdAt:DateTime = new DateTime,
                 _id:ObjectId = ObjectId.get) extends MongoDocument[User] {
@@ -82,6 +87,38 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
   lazy val plan = subscription.flatMap(_.plan) getOrElse Plan.DefaultPlan
 
   lazy val admin_? = role == Some(User.Roles.Admin)
+
+  lazy val name = {
+    val firstName =
+      {
+        for {
+          profile <- profile
+          firstName <- profile.firstName
+        } yield {
+          firstName
+        }
+      } getOrElse {
+        ""
+      }
+
+    val lastName =
+      {
+        for {
+          profile <- profile
+          lastName <- profile.lastName
+        } yield {
+          lastName
+        }
+      } getOrElse {
+        ""
+      }
+
+    firstName + " " + lastName
+  }
+
+  def credentialsFor(serviceName:String) = {
+    serviceCredentials.filter(_.serviceName == serviceName).headOption
+  }
 
   def withinQuotaFor_?(quotaedEvent:String) = {
     {

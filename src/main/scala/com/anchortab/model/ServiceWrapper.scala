@@ -23,21 +23,33 @@ sealed trait ServiceWrapper {
   def unsubscribeEmail(email:String) : Box[Boolean]
 }
 object ServiceWrapper {
-  val typeHints = ShortTypeHints(List(classOf[MailChimpServiceWrapper]))
+  val typeHints = ShortTypeHints(classOf[MailChimpServiceWrapper] :: classOf[ConstantContactServiceWrapper] :: Nil)
 }
 
-case class ConstantContactServiceWrapper(username:String, accessToken:String, listId:Int) extends ServiceWrapper with Loggable {
+case class ConstantContactServiceWrapper(username:String, implicit val accessToken:String, listId:Long) extends ServiceWrapper with Loggable {
+  import com.anchortab.constantcontact.model.Contacts._
+
   // This is an OAuth-based API wrapper, making the checking of valid credentials unneeded for the moment
   val credentialsValid_? = true
 
   def subscribeEmail(email:String) = {
-    // TODO
-    Failure("Not yet implemented.")
+    val contact = Contact(EmailAddress(email) :: Nil, ActionBy.Visitor)
+
+    for {
+      contact <- contact.save
+      listResult <- contact.addToLists(listId :: Nil)
+    } yield {
+      true
+    }
   }
 
   def unsubscribeEmail(email:String) = {
-    // TODO
-    Failure("Not yet implemented.")
+    for {
+      contact <- Contact.find(email)
+      deleteResult <- contact.delete
+    } yield {
+      true
+    }
   }
 }
 

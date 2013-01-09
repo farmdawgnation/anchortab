@@ -7,21 +7,18 @@
   <body class="lift:content_id=main">
     <div id="main" class="lift:surround?with=tab-manager;at=content">
       <lift:pwn-if-not-logged-in />
-      <h2>Subscribers for: My Awesome Tab</h2>
+      <h2>Subscribers for: <span class="tab-name">My Awesome Tab</span></h2>
 
-      <a href="/manager/tabs">Tabs List</a>
       <a href="/manager/tab/ABC123/subscribers/export" class="l:Tabs.subscriberExportLink">Export Subscribers</a>
 
       <table class="l:Tabs.subscriberTable subscriber-list">
-        <tr>
+        <tr class="header">
           <th>Email Address</th>
-          <th>Verified?</th>
           <th>Date Added</th>
           <th>Actions</th>
         </tr>
         <tr class="subscriber">
           <td class="email">justin@ciriongroup.com</td>
-          <td class="verified">Yes</td>
           <td class="date">10/01/2012</td>
           <td class="actions">
             <button class="delete-subscriber">Delete</button>

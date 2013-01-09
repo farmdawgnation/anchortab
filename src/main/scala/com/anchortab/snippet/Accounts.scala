@@ -15,9 +15,11 @@ import net.liftweb._
     import Helpers._
   import json._
     import JsonDSL._
+    import Extraction._
   import mongodb.BsonDSL._
 
-import com.anchortab.model.{User}
+import com.anchortab.model.{User, UserProfile}
+import com.anchortab.constantcontact.ConstantContact
 
 import org.bson.types.ObjectId
 
@@ -27,13 +29,57 @@ object Accounts {
 
   def snippetHandlers : SnippetPF = {
     case "profile-form" :: Nil => profileForm
+    case "constant-contact-connection" :: Nil => constantContactConnection _
+    case "mailchimp-connection" :: Nil => mailchimpConnection _
+  }
+
+  def mailchimpConnection(xhtml:NodeSeq) = {
+    (".disconnect-service" #> ClearNodes).apply(xhtml)
+  }
+
+  def constantContactConnection(xhtml:NodeSeq) = {
+    def startConstantContactOauth(s:String) = {
+      RedirectTo(ConstantContact.oauthAuthorizeUrl)
+    }
+
+    def disconnectConstantContactOauth(s:String) = {
+      {
+        for {
+          session <- userSession.is
+        } yield {
+          User.update("_id" -> session.userId, "$pull" -> ("serviceCredentials" -> ("serviceName" -> "Constant Contact")))
+          Reload
+        }
+      } openOr {
+        Alert("Something went wrong.")
+      }
+    }
+
+    val connectionTransform =
+      {
+        for {
+          session <- userSession.is
+          user <- User.find(session.userId)
+          credentials <- user.credentialsFor("Constant Contact")
+          username = credentials.userIdentifier
+        } yield {
+          ".connection-status *" #> ("Connected to " + username) &
+          ".connect-service" #> ClearNodes &
+          ".disconnect-service [onclick]" #> onEvent(disconnectConstantContactOauth _)
+        }
+      } openOr {
+        ".disconnect-service" #> ClearNodes &
+        ".connect-service [onclick]" #> onEvent(startConstantContactOauth _)
+      }
+
+    connectionTransform.apply(xhtml)
   }
 
   def profileForm = {
     {
       for {
         session <- userSession.is
-        user <- session.user
+        user <- User.find(session.userId)
       } yield {
         var firstName = user.profile.flatMap(_.firstName) getOrElse ""
         var lastName = user.profile.flatMap(_.lastName) getOrElse ""
@@ -43,7 +89,65 @@ object Accounts {
         var confirmPassword = ""
 
         def submit() = {
+          implicit val formats = DefaultFormats
 
+          val firstNameOpt = {
+            firstName match {
+              case "" => None
+              case s => Some(s)
+            }
+          }
+          val lastNameOpt = {
+            lastName match {
+              case "" => None
+              case s => Some(s)
+            }
+          }
+          val organizationOpt = {
+            organization match {
+              case "" => None
+              case s => Some(s)
+            }
+          }
+
+          val passwordChange = {
+            (changePassword, confirmPassword) match {
+              case ("", "") => Empty
+
+              case (p1, p2) if p1 != p2 =>
+                Failure("The passwords you selected do not match.")
+
+              case (p1, p2) =>
+                Full(("password" -> User.hashPassword(p1)))
+            }
+          }
+
+          val userProfile = UserProfile(firstNameOpt, lastNameOpt, organizationOpt)
+
+          (email, passwordChange) match {
+            case ("", _) =>
+              Alert("Email is a required field. It must have a value.")
+
+            case (_, Failure(msg, _, _)) =>
+              Alert(msg)
+
+            case (_, Empty) =>
+              User.update("_id" -> user._id, "$set" -> (
+                ("email" -> email) ~
+                ("profile" -> decompose(userProfile))
+              ))
+
+              Alert("Profile updated.")
+
+            case (_, Full(pw)) =>
+              User.update("_id" -> user._id, "$set" -> (
+                ("email" -> email) ~
+                ("profile" -> decompose(userProfile)) ~
+                pw
+              ))
+
+              Alert("Profile updated.")
+          }
         }
 
         val bind =

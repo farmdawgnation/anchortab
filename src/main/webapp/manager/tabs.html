@@ -9,14 +9,12 @@
       <lift:pwn-if-not-logged-in />
       <h2>My Tabs</h2>
 
-      <a href="/manager/tabs/new">New Tab</a>
-
       <table class="l:Tabs.tabList tab-list">
-        <tr>
+        <tr class="header">
           <th>Tab Name</th>
           <th>Views</th>
           <th>Subscriptions</th>
-          <th>Actions</th>
+          <th>&nbsp;</th>
         </tr>
         <tr class="empty-list">
           <td colspan="3">You current have no tabs.</td>
@@ -26,13 +24,15 @@
           <td class="view-count">9999999</td>
           <td class="subscription-count">99999999</td>
           <td>
-            <button class="get-code">Get Code</button>
-            <button class="subscribers">Subscribers</button>
-            <button class="edit-tab">Edit</button>
-            <button class="delete-tab">Delete</button>
+            <button class="get-code" title="Get Embed Code"><span class="ss-icon">&#x1F4C4;</span></button>
+            <button class="subscribers" title="Subscribers"><span class="ss-icon">&#x1F465;</span></button>
+            <button class="edit-tab" title="Edit Tab"><span class="ss-icon">&#x1F4DD;</span></button>
+            <button class="delete-tab" title="Delete Tab"><span class="ss-icon">&#x2421;</span></button>
           </td>
         </tr>
       </table>
+
+      <a href="/manager/tabs/new">New Tab</a>
     </div>
   </body>
 </html>

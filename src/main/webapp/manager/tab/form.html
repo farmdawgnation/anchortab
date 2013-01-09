@@ -16,7 +16,7 @@
         </div>
 
         <div>
-          <label for="appearance-delay">Appearance Delay (in seconds):</label>
+          <label for="appearance-delay">Appearance Delay:</label>
           <select id="appearance-delay">
             <option value="10">10</option>
             <option value="30">30</option>
@@ -62,6 +62,13 @@
         <div>
           <label for="mailchimp-listid">MailChimp List ID:</label>
           <input type="text" id="mailchimp-listid">
+        </div>
+
+        <div class="only-if-constantcontact-authorized">
+          <label for="constantcontact-listid">Constant Contact List:</label>
+          <select id="constantcontact-listid">
+            <option value="0">General Interest</option>
+          </select>
         </div>
 
         <input type="submit" class="submit" value="Save Tab" />

@@ -53,6 +53,8 @@ object Plan extends MongoDocumentMeta[Plan] {
   val MonthlyTerm = PlanTerm("monthly", "mo")
   val YearlyTerm = PlanTerm("yearly", "yr")
 
+  val terms = MonthlyTerm :: YearlyTerm :: Nil
+
   object Quotas {
     val NumberOfTabs = "number-of-tabs"
     val EmailSubscriptions = "email-subscriptions"

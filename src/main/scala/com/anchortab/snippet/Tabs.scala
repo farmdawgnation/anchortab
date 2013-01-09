@@ -19,6 +19,7 @@ import net.liftweb._
   import mongodb.BsonDSL._
 
 import com.anchortab.model._
+import com.anchortab.constantcontact.model.ContactLists._
 
 import org.bson.types.ObjectId
 
@@ -97,6 +98,7 @@ object Tabs {
 
     var mailChimpApiKey = ""
     var mailChimpListId = ""
+    var constantContactListId = ""
     var service : Tab.EmailServices.Value = {
       requestTab.map(_.service).openOr(None) match {
         case Some(mcsw:MailChimpServiceWrapper) =>
@@ -104,6 +106,9 @@ object Tabs {
           mailChimpListId = mcsw.listId
 
           Tab.EmailServices.MailChimp
+
+        case Some(ccsw:ConstantContactServiceWrapper) =>
+          Tab.EmailServices.ConstantContact
 
         case _ => Tab.EmailServices.None
       }
@@ -113,10 +118,19 @@ object Tabs {
       {
         // Build the object that will represent the association between this
         // tab and a remote service.
-        val serviceWrapper = {
+        val serviceWrapper : Option[ServiceWrapper] = {
           service match {
             case Tab.EmailServices.MailChimp =>
               Some(MailChimpServiceWrapper(mailChimpApiKey, mailChimpListId))
+            case Tab.EmailServices.ConstantContact =>
+              for {
+                session <- userSession.is
+                user <- User.find(session.userId)
+                credentials <- user.credentialsFor("Constant Contact")
+                token <- credentials.serviceCredentials.get("token")
+              } yield {
+                ConstantContactServiceWrapper(credentials.userIdentifier, token, constantContactListId.toLong)
+              }
             case _ => None
           }
         }
@@ -157,6 +171,19 @@ object Tabs {
       }
     }
 
+    val constantContactLists = {
+      for {
+        session <- userSession.is
+        user <- User.find(session.userId)
+        credentials <- user.credentialsFor("Constant Contact")
+      } yield {
+        implicit val accessToken = credentials.serviceCredentials.get("token") getOrElse ""
+        ContactList.findAll openOr List()
+      }
+    } openOr {
+      List()
+    }
+
     val bind =
       "#tab-name" #> text(tabName, tabName = _) &
       "#appearance-delay" #> selectObj[Tab.AppearanceDelayOptions.Value](
@@ -182,6 +209,12 @@ object Tabs {
       ) &
       "#mailchimp-apikey" #> text(mailChimpApiKey, mailChimpApiKey = _) &
       "#mailchimp-listid" #> text(mailChimpListId, mailChimpListId = _) &
+      ".only-if-constantcontact-authorized" #> (constantContactLists.nonEmpty ? PassThru | ClearNodes) andThen
+      "#constantcontact-listid" #> select(
+        constantContactLists.map(l => (l.id.toString, l.name)),
+        Empty,
+        constantContactListId = _
+      ) &
       ".submit" #> ajaxSubmit("Save Tab", submit _)
 
     "form" #> { ns:NodeSeq =>

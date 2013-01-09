@@ -165,7 +165,7 @@ object Authentication extends Loggable {
     var submittedPassword = ""
 
     if (userSession.is.isDefined) {
-      "form" #> <p>You appear to be logged in. <a href="/manager">Go to the manager &raquo;</a></p>
+      "form" #> <p><button class="go-to-manager">Manager &raquo;</button></p>
     } else {
       val bind =
         ".email" #> text(submittedUsername, submittedUsername = _) &

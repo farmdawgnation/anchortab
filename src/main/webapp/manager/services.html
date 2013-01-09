@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+    <title>Tab Manager</title>
+  </head>
+  <body class="lift:content_id=main">
+    <div id="main" class="lift:surround?with=tab-manager;at=content">
+      <lift:pwn-if-not-logged-in />
+      <h2>Connected Services</h2>
+
+      <p>
+        Anchor Tab is capable of pumping submissions of emails to the 3rd party service of your choice.
+        To send incoming emails to a third party service, connect to your service below and follow the
+        steps to authenticate Anchor Tab to access your account. Then, go edit the tab you want emails
+        recorded from. Select the service and the list from that service that you'd like to use.
+      </p>
+
+      <p>
+        Need to use a service that's not available? <a href="mailto:hello@anchortab.com">Let us know!</a>
+      </p>
+
+      <table class="connected-services-summary">
+        <tr class="header">
+          <th>Service</th>
+          <th>&nbsp;</th>
+        </tr>
+        <tr class="l:constant-contact-connection constant-contact-connection">
+          <td>
+            <span class="service-name">Constant Contact</span>
+            <small class="connection-status">Not connected.</small>
+          </td>
+          <td>
+            <button class="connect-service">Connect</button>
+            <button class="disconnect-service">Disconnect</button>
+          </td>
+        </tr>
+        <tr class="l:mailchimp-connection mailchimp-connection">
+          <td>
+            <span class="service-name">
+              Mailchimp
+              <small class="connection-status">Not connected.</small>
+            </span>
+          </td>
+          <td>
+            <button class="connect-service">Connect</button>
+            <button class="disconnect-service">Disconnect</button>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>

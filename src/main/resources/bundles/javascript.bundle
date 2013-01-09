@@ -15,3 +15,8 @@ twitter.js
 
 landing
 default
+
+manager
+base.js
+manager.js
+customSelect.jquery.js

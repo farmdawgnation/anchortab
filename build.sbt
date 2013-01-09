@@ -10,9 +10,9 @@ organization := "com.anchortab"
 
 scalaVersion := "2.9.2"
 
-awsAccessKey := "0X5MZEDRXKKZWRHD9702"
+awsAccessKey := "AKIAIIUM6RAXWVRN4NNQ"
 
-awsSecretKey := "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"
+awsSecretKey := "je5eTIWzMApiS60Q/B72ZdggKFjlBCZUFgExjpu/"
 
 awsS3Bucket := "assets.anchortab.com"
 
@@ -58,3 +58,13 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
 excludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
   cp filter {_.data.getName == "lift-json_2.9.1-2.4.jar"}
 }
+
+initialCommands := """
+import com.anchortab.model._
+import com.anchortab.constantcontact._
+import com.anchortab.constantcontact.model._
+import net.liftweb.json._
+import Extraction._
+val boot = new bootstrap.liftweb.Boot
+boot.boot
+"""

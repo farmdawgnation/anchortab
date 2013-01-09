@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+    <title>Tab Manager</title>
+  </head>
+  <body class="lift:content_id=main">
+    <div id="main" class="lift:surround?with=tab-manager;at=content">
+      <lift:pwn-if-not-admin />
+      <h2>Editing Plan</h2>
+
+      <form class="l:edit-plan-form plan-form">
+        <div>
+          <label>Plan Name</label>
+          <input type="text" class="plan-name">
+        </div>
+
+        <div>
+          <label>Description</label>
+          <input type="text" class="plan-description">
+        </div>
+
+        <div>
+          <label>Price</label>
+          <input type="text" class="plan-price">
+        </div>
+
+        <div>
+          <label>Term</label>
+          <select class="plan-term">
+            <option>Monthly</option>
+            <option>Yearly</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Visible?</label>
+          <input type="checkbox" class="plan-visible">
+        </div>
+
+        <h3>Features</h3>
+
+        <div>
+          <label>Basic Analytics</label>
+          <input type="checkbox" class="feature-basic-analytics">
+        </div>
+
+        <div>
+          <label>Whitelabeled Tabs</label>
+          <input type="checkbox" class="feature-whitelabeled-tabs">
+        </div>
+
+        <h3>Quotas</h3>
+
+        <p>
+          The numbers entered below will be the maximum number of each type of event
+          during the term. At the end of each term, the counts will reset.
+        </p>
+
+        <div>
+          <label>Number of Tabs</label>
+          <input type="text" class="quota-number-of-tabs">
+        </div>
+
+        <div>
+          <label>Email Subscriptions</label>
+          <input type="text" class="quota-email-subscriptions">
+        </div>
+
+        <div>
+          <label>Views</label>
+          <input type="text" class="quota-views">
+        </div>
+
+        <div>
+          <input type="submit" class="submit" value="Update Plan">
+        </div>
+      </form>
+    </div>
+  </body>
+</html>
