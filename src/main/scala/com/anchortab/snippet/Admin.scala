@@ -14,6 +14,7 @@ import net.liftweb._
   import util._
     import Helpers._
   import json._
+    import ext._
     import JsonDSL._
     import Extraction._
   import mongodb.BsonDSL._
@@ -54,37 +55,102 @@ object Admin {
   }
 
   def editPlanForm = {
-    var planName = ""
-    var planDescription = ""
-    var planTerm = ""
-    var visible = false
-    var featureBasicAnalytics = false
-    var featureWhitelabeledTabs = false
-    var quotaNumberOfTabs = ""
-    var quotaEmailSubscriptions = ""
-    var quotaViews = ""
+    val requestPlan = requestPlanId.is.flatMap(Plan.find(_))
 
-    ".plan-name" #> text(planName, planName = _) &
-    ".plan-description" #> text(planDescription, planDescription = _) &
-    //".plan-term" #> select(
-    //  
-    //) &
-    ".plan-visible" #> checkbox(visible, visible = _) &
-    ".feature-basic-analytics" #> checkbox(featureBasicAnalytics, featureBasicAnalytics = _) &
-    ".feature-whitelabeled-tabs" #> checkbox(featureWhitelabeledTabs, featureWhitelabeledTabs = _) &
-    ".quota-number-of-tabs" #> text(quotaNumberOfTabs, quotaNumberOfTabs = _) &
-    ".quota-email-subscriptions" #> text(quotaEmailSubscriptions, quotaEmailSubscriptions = _) &
-    ".quota-views" #> text(quotaViews, quotaViews = _)
+    var planName = requestPlan.map(_.name) openOr ""
+    var planDescription = requestPlan.map(_.description) openOr ""
+    var planTerm = requestPlan.map(_.term) openOr Plan.MonthlyTerm
+    var planPrice = requestPlan.map(_.price) openOr 0.0
+    var visible = requestPlan.map(_.visibleOnRegistration) openOr true
+    var featureBasicAnalytics = requestPlan.map(_.hasFeature_?(Plan.Features.BasicAnalytics)) openOr false
+    var featureWhitelabeledTabs = requestPlan.map(_.hasFeature_?(Plan.Features.WhitelabeledTabs)) openOr false
+    var quotaNumberOfTabs = requestPlan.flatMap(_.quotaFor(Plan.Quotas.NumberOfTabs).map(_.toString)) openOr ""
+    var quotaEmailSubscriptions = requestPlan.flatMap(_.quotaFor(Plan.Quotas.EmailSubscriptions).map(_.toString)) openOr ""
+    var quotaViews = requestPlan.flatMap(_.quotaFor(Plan.Quotas.Views).map(_.toString)) openOr ""
+
+    def submit() = {
+      implicit val formats = DefaultFormats ++ JodaTimeSerializers.all
+
+      val features = {
+        Map(
+          Plan.Features.BasicAnalytics -> featureBasicAnalytics,
+          Plan.Features.WhitelabeledTabs -> featureWhitelabeledTabs
+        )
+      }
+
+      val quotas = {
+        def convertToQuotaBox(quotaName:String, input:String) = {
+          (input.isEmpty ? Empty | tryo(input.toLong)).map(quotaName -> _)
+        }
+
+        val tabNumberQuota = convertToQuotaBox(Plan.Quotas.NumberOfTabs, quotaNumberOfTabs)
+        val emailSubscriptionQuota = convertToQuotaBox(Plan.Quotas.EmailSubscriptions, quotaEmailSubscriptions)
+        val viewQuota = convertToQuotaBox(Plan.Quotas.Views, quotaViews)
+
+        val quotaList = tabNumberQuota :: emailSubscriptionQuota :: viewQuota :: Nil
+        quotaList.foldLeft(Map[String, Long]())(_ ++ _)
+      }
+
+      requestPlanId.is match {
+        case Empty =>
+          Plan( planName, planDescription, planPrice, features, quotas, visible,
+                term = planTerm).save
+
+          RedirectTo("/admin/plans")
+
+        case Full(requestPlanId) =>
+          Plan.update("_id" -> new ObjectId(requestPlanId), "$set" -> (
+            ("name" -> planName) ~
+            ("description" -> planDescription) ~
+            ("price" -> planPrice) ~
+            ("features" -> features) ~
+            ("quotas" -> quotas) ~
+            ("visibleOnRegistration" -> visible) ~
+            ("term" -> decompose(planTerm))
+          ))
+
+          RedirectTo("/admin/plans")
+
+        case _ =>
+          Alert("Something went wrong.")
+      }
+    }
+
+    val bind =
+      ".plan-name" #> text(planName, planName = _) &
+      ".plan-description" #> text(planDescription, planDescription = _) &
+      ".plan-price" #> text(planPrice.toString, (price) => planPrice = price.toDouble) &
+      ".plan-term" #> selectObj[PlanTerm](
+        Plan.terms.map(t => (t, t.description.capitalize)),
+        Full(planTerm),
+        planTerm = _
+      ) &
+      ".plan-visible" #> checkbox(visible, visible = _) &
+      ".feature-basic-analytics" #> checkbox(featureBasicAnalytics, featureBasicAnalytics = _) &
+      ".feature-whitelabeled-tabs" #> checkbox(featureWhitelabeledTabs, featureWhitelabeledTabs = _) &
+      ".quota-number-of-tabs" #> text(quotaNumberOfTabs, quotaNumberOfTabs = _) &
+      ".quota-email-subscriptions" #> text(quotaEmailSubscriptions, quotaEmailSubscriptions = _) &
+      ".quota-views" #> text(quotaViews, quotaViews = _) &
+      ".submit" #> ajaxSubmit("Update Plan", submit _)
+
+    "form" #> { ns:NodeSeq =>
+      ajaxForm(bind(ns))
+    }
   }
 
   def adminPlansList(xhtml:NodeSeq) = {
     val plans = Plan.findAll
 
+    def editPlan(planId:ObjectId)(s:String) = {
+      RedirectTo("/admin/plan/" + planId.toString + "/edit")
+    }
+
     val planTransform =
       ".plan-row" #> plans.map { plan =>
         ".plan-name *" #> plan.name &
         ".plan-price *" #> plan.price.toString &
-        ".plan-term *" #> plan.term.description
+        ".plan-term *" #> plan.term.description &
+        ".edit-plan [onclick]" #> onEvent(editPlan(plan._id) _)
       }
 
     planTransform.apply(xhtml)
