@@ -9,3 +9,6 @@ $(document).ready ->
 
   $('button.new-user').on 'click', ->
     document.location = "/admin/users/new"
+
+  $('button.new-plan').on 'click', ->
+    document.location = "/admin/plans/new"
