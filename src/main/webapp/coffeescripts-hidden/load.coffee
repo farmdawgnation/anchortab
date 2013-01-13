@@ -189,6 +189,9 @@ displayTab = (tabJson) ->
           .text("Thank you for adding your email to our list! Expect to hear from us soon!")
       )
 
+  if $.browser.msie
+    anchorTab.addClass "msie"
+
   $("body").append anchorTab
 
   setTimeout ->
