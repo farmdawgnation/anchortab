@@ -9,9 +9,9 @@ All Rights Reserved
 ## Configuration - It'd be nice if we could deduce these from a props
 ## file for something, but in lieu of that, this works.
 ##
-googleAnalyticsAccount = "UA-35269224-2"
-apiDomain = "anchortab.com"
-resourcesDomain = "embed.anchortab.com"
+googleAnalyticsAccount = anchortab.googleAnalyticsAccount || "UA-35269224-4"
+apiDomain = anchortab.apiDomain || "local.anchortab.com"
+resourcesDomain = anchortab.resourcesDomain || "local.anchortab.com"
 jqVersion = "1.8.2"
 
 ##
@@ -188,6 +188,9 @@ displayTab = (tabJson) ->
           .addClass("success-message")
           .text("Thank you for adding your email to our list! Expect to hear from us soon!")
       )
+
+  if $.browser.msie
+    anchorTab.addClass "msie"
 
   $("body").append anchorTab
 

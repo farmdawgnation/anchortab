@@ -4,12 +4,15 @@
     <title class="lift:page-title">Anchor Tab</title>
 
     <l:head>
+      <script class="l:jquery" src="/javascripts/jquery-1.8.2.js"></script>
       <l:ie-conditional version="lte IE 8" eager_eval="true">
         <l:script-bundle name="ie8-lah-de-dah"></l:script-bundle>
       </l:ie-conditional>
+      <l:ie-conditional version="lte IE 9" eager_eval="true">
+        <l:script-bundle name="ie-lte9"></l:script-bundle>
+      </l:ie-conditional>
       <link href="/fonts/ss-standard/ss-standard.css" rel="stylesheet" type="text/css">
       <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,800,700,600|Damion' rel='stylesheet' type='text/css'>
-      <script class="l:jquery" src="/javascripts/jquery-1.8.2.js"></script>
       <l:style-bundle name="default"></l:style-bundle>
       <l:script-bundle name="default"></l:script-bundle>
       <link rel="shortcut icon" type="image/png" href="/images/favicon.png">
@@ -74,18 +77,6 @@
         <p class="love">Brewed with love in The Classic City and ATL.</p>
       </div>
     </footer>
-    <script type="text/javascript">
-
-      var _gaq = _gaq || [];
-      _gaq.push(['_setAccount', 'UA-35269224-1']);
-      _gaq.push(['_trackPageview']);
-
-      (function() {
-        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-      })();
-
-    </script>
+    <script class="l:google-analytics"></script>
   </body>
 </html>

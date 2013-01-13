@@ -1,5 +1,10 @@
 @import "compass/css3"
 
+// MSIE specific styles
+#anchor-tab.msie
+  .anchortab-stamp
+    bottom: 2px
+
 #anchor-tab
   position: fixed
   bottom: -75px
@@ -41,7 +46,7 @@
 
     position: absolute
     left: 10px
-    bottom: 1.5px
+    bottom: 4.5px
 
   .minimize
     position: absolute
@@ -85,6 +90,7 @@
   .email-submission
     color: white
     border: 0
+    background: #706f6f
     +background(linear-gradient(#706f6f, #262625))
     padding: 4px
     +border-radius(5px)
@@ -96,15 +102,19 @@
     margin-left: 10px
 
   &.gray
+    background: #848484
     +background(linear-gradient(#848484, #5e5e5e))
 
   &.green
+    background: #39bd42
     +background(linear-gradient(#39bd42, #2b8a31))
 
   &.red
+    background: #db2f2d
     +background(linear-gradient(#db2f2d, #9b2220))
 
   &.blue
+    background: #2d8bd6
     +background(linear-gradient(#2d8bd6, #226aa3))
 
   &.visible
@@ -114,6 +124,11 @@
     margin: 4px 4px
     display: inline-block
 
+    font-family: Arial, sans-serif
+    font-size: 13px
+
+    margin-right: 10px
+
     &.success-message
       display: none
       margin: 8.5px 4px
@@ -121,18 +136,19 @@
       &:after
         display: none
 
-    &:after
-      display: inline-block
-      content: ''
+    //
+      &:after
+        display: inline-block
+        content: ''
 
-      vertical-align: bottom
+        vertical-align: bottom
 
-      width: 2px
-      height: 20px
-      position: relative
-      top: 2px
+        width: 2px
+        height: 20px
+        position: relative
+        top: 2px
 
-      margin-right: 5px
-      margin-left: 7px
+        margin-right: 5px
+        margin-left: 7px
 
-      background: image-url('tab-divider.png')
+        background: image-url('tab-divider.png')

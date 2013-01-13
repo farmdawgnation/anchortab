@@ -7,7 +7,8 @@ import net.liftweb._
     import ext._
     import JsonDSL._
     import Extraction._
-  import util.Helpers._
+  import util._
+    import Helpers._
 
 import org.joda.time._
 
@@ -41,14 +42,15 @@ case class Tab(name:String, userId:ObjectId, appearance:TabAppearance, service:O
   lazy val subscriberEmails = subscribers.map(_.email)
   def hasSubscriber_?(email:String) = subscriberEmails.contains(email)
 
-  val embedCode = """
-    <script id="anchortab-loader" type="text/javascript" data-tab-id="""" + _id + """" src="http://local.anchortab.com/javascripts/load.js"></script>
-  """
+  val embedCode =
+    """<script id="anchortab-loader" type="text/javascript" data-tab-id="""" + _id + """" src="""" + Tab.embedScriptUrl + """"></script>"""
 }
 
 object Tab extends MongoDocumentMeta[Tab] {
   override def formats = (allFormats ++ JodaTimeSerializers.all) +
     ServiceWrapper.typeHints
+
+  lazy val embedScriptUrl = Props.get("anchortab.embedscript") openOr "http://local.anchortab.com/javascripts/load.js"
 
   object AppearanceDelayOptions extends Enumeration {
     val Delay0 = Value("0")

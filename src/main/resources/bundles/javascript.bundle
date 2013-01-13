@@ -1,8 +1,13 @@
 load->embed.anchortab.com
+load-production.js
 load.js
 
 ie8-lah-de-dah
 html5shiv.js
+
+ie-lte9
+Placeholders.js
+init-placeholders.js
 
 default
 base.js
