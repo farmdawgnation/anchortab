@@ -14,3 +14,4 @@ wepay.oauthRedirectUrl=http://anchortab.com
 
 # Set the url for the embed code.
 anchortab.embedscript=http://local.anchortab.com/javascripts/load.js
+anchortab.analyticsid=UA-35269224-3
