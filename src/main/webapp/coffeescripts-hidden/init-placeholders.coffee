@@ -1,0 +1,2 @@
+$(document).ready ->
+  Placeholders.init()
