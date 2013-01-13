@@ -11,3 +11,6 @@ wepay.anchorTabUserId=0
 wepay.anchorTabAccountId=1670008
 wepay.oauthPermissions=collect_payments
 wepay.oauthRedirectUrl=http://anchortab.com
+
+# Set the url for the embed code.
+anchortab.embedscript=http://local.anchortab.com/javascripts/load.js
