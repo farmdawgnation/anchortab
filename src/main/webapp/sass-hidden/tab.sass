@@ -1,4 +1,5 @@
 @import "compass/css3"
+@import "compass/reset/utilities"
 
 // MSIE specific styles
 #anchor-tab.msie
@@ -6,6 +7,12 @@
     bottom: 2px
 
 #anchor-tab
+  +nested-reset
+  +reset-box-model
+
+  height: 49px
+  box-sizing: border-box
+
   position: fixed
   bottom: -75px
   right: 0
@@ -15,7 +22,7 @@
 
   z-index: 100
 
-  font-family: 'Open Sans', 'Arial', sans-serif
+  font-family: 'Arial', sans-serif
   font-size: 13px
 
   text-align: center
@@ -84,7 +91,7 @@
     +border-radius(5px)
     border: 0
     padding: 7px
-    font-family: 'Open Sans', 'Arial', sans-serif
+    font-family: 'Arial', sans-serif
     width: 193px
 
   .email-submission
