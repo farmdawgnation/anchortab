@@ -67,7 +67,7 @@ object Invites extends Loggable {
     var maxUses = requestInviteCode.numberOfUsesAvailable.map(_.toString) getOrElse ""
     var validityStart = ""
     var validityEnd = ""
-    var plan: Option[Plan] = None
+    var plan: Option[Plan] = requestInviteCode.forPlan
 
     def saveInviteCode() = {
       val numUses = {
@@ -92,7 +92,7 @@ object Invites extends Loggable {
       ".valitiy-end" #> text(validityEnd, validityEnd = _) &
       ".plan" #> selectObj[Option[Plan]](
         List((None, "None")) ++ Plan.findAll.map(p => (Some(p), p.name)),
-        Empty,
+        Full(plan),
         plan = _
       ) &
       ".submit" #> ajaxSubmit("Save Invite Code", saveInviteCode _)
@@ -115,6 +115,10 @@ object Invites extends Loggable {
       Alert(inviteCode.url)
     }
 
+    def editInviteCode(inviteCode: InviteCode)(s: String) = {
+      RedirectTo("/admin/invite/" + inviteCode._id.toString + "/edit")
+    }
+
     def deleteInviteCode(inviteCode: InviteCode)(s: String) = {
       inviteCode.delete
 
@@ -126,7 +130,7 @@ object Invites extends Loggable {
       ".accepts *" #> inviteCode.numberOfUses &
       ".accepts-remain *" #> (inviteCode.numberOfUsesAvailable.map(_ - inviteCode.numberOfUses).map(_.toString) getOrElse "unlimited") &
       ".invite-link [onclick]" #> onEvent(inviteLink(inviteCode) _) &
-      ".edit-invite [onclick]" #> onEvent((s:String) => Alert("HAI")) &
+      ".edit-invite [onclick]" #> onEvent(editInviteCode(inviteCode) _) &
       ".delete-invite [onclick]" #> onEventIf("Delete this invite code?", deleteInviteCode(inviteCode) _)
     }
   }
