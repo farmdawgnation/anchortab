@@ -210,7 +210,12 @@ object Authentication extends Loggable {
     var organization = ""
     var selectedPlan = ""
 
-    val plans = Plan.findAll("visibleOnRegistration" -> true)
+    val plans = {
+      inviteCode.is.flatMap(_.forPlan).map(List(_))
+    } openOr {
+      Plan.findAll("visibleOnRegistration" -> true)
+    }
+
     val planSelections = plans.map { plan =>
       (plan._id.toString, plan.registrationTitle)
     }
