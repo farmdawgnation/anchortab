@@ -16,12 +16,20 @@ import net.liftweb._
     import JsonDSL._
   import mongodb.BsonDSL._
 
-object inviteCode extends RequestVar[Box[String]](Empty)
+import com.anchortab.model.InviteCode
+
+object inviteCode extends RequestVar[Box[InviteCode]](Empty)
 
 object Invites extends Loggable {
   def statelessRewrite: RewritePF = {
     case RewriteRequest(ParsePath("accept-invite" :: userInviteCode :: Nil, _, _, _), _, _) =>
-      inviteCode(Full(userInviteCode))
+      for {
+        invite <- InviteCode.findAll("code" -> userInviteCode)
+          if invite.numberOfUsesAvailable.map(_ > invite.numberOfUses) getOrElse true
+      } {
+        inviteCode(Full(invite))
+      }
+
       RewriteResponse("register" :: Nil)
   }
 }
