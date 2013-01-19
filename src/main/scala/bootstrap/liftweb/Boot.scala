@@ -47,6 +47,7 @@ class Boot {
 
     // Add API to stateless rewrites
     LiftRules.statelessRewrite.append(Api.statelessRewrite)
+    LiftRules.statelessRewrite.append(Invites.statelessRewrite)
     LiftRules.statelessRewrite.append(Tabs.statelessRewrite)
     LiftRules.statelessRewrite.append(Admin.statelessRewrite)
 
@@ -56,6 +57,7 @@ class Boot {
     LiftRules.snippets.append(Authentication.snippetHandlers)
     LiftRules.snippets.append(Accounts.snippetHandlers)
     LiftRules.snippets.append(Admin.snippetHandlers)
+    LiftRules.snippets.append(Invites.snippetHandlers)
 
     //Init the jQuery module, see http://liftweb.net/jquery for more information.
     LiftRules.jsArtifacts = JQueryArtifacts

@@ -5,18 +5,17 @@
     <title>Register</title>
   </head>
   <body class="lift:content_id=main">
-    <div id="main" class="lift:surround?with=default;at=content">
-      <h2>Anchor Tab New User Registration</h2>
-
+    <div id="main" class="lift:surround?with=tab-manager-narrow;at=content">
       <form class="l:registration-form registration-form">
-        <h3>Select a Plan</h3>
+        <h3>Registration</h3>
 
-        <select class="plan-selection">
-          <option value="starter">Starter (Free)</option>
-          <option value="basic">Basic ($5/mo)</option>
-        </select>
-
-        <h3>Give Us the Details</h3>
+        <div>
+          <label for="plan-selection">Select Plan:</label>
+          <select class="plan-selection">
+            <option value="starter">Starter (Free)</option>
+            <option value="basic">Basic ($5/mo)</option>
+          </select>
+        </div>
 
         <div>
           <label for="email">Email:</label>

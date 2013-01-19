@@ -198,6 +198,10 @@ object Authentication extends Loggable {
   }
 
   def registrationForm = {
+    // We only allow registration with invite code for the time being.
+    if (! inviteCode.is.isDefined)
+      S.redirectTo("/")
+
     var emailAddress = ""
     var requestedPassword = ""
     var requestedPasswordConfirmation = ""
@@ -206,7 +210,12 @@ object Authentication extends Loggable {
     var organization = ""
     var selectedPlan = ""
 
-    val plans = Plan.findAll("visibleOnRegistration" -> true)
+    val plans = {
+      inviteCode.is.flatMap(_.forPlan).map(List(_))
+    } openOr {
+      Plan.findAll("visibleOnRegistration" -> true)
+    }
+
     val planSelections = plans.map { plan =>
       (plan._id.toString, plan.registrationTitle)
     }
@@ -258,6 +267,13 @@ object Authentication extends Loggable {
           user match {
             case Full(user) =>
               val loginResult = processLogin(emailAddress, requestedPassword)
+
+              // Bump the invite code count
+              for {
+                invite <- inviteCode.is
+              } {
+                InviteCode.update("_id" -> invite._id, "$inc" -> ("numberOfUses" -> 1))
+              }
 
               if (plans.filter(_._id.toString == selectedPlan).headOption.map(_.free_?) getOrElse true) {
                 loginResult
