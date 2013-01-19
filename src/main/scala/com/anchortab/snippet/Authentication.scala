@@ -198,6 +198,10 @@ object Authentication extends Loggable {
   }
 
   def registrationForm = {
+    // We only allow registration with invite code for the time being.
+    if (! inviteCode.is.isDefined)
+      S.redirectTo("/")
+
     var emailAddress = ""
     var requestedPassword = ""
     var requestedPasswordConfirmation = ""
