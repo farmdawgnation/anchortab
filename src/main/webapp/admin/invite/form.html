@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+    <title>Tab Manager</title>
+  </head>
+  <body class="lift:content_id=main">
+    <div id="main" class="lift:surround?with=tab-manager;at=content">
+      <lift:pwn-if-not-admin />
+      <h2>Editing Invite</h2>
+
+      <form data-lift="invite-form" class="invite-form">
+        <div>
+          <label>Code</label>
+          <input type="text" readonly="readonly" class="current-code">
+        </div>
+
+        <div>
+          <label>Max Uses</label>
+          <input type="text" class="max-uses">
+        </div>
+
+        <div>
+          <label>Validity Start</label>
+          <input type="text" class="validity-start">
+        </div>
+
+        <div>
+          <label>Validity End</label>
+          <input type="text" class="validity-end">
+        </div>
+
+        <div>
+          <label>For Plan</label>
+          <select class="plan">
+            <option>Awesome Plan</option>
+          </select>
+        </div>
+
+        <div>
+          <input type="submit" class="submit" value="Update Invite Code">
+        </div>
+      </form>
+    </div>
+  </body>
+</html>
