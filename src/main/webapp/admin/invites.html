@@ -8,8 +8,27 @@
     <div id="main" class="lift:surround?with=tab-manager;at=content">
       <h2>Invites Administration</h2>
 
-      <p>Welcome to the Admin Console. Please use the menu to the left to navigate
-         to the various sections of the admin console.</p>
+      <p>
+        <button class="new-invite">New Invite</button>
+      </p>
+
+      <table class="invites-list">
+        <tr class="header">
+          <th>Invite Code</th>
+          <th>Accepts</th>
+          <th>Accepts Remain</th>
+          <th>&nbsp;</th>
+        </tr>
+        <tr class="invite-row">
+          <td class="invite-code">Bacon</td>
+          <td class="accepts">500</td>
+          <td class="accepts-remain">999999</td>
+          <td>
+            <button class="edit-invite">Edit Invite</button>
+            <button class="delete-invite">Delete Invite</button>
+          </td>
+        </tr>
+      </table>
     </div>
   </body>
 </html>
