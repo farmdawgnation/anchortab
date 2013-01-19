@@ -268,6 +268,13 @@ object Authentication extends Loggable {
             case Full(user) =>
               val loginResult = processLogin(emailAddress, requestedPassword)
 
+              // Bump the invite code count
+              for {
+                invite <- inviteCode.is
+              } {
+                InviteCode.update("_id" -> invite._id, "$inc" -> ("numberOfUses" -> 1))
+              }
+
               if (plans.filter(_._id.toString == selectedPlan).headOption.map(_.free_?) getOrElse true) {
                 loginResult
               } else {
