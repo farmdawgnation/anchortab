@@ -18,8 +18,10 @@ import org.bson.types.ObjectId
 
 case class InviteCode(numberOfUses: Int = 0, numberOfUsesAvailable: Option[Int] = None,
                       validityStart: Option[DateTime] = None, validityEnd: Option[DateTime] = None,
-                      forPlan: Option[Plan] = None, code: String = randomString(32),
+                      forPlanId: Option[ObjectId] = None, code: String = randomString(32),
                       _id:ObjectId = ObjectId.get) extends MongoDocument[InviteCode] {
+
+  val forPlan = forPlanId.flatMap(Plan.find(_))
   val meta = InviteCode
 }
 object InviteCode extends MongoDocumentMeta[InviteCode] {
