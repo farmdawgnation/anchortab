@@ -6,13 +6,14 @@
   </head>
   <body class="lift:content_id=main">
     <div id="main" class="lift:surround?with=tab-manager;at=content">
+      <lift:pwn-if-not-admin></lift:pwn-if-not-admin>
       <h2>Invites Administration</h2>
 
       <p>
         <button class="new-invite">New Invite</button>
       </p>
 
-      <table class="invites-list">
+      <table data-lift="invites-list" class="invites-list">
         <tr class="header">
           <th>Invite Code</th>
           <th>Accepts</th>
@@ -24,8 +25,9 @@
           <td class="accepts">500</td>
           <td class="accepts-remain">999999</td>
           <td>
-            <button class="edit-invite">Edit Invite</button>
-            <button class="delete-invite">Delete Invite</button>
+            <button class="invite-link">Link</button>
+            <button class="edit-invite">Edit</button>
+            <button class="delete-invite">Delete</button>
           </td>
         </tr>
       </table>

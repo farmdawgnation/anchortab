@@ -1,5 +1,7 @@
 package com.anchortab.snippet
 
+import com.anchortab._
+
 import scala.xml.NodeSeq
 
 import net.liftweb._
@@ -18,6 +20,8 @@ import net.liftweb._
 
 import com.anchortab.model.InviteCode
 
+import org.bson.types.ObjectId
+
 object inviteCode extends RequestVar[Box[InviteCode]](Empty)
 
 object Invites extends Loggable {
@@ -31,5 +35,32 @@ object Invites extends Loggable {
       }
 
       RewriteResponse("register" :: Nil)
+  }
+
+  def snippetHandlers: SnippetPF = {
+    case "invites-list" :: Nil => invitesList
+  }
+
+  def invitesList = {
+    val inviteCodes = InviteCode.findAll
+
+    def inviteLink(inviteCode: InviteCode)(s: String) = {
+      Alert(inviteCode.url)
+    }
+
+    def deleteInviteCode(inviteCode: InviteCode)(s: String) = {
+      inviteCode.delete
+
+      Reload
+    }
+
+    ".invite-row" #> inviteCodes.map { inviteCode =>
+      ".invite-code *" #> inviteCode.code &
+      ".accepts *" #> inviteCode.numberOfUses &
+      ".accepts-remain *" #> (inviteCode.numberOfUsesAvailable.map(_ - inviteCode.numberOfUses).map(_.toString) getOrElse "unlimited") &
+      ".invite-link [onclick]" #> onEvent(inviteLink(inviteCode) _) &
+      ".edit-invite [onclick]" #> onEvent((s:String) => Alert("HAI")) &
+      ".delete-invite [onclick]" #> onEventIf("Delete this invite code?", deleteInviteCode(inviteCode) _)
+    }
   }
 }
