@@ -252,7 +252,10 @@ object Authentication extends Loggable {
       } else {
         for {
           accountId <- Props.getLong("wepay.anchorTabAccountId") ?~! "No WePay Account ID found."
+          redirectUri <- Props.get("wepay.anchorTabRedirectUri") ?~! "No redirect URI found."
+          callbackUri <- Props.get("wepay.anchorTabCallbackUri") ?~! "No callback URI found."
           preapproval <- Preapproval(accountId, plan.price, plan.name, plan.term.description,
+                                    redirect_uri = Some(redirectUri), callback_uri = Some(callbackUri),
                                     fee_payer = Some("payee"), auto_recur = Some(true)).save
           preapprovalId = preapproval.preapproval_id
           preapprovalUri <- preapproval.preapproval_uri
