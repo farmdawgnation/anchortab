@@ -52,7 +52,37 @@ object WePaySnip extends Loggable {
 
     case req @ Req("wepay-ipn" :: Nil, _, _) if req.param("preapproval_id").isDefined =>
       () => {
-        Full(OkResponse())
+        for {
+          preapproval_id_str <- req.param("preapproval_id")
+          preapprovalId <- tryo(preapproval_id_str.toLong)
+          preapproval <- Preapproval.find(preapprovalId)
+          preapprovalState <- preapproval.state
+          preapprovingUser <- User.find("subscriptions.preapprovalId" -> preapprovalId)
+          preapprovedSubscription <- preapprovingUser.subscriptions
+            .filter(_.preapprovalId.map(_ == preapprovalId) getOrElse false).headOption
+        } yield {
+          def updateSubscriptionState(newStatus: String) = {
+            preapprovingUser.copy(
+              subscriptions = preapprovingUser.subscriptions.map { userSubscription =>
+                if (userSubscription._id == preapprovedSubscription._id)
+                  userSubscription.copy(status = newStatus)
+                else
+                  userSubscription
+              }
+            ).save
+          }
+
+          preapprovalState match {
+            case "approved" => updateSubscriptionState("active")
+            case "expired" =>
+              User.update("_id" -> preapprovingUser._id, "$pull" -> ("subscriptions" ->
+                ("preapprovalId" -> preapprovalId)))
+            case "stopped" => updateSubscriptionState("stopped")
+            case s if s == "cancelled" || s == "revoked" => updateSubscriptionState("cancelled")
+          }
+
+          OkResponse()
+        }
       }
 
     case req @ Req("wepay-ipn" :: Nil, _, _) if req.param("checkout_id").isDefined =>
