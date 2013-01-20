@@ -28,6 +28,7 @@ import me.frmr.wepay._
 case object LoginFailed extends SimpleAnchorTabEvent("login-failed")
 
 object userSession extends SessionVar[Box[UserSession]](Empty)
+object impersonatorSession extends SessionVar[Box[UserSession]](Empty)
 object statelessUser extends RequestVar[Box[User]](Empty)
 
 object Authentication extends Loggable {
@@ -86,8 +87,14 @@ object Authentication extends Loggable {
   def dispatch : DispatchPF = {
     case Req("session" :: "logout" :: Nil, _, _) =>
       () => {
-        userSession(Empty)
-        Full(RedirectResponse("/", HTTPCookie("session", "deleted").setPath("/").setMaxAge(-100)))
+        if (impersonatorSession.is.isDefined) {
+          userSession(impersonatorSession.is)
+          impersonatorSession(Empty)
+          Full(RedirectResponse("/admin/users"))
+        } else {
+          userSession(Empty)
+          Full(RedirectResponse("/", HTTPCookie("session", "deleted").setPath("/").setMaxAge(-100)))
+        }
       }
 
     case Req("session" :: "login" :: Nil, _, _) =>
@@ -197,9 +204,28 @@ object Authentication extends Loggable {
     }
   }
 
+  private[snippet] def impersonateUser(userId: ObjectId) = {
+    User.find(userId) match {
+      case Some(user) =>
+        impersonatorSession(userSession.is)
+
+        val remoteIp = S.containerRequest.map(_.remoteAddress).openOr("localhost")
+        val userAgent = S.containerRequest.flatMap(_.userAgent).openOr("unknown")
+
+        // We don't persist this like a normal user session, because it doesn't need to
+        // outlive the Lift session.
+        userSession(Full(UserSession(user._id, remoteIp, userAgent)))
+
+        RedirectTo("/manager/dashboard")
+
+      case _ =>
+        Alert("Something went wrong with impersonation.")
+    }
+  }
+
   def registrationForm = {
     // We only allow registration with invite code for the time being.
-    if (! inviteCode.is.isDefined)
+    if (Props.mode == Props.RunModes.Production && ! inviteCode.is.isDefined)
       S.redirectTo("/")
 
     var emailAddress = ""
@@ -226,7 +252,10 @@ object Authentication extends Loggable {
       } else {
         for {
           accountId <- Props.getLong("wepay.anchorTabAccountId") ?~! "No WePay Account ID found."
+          redirectUri <- Props.get("wepay.anchorTabRedirectUri") ?~! "No redirect URI found."
+          callbackUri <- Props.get("wepay.anchorTabCallbackUri") ?~! "No callback URI found."
           preapproval <- Preapproval(accountId, plan.price, plan.name, plan.term.description,
+                                    redirect_uri = Some(redirectUri), callback_uri = Some(callbackUri),
                                     fee_payer = Some("payee"), auto_recur = Some(true)).save
           preapprovalId = preapproval.preapproval_id
           preapprovalUri <- preapproval.preapproval_uri

@@ -304,6 +304,10 @@ object Admin {
       RedirectTo("/admin/user/" + userId.toString + "/edit")
     }
 
+    def impersonateUser(userId: ObjectId)(s: String) = {
+      Authentication.impersonateUser(userId)
+    }
+
     val userListTransform =
       {
         for {
@@ -314,6 +318,7 @@ object Admin {
           ".user-row" #> users.map { user =>
             ".email *" #> user.email &
             ".name *" #> user.name &
+            ".impersonate-user [onclick]" #> onEvent(impersonateUser(user._id) _) &
             ".edit-user [onclick]" #> onEvent(editUser(user._id) _)
           }
         }

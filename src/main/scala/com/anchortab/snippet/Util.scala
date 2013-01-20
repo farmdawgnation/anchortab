@@ -45,6 +45,20 @@ object Util extends Loggable {
     case "user-gravatar" :: Nil => userGravatar _
     case "user-name" :: Nil => userName _
     case "google-analytics" :: Nil => googleAnalytics _
+    case "uservoice" :: Nil => uservoice _
+  }
+
+  def uservoice(xhtml: NodeSeq) = {
+    Unparsed("""
+      <script type="text/javascript">
+        var uvOptions = {};
+        (function() {
+          var uv = document.createElement('script'); uv.type = 'text/javascript'; uv.async = true;
+          uv.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'widget.uservoice.com/8GBnAHDKflWRMP1tBP9y1A.js';
+          var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(uv, s);
+        })();
+      </script>
+    """)
   }
 
   val googleAnalyticsId = Props.get("anchortab.analyticsid") openOr ""
