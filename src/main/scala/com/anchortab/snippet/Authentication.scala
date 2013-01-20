@@ -28,6 +28,7 @@ import me.frmr.wepay._
 case object LoginFailed extends SimpleAnchorTabEvent("login-failed")
 
 object userSession extends SessionVar[Box[UserSession]](Empty)
+object impersonatorSession extends SessionVar[Box[UserSession]](Empty)
 object statelessUser extends RequestVar[Box[User]](Empty)
 
 object Authentication extends Loggable {
@@ -86,8 +87,14 @@ object Authentication extends Loggable {
   def dispatch : DispatchPF = {
     case Req("session" :: "logout" :: Nil, _, _) =>
       () => {
-        userSession(Empty)
-        Full(RedirectResponse("/", HTTPCookie("session", "deleted").setPath("/").setMaxAge(-100)))
+        if (impersonatorSession.is.isDefined) {
+          userSession(impersonatorSession.is)
+          impersonatorSession(Empty)
+          Full(RedirectResponse("/admin/users"))
+        } else {
+          userSession(Empty)
+          Full(RedirectResponse("/", HTTPCookie("session", "deleted").setPath("/").setMaxAge(-100)))
+        }
       }
 
     case Req("session" :: "login" :: Nil, _, _) =>
@@ -194,6 +201,25 @@ object Authentication extends Loggable {
 
       case _ =>
         LoginFailed
+    }
+  }
+
+  private[snippet] def impersonateUser(userId: ObjectId) = {
+    User.find(userId) match {
+      case Some(user) =>
+        impersonatorSession(userSession.is)
+
+        val remoteIp = S.containerRequest.map(_.remoteAddress).openOr("localhost")
+        val userAgent = S.containerRequest.flatMap(_.userAgent).openOr("unknown")
+
+        // We don't persist this like a normal user session, because it doesn't need to
+        // outlive the Lift session.
+        userSession(Full(UserSession(user._id, remoteIp, userAgent)))
+
+        RedirectTo("/manager/dashboard")
+
+      case _ =>
+        Alert("Something went wrong with impersonation.")
     }
   }
 
