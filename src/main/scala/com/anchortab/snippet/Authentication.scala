@@ -225,7 +225,7 @@ object Authentication extends Loggable {
 
   def registrationForm = {
     // We only allow registration with invite code for the time being.
-    if (! inviteCode.is.isDefined)
+    if (Props.mode == Props.RunModes.Production && ! inviteCode.is.isDefined)
       S.redirectTo("/")
 
     var emailAddress = ""
