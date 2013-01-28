@@ -54,12 +54,7 @@
           </select>
         </div>
 
-        <div>
-          <label for="mailchimp-apikey">MailChimp API Key:</label>
-          <input type="text" id="mailchimp-apikey">
-        </div>
-
-        <div>
+        <div class="only-if-mailchimp-authorized">
           <label for="mailchimp-listid">MailChimp List ID:</label>
           <input type="text" id="mailchimp-listid">
         </div>
@@ -67,7 +62,7 @@
         <div class="only-if-constantcontact-authorized">
           <label for="constantcontact-listid">Constant Contact List:</label>
           <select id="constantcontact-listid">
-            <option value="0">General Interest</option>
+            <option>Loading…</option>
           </select>
         </div>
 

@@ -99,10 +99,10 @@ object Tabs {
     var mailChimpApiKey = ""
     var mailChimpListId = ""
     var constantContactListId = ""
+
     var service : Tab.EmailServices.Value = {
       requestTab.map(_.service).openOr(None) match {
         case Some(mcsw:MailChimpServiceWrapper) =>
-          mailChimpApiKey = mcsw.apiKey
           mailChimpListId = mcsw.listId
 
           Tab.EmailServices.MailChimp
@@ -121,7 +121,15 @@ object Tabs {
         val serviceWrapper : Option[ServiceWrapper] = {
           service match {
             case Tab.EmailServices.MailChimp =>
-              Some(MailChimpServiceWrapper(mailChimpApiKey, mailChimpListId))
+              for {
+                session <- userSession.is
+                user <- User.find(session.userId)
+                credentials <- user.credentialsFor("Mailchimp")
+                token <- credentials.serviceCredentials.get("token")
+              } yield {
+                MailChimpServiceWrapper(token, mailChimpListId)
+              }
+
             case Tab.EmailServices.ConstantContact =>
               for {
                 session <- userSession.is
@@ -131,6 +139,7 @@ object Tabs {
               } yield {
                 ConstantContactServiceWrapper(credentials.userIdentifier, token, constantContactListId.toLong)
               }
+
             case _ => None
           }
         }
@@ -184,6 +193,26 @@ object Tabs {
       List()
     }
 
+    val mailChimpAuthorized_? = {
+      for {
+        session <- userSession.is
+        user <- User.find(session.userId)
+        credentials <- user.credentialsFor("Mailchimp")
+      } yield {
+        true
+      }
+    } openOr {
+      false
+    }
+
+    val validEmailServices = {
+      val none = List(Tab.EmailServices.None)
+      val cc = (constantContactLists.nonEmpty ? List(Tab.EmailServices.ConstantContact) | List())
+      val mc = (mailChimpAuthorized_? ? List(Tab.EmailServices.MailChimp) | List())
+
+      none ++ cc ++ mc
+    }
+
     val bind =
       "#tab-name" #> text(tabName, tabName = _) &
       "#appearance-delay" #> selectObj[Tab.AppearanceDelayOptions.Value](
@@ -203,11 +232,11 @@ object Tabs {
       ) &
       "#custom-text" #> text(customText, customText = _) &
       "#service" #> selectObj[Tab.EmailServices.Value](
-        Tab.EmailServices.values.toList.map(v => (v,v.toString)),
+        validEmailServices.map(v => (v,v.toString)),
         Full(service),
         selected => service = selected
       ) &
-      "#mailchimp-apikey" #> text(mailChimpApiKey, mailChimpApiKey = _) &
+      ".only-if-mailchimp-authorized" #> (mailChimpAuthorized_? ? PassThru | ClearNodes) andThen
       "#mailchimp-listid" #> text(mailChimpListId, mailChimpListId = _) &
       ".only-if-constantcontact-authorized" #> (constantContactLists.nonEmpty ? PassThru | ClearNodes) andThen
       "#constantcontact-listid" #> select(
