@@ -14,6 +14,10 @@ wepay.anchorTabCallbackUri=http://staging.anchortab.com/wepay-ipn
 wepay.oauthPermissions=collect_payments
 wepay.oauthRedirectUrl=http://anchortab.com
 
+mailchimp.redirectUrl=http://staging.anchortab.com/oauth2/mailchimp
+mailchimp.clientId=256538841966
+mailchimp.clientSecret=2b8eb534d939bfa8b63f0408ff04553e
+
 # Set the url for the embed code.
 anchortab.embedscript=http://staging.anchortab.com/javascripts/load.js
 anchortab.analyticsid=UA-35269224-3
