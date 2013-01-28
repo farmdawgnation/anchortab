@@ -17,6 +17,7 @@ import net.liftweb._
 
 import com.anchortab.model.{User, UserServiceCredentials}
 import com.anchortab.constantcontact.ConstantContact
+import com.anchortab.mailchimp._
 
 object OAuth extends Loggable {
   implicit val formats = DefaultFormats
@@ -32,6 +33,22 @@ object OAuth extends Loggable {
         } yield {
           val serviceCredential = UserServiceCredentials("Constant Contact", username, Map("token" -> token))
           User.update("_id" -> session.userId, "$addToSet" -> (
+            ("serviceCredentials" -> decompose(serviceCredential))
+          ))
+
+          RedirectResponse("/manager/services")
+        }
+      }
+
+    case req @ Req("oauth2" :: "mailchimp" :: Nil, _, _) =>
+      () => {
+        for {
+          session <- userSession.is
+          code <- req.param("code")
+          token <- MailchimpOAuth.retrieveAccessTokenAndDcForCode(code)
+        } yield {
+          val serviceCredential = UserServiceCredentials("Mailchimp", token, Map("token" -> token))
+          User.update("_id" -> session.userId, "$addToSet" ->(
             ("serviceCredentials" -> decompose(serviceCredential))
           ))
 

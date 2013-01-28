@@ -20,6 +20,7 @@ import net.liftweb._
 
 import com.anchortab.model.{User, UserProfile}
 import com.anchortab.constantcontact.ConstantContact
+import com.anchortab.mailchimp._
 
 import org.bson.types.ObjectId
 
@@ -34,7 +35,41 @@ object Accounts {
   }
 
   def mailchimpConnection(xhtml:NodeSeq) = {
-    (".disconnect-service" #> ClearNodes).apply(xhtml)
+    def startMailchimpOAuth(s: String) = {
+      RedirectTo(MailchimpOAuth.oAuthAuthorizeUrl)
+    }
+
+    def disconnectMailchimpOAuth(s: String) = {
+      {
+        for {
+          session <- userSession.is
+        } yield {
+          User.update("_id" -> session.userId, "$pull" -> ("serviceCredentials" -> ("serviceName" -> "Mailchimp")))
+          Reload
+        }
+      } openOr {
+        Alert("Something went wrong.")
+      }
+    }
+
+    val connectionTransform =
+      {
+        for {
+          session <- userSession.is
+          user <- User.find(session.userId)
+          credentials <- user.credentialsFor("Mailchimp")
+          username = credentials.userIdentifier
+        } yield {
+          ".connection-status *" #> ("Connected to " + username) &
+          ".connect-service" #> ClearNodes &
+          ".disconnect-service [onclick]" #> onEvent(disconnectMailchimpOAuth _)
+        }
+      } openOr {
+        ".disconnect-service" #> ClearNodes &
+        ".connect-service [onclick]" #> onEvent(startMailchimpOAuth _)
+      }
+
+    connectionTransform.apply(xhtml)
   }
 
   def constantContactConnection(xhtml:NodeSeq) = {
