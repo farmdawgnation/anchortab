@@ -205,6 +205,14 @@ object Tabs {
       false
     }
 
+    val validEmailServices = {
+      val none = List(Tab.EmailServices.None)
+      val cc = (constantContactLists.nonEmpty ? List(Tab.EmailServices.ConstantContact) | List())
+      val mc = (mailChimpAuthorized_? ? List(Tab.EmailServices.MailChimp) | List())
+
+      none ++ cc ++ mc
+    }
+
     val bind =
       "#tab-name" #> text(tabName, tabName = _) &
       "#appearance-delay" #> selectObj[Tab.AppearanceDelayOptions.Value](
@@ -224,7 +232,7 @@ object Tabs {
       ) &
       "#custom-text" #> text(customText, customText = _) &
       "#service" #> selectObj[Tab.EmailServices.Value](
-        Tab.EmailServices.values.toList.map(v => (v,v.toString)),
+        validEmailServices.map(v => (v,v.toString)),
         Full(service),
         selected => service = selected
       ) &
