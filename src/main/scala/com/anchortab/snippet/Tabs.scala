@@ -1,6 +1,7 @@
 package com.anchortab.snippet
 
 import scala.xml.NodeSeq
+import scala.collection.JavaConverters._
 
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -97,17 +98,19 @@ object Tabs {
     var customText = requestTab.map(_.appearance.customText) openOr ""
 
     var mailChimpApiKey = ""
-    var mailChimpListId = ""
-    var constantContactListId = ""
+    var mailChimpListId: Box[String] = Empty
+    var constantContactListId: Box[String] = Empty
 
     var service : Tab.EmailServices.Value = {
       requestTab.map(_.service).openOr(None) match {
         case Some(mcsw:MailChimpServiceWrapper) =>
-          mailChimpListId = mcsw.listId
+          mailChimpListId = Full(mcsw.listId)
 
           Tab.EmailServices.MailChimp
 
         case Some(ccsw:ConstantContactServiceWrapper) =>
+          constantContactListId = Full(ccsw.listId.toString)
+
           Tab.EmailServices.ConstantContact
 
         case _ => Tab.EmailServices.None
@@ -126,6 +129,7 @@ object Tabs {
                 user <- User.find(session.userId)
                 credentials <- user.credentialsFor("Mailchimp")
                 token <- credentials.serviceCredentials.get("token")
+                mailChimpListId <- mailChimpListId
               } yield {
                 MailChimpServiceWrapper(token, mailChimpListId)
               }
@@ -136,6 +140,7 @@ object Tabs {
                 user <- User.find(session.userId)
                 credentials <- user.credentialsFor("Constant Contact")
                 token <- credentials.serviceCredentials.get("token")
+                constantContactListId <- constantContactListId
               } yield {
                 ConstantContactServiceWrapper(credentials.userIdentifier, token, constantContactListId.toLong)
               }
@@ -205,6 +210,26 @@ object Tabs {
       false
     }
 
+    val mailchimpLists = {
+      import com.ecwid.mailchimp._
+        import method.list._
+
+      {
+        for {
+          session <- userSession.is
+          user <- User.find(session.userId)
+          credentials <- user.credentialsFor("Mailchimp")
+          token <- credentials.serviceCredentials.get("token")
+        } yield {
+          val mcClient = new MailChimpClient
+          val listsMethod = new ListsMethod
+          listsMethod.apikey = token
+
+          mcClient.execute(listsMethod)
+        }
+      } map(_.data.asScala.toList) openOr List()
+    }
+
     val validEmailServices = {
       val none = List(Tab.EmailServices.None)
       val cc = (constantContactLists.nonEmpty ? List(Tab.EmailServices.ConstantContact) | List())
@@ -237,12 +262,16 @@ object Tabs {
         selected => service = selected
       ) &
       ".only-if-mailchimp-authorized" #> (mailChimpAuthorized_? ? PassThru | ClearNodes) andThen
-      "#mailchimp-listid" #> text(mailChimpListId, mailChimpListId = _) &
+      "#mailchimp-listid" #> select(
+        mailchimpLists.map(l => (l.id, l.name)),
+        mailChimpListId,
+        id => mailChimpListId = Full(id)
+      ) &
       ".only-if-constantcontact-authorized" #> (constantContactLists.nonEmpty ? PassThru | ClearNodes) andThen
       "#constantcontact-listid" #> select(
         constantContactLists.map(l => (l.id.toString, l.name)),
-        Empty,
-        constantContactListId = _
+        constantContactListId,
+        id => constantContactListId = Full(id)
       ) &
       ".submit" #> ajaxSubmit("Save Tab", submit _)
 
