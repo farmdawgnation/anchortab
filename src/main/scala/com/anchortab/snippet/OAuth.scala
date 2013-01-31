@@ -1,5 +1,7 @@
 package com.anchortab.snippet
 
+import scala.collection.JavaConversions._
+
 import net.liftweb._
   import common._
   import http._
@@ -42,12 +44,24 @@ object OAuth extends Loggable {
 
     case req @ Req("oauth2" :: "mailchimp" :: Nil, _, _) =>
       () => {
+        import com.ecwid.mailchimp._
+          import method.helper._
+
+        val mcClient = new MailChimpClient
+        val getAccountInfoMethod = new GetAccountDetailsMethod
+
+        // Ain't nobody got time for that
+        getAccountInfoMethod.exclude = "modules" :: "orders" :: "rewards-credits" ::
+            "rewards-inspections" :: "rewards-referrals" :: "rewards-applied" :: Nil
+
         for {
           session <- userSession.is
           code <- req.param("code")
           token <- MailchimpOAuth.retrieveAccessTokenAndDcForCode(code)
         } yield {
-          val serviceCredential = UserServiceCredentials("Mailchimp", token, Map("token" -> token))
+          getAccountInfoMethod.apikey = token
+          val accountInformation = mcClient.execute(getAccountInfoMethod)
+          val serviceCredential = UserServiceCredentials("Mailchimp", accountInformation.username, Map("token" -> token))
           User.update("_id" -> session.userId, "$addToSet" ->(
             ("serviceCredentials" -> decompose(serviceCredential))
           ))
