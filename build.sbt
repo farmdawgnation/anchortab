@@ -17,7 +17,8 @@ awsSecretKey := "je5eTIWzMApiS60Q/B72ZdggKFjlBCZUFgExjpu/"
 awsS3Bucket := "assets.anchortab.com"
 
 resolvers ++= Seq("snapshots"     at "http://oss.sonatype.org/content/repositories/snapshots",
-                "releases"        at "http://oss.sonatype.org/content/repositories/releases"
+                "releases"        at "http://oss.sonatype.org/content/repositories/releases",
+                "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
                 )
 
 seq(com.github.siasia.WebPlugin.webSettings :_*)
@@ -40,7 +41,7 @@ libraryDependencies ++= {
     "org.joda"          % "joda-convert"        % "1.2",
     "org.mindrot"       % "jbcrypt"             % "0.3m",
     "me.frmr.wepay-scala" %% "wepay-scala"       % "0.9.1-SNAPSHOT",
-    "com.ecwid"         % "ecwid-mailchimp"     % "1.3.0.4"
+    "com.ecwid"         % "ecwid-mailchimp"     % "1.3.0.5-SNAPSHOT"
   )
 }
 
