@@ -49,6 +49,10 @@ object Tabs {
       RewriteResponse("manager" :: "tab" :: "subscribers" :: "export" :: Nil)
   }
 
+  def newTabButton = {
+    "button [onclick]" #> onEvent(_ => RedirectTo("/manager/tabs/new"))
+  }
+
   def tabList = {
     val tabs = {
       for {
