@@ -26,6 +26,8 @@ import org.bson.types.ObjectId
 
 object requestTabId extends RequestVar[Box[String]](Empty)
 
+case class TabEmbedCodeReceived(embedCode: String) extends SimpleAnchorTabEvent("tab-embed-code-received")
+
 object Tabs {
   val dateAndTimeFormatter = new SimpleDateFormat("MM/dd/yyyy hh:mm aa")
   val dateFormatter = new SimpleDateFormat("MM/dd/yyyy")
@@ -69,7 +71,8 @@ object Tabs {
     }
 
     def getCode(tab:Tab)() =
-      Alert(tab.embedCode)
+      //Alert(tab.embedCode)
+      TabEmbedCodeReceived(tab.embedCode)
 
     def subscribers(tabId:ObjectId)() =
       RedirectTo("/manager/tab/" + tabId.toString + "/subscribers")
