@@ -2,6 +2,8 @@ package com.anchortab.migrate
 
 import com.anchortab.model._
 
+import scala.collection.JavaConversions._
+
 import net.liftweb._
   import http._
     import js._
