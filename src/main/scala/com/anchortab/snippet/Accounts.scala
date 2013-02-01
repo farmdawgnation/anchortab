@@ -60,7 +60,7 @@ object Accounts {
           credentials <- user.credentialsFor("Mailchimp")
           username = credentials.userIdentifier
         } yield {
-          ".connection-status *" #> ("Connected to " + username) &
+          ".connection-status *" #> ("Connected to " + username + ".") &
           ".connect-service" #> ClearNodes &
           ".disconnect-service [onclick]" #> onEvent(disconnectMailchimpOAuth _)
         }
@@ -98,7 +98,7 @@ object Accounts {
           credentials <- user.credentialsFor("Constant Contact")
           username = credentials.userIdentifier
         } yield {
-          ".connection-status *" #> ("Connected to " + username) &
+          ".connection-status *" #> ("Connected to " + username + ".") &
           ".connect-service" #> ClearNodes &
           ".disconnect-service [onclick]" #> onEvent(disconnectConstantContactOauth _)
         }

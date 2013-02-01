@@ -24,12 +24,12 @@ class SimpleAnchorTabEvent(eventName:String) extends JsCmd {
   implicit def typeHints = Serialization.formats(NoTypeHints)
 
   def toJsCmd = {
-    Call("anchortab.event", eventName, decompose(this)).cmd.toJsCmd
+    Call("anchortabSite.event", eventName, decompose(this)).cmd.toJsCmd
   }
 }
 class AnchorTabEvent(eventName:String, parameters:JObject) extends JsCmd {
   def toJsCmd = {
-    Call("anchortab.event", eventName, parameters).cmd.toJsCmd
+    Call("anchortabSite.event", eventName, parameters).cmd.toJsCmd
   }
 }
 

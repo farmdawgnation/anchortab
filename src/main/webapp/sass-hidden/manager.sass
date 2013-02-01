@@ -85,6 +85,10 @@
     &.error
       border: 1px solid red
 
+  .customSelect:after
+    content: '▼'
+    margin-left: 10px
+
   input.submit
     +pretty-button
 
@@ -254,6 +258,9 @@ body
           background: #3f3f3e
           +background(linear-gradient(#5b5b5b, #3f3f3e))
 
+        .new-tab-button
+          +pretty-button
+
         .tab-list
           +pretty-table
 
@@ -364,3 +371,18 @@ body
 
         .invite-form
           +pretty-form
+
+  #embed-code-modal
+    > h1
+      font-size: 2em
+      margin-bottom: 0.5em
+
+    > p
+      margin-bottom: 0.5em
+
+      > a
+        color: rgb(47, 47, 47)
+
+    > textarea
+      width: 100%
+      height: 100px
