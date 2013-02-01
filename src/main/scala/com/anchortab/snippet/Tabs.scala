@@ -49,6 +49,9 @@ object Tabs {
       RewriteResponse("manager" :: "tab" :: "subscribers" :: "export" :: Nil)
   }
 
+  def tabName =
+    "span *" #> requestTab.map(_.name)
+
   def newTabButton = {
     "button [onclick]" #> onEvent(_ => RedirectTo("/manager/tabs/new"))
   }
