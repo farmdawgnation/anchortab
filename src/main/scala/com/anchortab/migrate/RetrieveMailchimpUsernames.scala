@@ -42,6 +42,7 @@ object RetrieveMailchimpUsernames {
       val accountDetails = tryo(mcClient.execute(gadMethod))
 
       for (details <- accountDetails) {
+        println("The Mailchimp token " + token + " is for " + details.username)
         val serviceCredential = UserServiceCredentials("Mailchimp", details.username, Map("token" -> token))
 
         User.update("_id" -> user._id, "$pull" ->

@@ -71,7 +71,6 @@ object Tabs {
     }
 
     def getCode(tab:Tab)() =
-      //Alert(tab.embedCode)
       TabEmbedCodeReceived(tab.embedCode)
 
     def subscribers(tabId:ObjectId)() =
