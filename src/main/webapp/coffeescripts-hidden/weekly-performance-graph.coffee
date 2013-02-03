@@ -23,6 +23,7 @@ $(document).ready ->
     yAxis:
       title:
         text: null
+      min: 0
 
   requestEventSummary()
 
