@@ -78,6 +78,19 @@ object Api extends RestHelper with Loggable {
           callbackFnName <- req.param("callback") ?~! "Callback not specified." ~> 403
           email <- req.param("email").filter(_.trim.nonEmpty) ?~! "Email was not specified." ~> 403
         } yield {
+          val remoteIp = req.header("X-Forwarded-For") openOr req.remoteAddr
+          val userAgent = req.userAgent openOr "unknown"
+
+          val cookieId =
+            S.cookieValue("unique-event-actor") match {
+              case Full(uniqueEventActorId) => uniqueEventActorId
+              case _ =>
+                val uniqueEventActor = UniqueEventActor(remoteIp, userAgent, tab._id)
+                // TODO WRITE CONCERN ME
+                uniqueEventActor.save
+                uniqueEventActor.cookieId
+            }
+
           // Ensure this new subscriber is unique.
           if (! tab.hasSubscriber_?(email)) {
             implicit val formats = Tab.formats
@@ -100,6 +113,8 @@ object Api extends RestHelper with Loggable {
           val submitResult =
             ("success" -> 1) ~
             ("email" -> email)
+
+          EventActor ! TrackEvent(Event.Types.TabSubmit, remoteIp, userAgent, user._id, tab._id, Some(cookieId))
 
           Call(callbackFnName, submitResult)
         }

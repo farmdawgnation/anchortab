@@ -27,6 +27,7 @@ import org.bson.types.ObjectId
 object requestTabId extends RequestVar[Box[String]](Empty)
 
 case class TabEmbedCodeReceived(embedCode: String) extends SimpleAnchorTabEvent("tab-embed-code-received")
+case class NewTabCreated(embedCode: String) extends SimpleAnchorTabEvent("new-tab-created")
 
 object Tabs {
   val dateAndTimeFormatter = new SimpleDateFormat("MM/dd/yyyy hh:mm aa")
@@ -179,14 +180,16 @@ object Tabs {
                     service = serviceWrapper
                   ).save
 
+                  RedirectTo("/manager/tabs")
+
                 case _ =>
                   val tab = Tab(tabName, session.userId,
                       TabAppearance(appearanceDelay.toInt, font, colorScheme, customText),
                       serviceWrapper)
                   tab.save
-              }
 
-            RedirectTo("/manager/tabs")
+                  NewTabCreated(tab.embedCode)
+              }
           }
         }
       } openOr {
