@@ -52,19 +52,23 @@ object EventActor extends LiftActor with Loggable {
     case EventSummaryRequested(comet, userId, eventType) =>
       val eventSummaryEntries = {
         for {
-          daysBefore <- (7 to 1).toList
+          daysBefore <- (0 to 6).toList
         } yield {
           val rangeStart = new DateMidnight().minusDays(daysBefore)
           val rangeEnd = new DateMidnight().minusDays(daysBefore - 1)
+
+          println(rangeStart + " to " + rangeEnd)
           val eventTypeCount = Event.count(
             ("userId" -> userId) ~
             ("eventType" -> eventType) ~
-            ("createdAt" -> ("$gte" -> rangeStart.toString())) ~
-            ("createdAt" -> ("$lt" -> rangeEnd.toString()))
+            ("createdAt" ->
+              ("$gte" -> rangeStart.toString()) ~
+              ("$lt" -> rangeEnd.toString())
+            )
           )
           EventSummaryEntry(rangeStart.toString, eventTypeCount)
         }
-      }
+      }.reverse
 
       comet ! EventSummaryDelivered(EventSummary(eventType, eventSummaryEntries))
   }
