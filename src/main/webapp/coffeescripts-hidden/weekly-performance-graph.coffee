@@ -25,3 +25,9 @@ $(document).ready ->
         text: null
 
   requestEventSummary()
+
+  $(document).on 'event-summary-updated', (event) ->
+    if event.eventSummary.name == "tab-view"
+      chart.series[0].setData(event.eventSummary.data)
+    else if event.eventSummary.name == "tab-submit"
+      chart.series[1].setData(event.eventSummary.data)
