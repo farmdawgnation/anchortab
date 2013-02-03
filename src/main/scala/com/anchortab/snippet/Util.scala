@@ -5,9 +5,11 @@ import scala.xml._
 import net.liftweb._
   import common._
   import http._
+    import SHtml._
     import LiftRules._
     import rest._
     import js._
+      import JsCmds._
       import JE._
       import JsExp._
   import util._
@@ -31,6 +33,14 @@ class AnchorTabEvent(eventName:String, parameters:JObject) extends JsCmd {
   def toJsCmd = {
     Call("anchortabSite.event", eventName, parameters).cmd.toJsCmd
   }
+}
+
+class CallableFunction(name:String, callback:(String)=>JsCmd, args:List[String] = List()) extends JsCmd {
+  override val toJsCmd =
+    Function(
+      name, args,
+      ajaxCall(JsRaw("Array.prototype.slice.call(arguments).join('|')"), callback)._2
+    ).toJsCmd
 }
 
 object currentPageTitle extends RequestVar[Box[String]](Empty)

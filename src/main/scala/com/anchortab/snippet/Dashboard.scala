@@ -1,5 +1,7 @@
 package com.anchortab.snippet
 
+import scala.xml.NodeSeq
+
 import net.liftweb._
   import common._
   import mongodb._
@@ -10,6 +12,20 @@ import net.liftweb._
     import Extraction._
 
 object Dashboard {
+  def weeklyPerformanceGraph = {
+    {
+      for {
+        session <- userSession.is
+        cometName = "event-summary-comet-" + session.userId
+      } yield {
+        <lift:comet type="EventSummaryComet" name={cometName}></lift:comet>
+        <div id="weekly-performance-graph"></div>
+      }
+    } openOr {
+      NodeSeq.Empty
+    }
+  }
+
   def accountStats = {
     val currentPlanName =
       for {

@@ -1,5 +1,5 @@
 $(document).ready ->
-  new Highcharts.Chart
+  chart = new Highcharts.Chart
     chart:
       renderTo: 'weekly-performance-graph',
       defaultSeriesType: 'spline',
@@ -23,4 +23,5 @@ $(document).ready ->
     yAxis:
       title:
         text: null
-    
+
+  requestEventSummary()
