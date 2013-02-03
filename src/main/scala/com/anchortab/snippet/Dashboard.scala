@@ -12,14 +12,14 @@ import net.liftweb._
     import Extraction._
 
 object Dashboard {
-  def weeklyPerformanceGraph = {
+  def weeksPerformanceGraph = {
     {
       for {
         session <- userSession.is
         cometName = "event-summary-comet-" + session.userId
       } yield {
         <lift:comet type="EventSummaryComet" name={cometName}></lift:comet>
-        <div id="weekly-performance-graph"></div>
+        <div id="weeks-performance-graph"></div>
       }
     } openOr {
       NodeSeq.Empty

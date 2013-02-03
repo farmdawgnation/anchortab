@@ -1,7 +1,7 @@
 $(document).ready ->
   chart = new Highcharts.Chart
     chart:
-      renderTo: 'weekly-performance-graph',
+      renderTo: 'weeks-performance-graph',
       defaultSeriesType: 'spline',
       backgroundColor: '#f7f7f7',
       width: 600,
