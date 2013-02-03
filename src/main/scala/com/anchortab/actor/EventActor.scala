@@ -57,7 +57,6 @@ object EventActor extends LiftActor with Loggable {
           val rangeStart = new DateMidnight().minusDays(daysBefore)
           val rangeEnd = new DateMidnight().minusDays(daysBefore - 1)
 
-          println(rangeStart + " to " + rangeEnd)
           val eventTypeCount = Event.count(
             ("userId" -> userId) ~
             ("eventType" -> eventType) ~
