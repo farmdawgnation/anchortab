@@ -26,6 +26,14 @@ class EventSummaryComet extends CometActor {
     EventActor ! EventActorClientCometRegistered(this)
   }
 
+  override def localShutdown = {
+    for {
+      name <- this.name
+    } {
+      EventActor ! EventActorClientCometDeregistered(name)
+    }
+  }
+
   def render = {
     RequestEventSummary
   }
