@@ -37,6 +37,14 @@ object EventActor extends LiftActor with Loggable {
     case TrackEvent(eventType, ip, userAgent, userId, tabId, cookieId, email) =>
       EventLog.track(eventType, ip, userAgent, userId, tabId, cookieId, email)
 
+      if (eventType == Event.Types.TabView || eventType == Event.Types.TabSubmit) {
+        val targetComet = "event-summary-comet-" + userId
+
+        for(comet <- registeredComets.get(targetComet)) {
+          this ! EventSummaryRequested(comet, userId, eventType)
+        }
+      }
+
     case EventActorClientCometRegistered(comet) =>
       {
         for(cometName <- comet.name) yield {
