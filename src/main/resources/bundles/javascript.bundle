@@ -26,3 +26,7 @@ base.js
 manager.js
 customSelect.jquery.js
 jquery.modal.js
+
+dashboard
+highcharts/highcharts.js
+weekly-performance-graph.js
