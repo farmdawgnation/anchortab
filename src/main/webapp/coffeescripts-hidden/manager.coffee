@@ -36,6 +36,16 @@ $(document).ready ->
   $("body").on 'click', '#modal-dismiss', (event) ->
     $.modal.close()
 
+  $(document).on 'form-validation-error', (event) ->
+    $target = $(event.fieldSelector)
+    $targetContainer = $target.closest("div")
+
+    $target.addClass "error"
+    $targetContainer.append $("<div />").addClass("validation-error").text(event.error)
+
+  $(document).on 'click', 'form .submit', (event) ->
+    $(".validation-error").remove()
+
   $(document).on 'redirecting-to-wepay', (event) ->
     nodes = [
       $("<h1 />")
