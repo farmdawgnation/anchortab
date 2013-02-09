@@ -11,7 +11,9 @@ All Rights Reserved
 ##
 googleAnalyticsAccount = anchortab?.googleAnalyticsAccount || "UA-35269224-4"
 apiDomain = anchortab?.apiDomain || "local.anchortab.com"
+secureApiDomain = anchortab?.secureApiDomain || "local.anchortab.com"
 resourcesDomain = anchortab?.resourcesDomain || "local.anchortab.com"
+secureResourcesDomain = anchortab?.secureResourcesDomain || "local.anchortab.com"
 jqVersion = "1.8.2"
 
 ##
@@ -111,6 +113,9 @@ submitEmail = (event) ->
     success: (event) ->
       $("#anchor-tab").addClass("success")
 
+      gaqInfo = "Domain: " + document.domain
+      _gaq.push ["at._trackEvent", "Submission", "Email Submitted", gaqInfo]
+
       setTimeout ->
         $("#anchor-tab")
           .removeClass("visible")
@@ -125,6 +130,9 @@ submitEmail = (event) ->
     error: (xhr, status, error) ->
       $("#anchor-tab [disabled]").removeAttr("disabled")
       alert("Something went wrong submitting your email. Please contact us if you continue to see this error.")
+
+      gaqInfo = "Domain: " + document.domain + " Response Status: " + status
+      _gaq.push ["at._trackEvent", "Submission", "Submission Error", gaqInfo]
 
 displayTab = (tabJson) ->
   # In case of compatibility mode
@@ -190,6 +198,7 @@ displayTab = (tabJson) ->
       )
 
   if $.browser.msie
+    _gaq.push ["at._trackEvent", "Bootstrap", "MSIE", navigator.userAgent]
     anchorTab.addClass "msie"
 
   $("body").append anchorTab
@@ -205,10 +214,16 @@ displayTab = (tabJson) ->
     .on('click', '.minimize', ->
       $("#anchor-tab").removeClass("visible").addClass("minimized")
       setStateCookie 'minimized'
+
+      gaqInfo = "Domain: " + document.domain
+      _gaq.push ["at._trackEvent", "Tab Visibility", "Minimize Tab", gaqInfo]
     )
     .on('click', '.maximize', ->
       $("#anchor-tab").removeClass("minimized").addClass("visible")
       setStateCookie 'visible'
+
+      gaqInfo = "Domain: " + document.domain
+      _gaq.push ["at._trackEvent", "Tab Visibility", "Maximize Tab", gaqInfo]
     )
 
 loadAnchorTab = ->
