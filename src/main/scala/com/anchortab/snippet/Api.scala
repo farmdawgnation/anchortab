@@ -21,6 +21,7 @@ import net.liftweb._
 import org.bson.types.ObjectId
 
 import com.anchortab.model._
+import com.anchortab.actor._
 import com.anchortab.actor.{EventActor, TrackEvent}
 
 object Api extends RestHelper with Loggable {
@@ -102,11 +103,10 @@ object Api extends RestHelper with Loggable {
               ("$addToSet" -> ("subscribers" -> decompose(subscriberInformation)))
             ))
 
-            tab.service.map(_.subscribeEmail(email)) match {
-              case Some(Failure(msg, _, _)) =>
-                logger.error("ServiceWrapper subscribe for " + tab._id + " failed for " + email + ": " + msg)
-
-              case _ =>
+            for {
+              serviceWrapper <- tab.service
+            } {
+              ServiceWrapperSubmissionActor ! SubscribeEmailToServiceWrapper(serviceWrapper, email)
             }
           }
 
