@@ -14,7 +14,7 @@ wepay.anchorTabCallbackUri=http://local.anchortab.com/wepay-ipn
 wepay.oauthPermissions=collect_payments
 wepay.oauthRedirectUrl=http://anchortab.com
 
-mailchimp.redirectUrl=http://anchortab.com/oauth2/mailchimp
+mailchimp.redirectUrl=https://anchortab.com/oauth2/mailchimp
 mailchimp.clientId=398234061384
 mailchimp.clientSecret=ef5348bb94503e35fac79bf0230b6015
 

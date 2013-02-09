@@ -78,7 +78,7 @@ loadGAIfNeeded = ->
 
 withJQueryLoaded = (callback) ->
   if ! jQuery?
-    loadScript("http://ajax.googleapis.com/ajax/libs/jquery/" + jqVersion + "/jquery.min.js", callback)
+    loadScript("//ajax.googleapis.com/ajax/libs/jquery/" + jqVersion + "/jquery.min.js", callback)
   else if ! /^1.[678]/.test(jQuery.fn.jquery)
     console?.error("AnchorTab is disabled because you are using an unsupported version of jQuery.")
 
@@ -103,7 +103,7 @@ submitEmail = (event) ->
   $input.attr('disabled', 'disabled')
 
   email = $input.val()
-  submissionUri = "http://" + apiDomain + "/api/v1/embed/" + tabId + "/submit"
+  submissionUri = "//" + apiDomain + "/api/v1/embed/" + tabId + "/submit"
 
   $.ajax
     url: submissionUri
@@ -147,9 +147,13 @@ displayTab = (tabJson) ->
   # Load the Anchor Tab stylesheet.
   atStyleSheet =
     $("<link />")
-      .attr("href", "http://" + resourcesDomain + "/stylesheets/tab.css")
       .attr("rel", "stylesheet")
       .attr("type", "text/css")
+
+  if document.location.protocol == "https:"
+    atStyleSheet.attr("href", "//" + secureResourcesDomain + "/stylesheets/tab.css")
+  else
+    atStyleSheet.attr("href", "//" + resourcesDomain + "/stylesheets/tab.css")
 
   $("head").append atStyleSheet
 
@@ -232,7 +236,7 @@ loadAnchorTab = ->
   # then we'll have to refactor some of this code, I suppose.
   $ = jQuery # In case we're in compability mode.
   tabId = $("#anchortab-loader").data('tab-id')
-  tabJson = "http://" + apiDomain + "/api/v1/embed/" + tabId
+  tabJson = "//" + apiDomain + "/api/v1/embed/" + tabId
 
   $.ajax
     url: tabJson
