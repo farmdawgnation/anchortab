@@ -45,6 +45,7 @@ $(document).ready ->
 
   $(document).on 'click', 'form .submit', (event) ->
     $(".validation-error").remove()
+    $("input.error").removeClass("error")
 
   $(document).on 'redirecting-to-wepay', (event) ->
     nodes = [
