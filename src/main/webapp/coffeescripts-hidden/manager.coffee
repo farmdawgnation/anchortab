@@ -63,6 +63,7 @@ $(document).ready ->
         .text("Continue to Payment")
     ]
 
+    $("input.submit").attr("disabled", "disabled")
     modal("wepay-redirect-modal", nodes, (_) ->
       document.location = event.preapprovalUrl
     )
