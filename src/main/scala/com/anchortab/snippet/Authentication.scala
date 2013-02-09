@@ -21,6 +21,7 @@ import com.mongodb.WriteConcern
 import org.bson.types.ObjectId
 
 import com.anchortab.model._
+import com.anchortab.actor._
 
 import me.frmr.wepay._
   import api.Preapproval
@@ -336,6 +337,9 @@ object Authentication extends Loggable {
               } {
                 InviteCode.update("_id" -> invite._id, "$inc" -> ("numberOfUses" -> 1))
               }
+
+              // Send welcome email
+              EmailActor ! SendWelcomeEmail(user.email)
 
               if (plans.filter(_._id.toString == selectedPlan).headOption.map(_.free_?) getOrElse true) {
                 loginResult
