@@ -75,7 +75,7 @@ object Api extends RestHelper with Loggable {
 
           Call(callbackFnName, tabJson)
         }
-      } ?~! "Unknown Tab." ~> 404
+      } ?~ "Unknown Tab." ~> 404
 
     // JSONP can't be semantic. :(
     case req @ Req("api" :: "v1" :: "embed" :: tabId :: "submit" :: Nil, _, GetRequest) =>
