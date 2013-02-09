@@ -102,7 +102,7 @@ object Bundles {
           else
             bundle.name + "." + extension + "?" + bundle.version
 
-        tagGenerator("//" + bundle.bucket + urlBase + "/" + bundleFilename)
+        tagGenerator("//" + makeSecureIfNeeded(bundle.bucket) + urlBase + "/" + bundleFilename)
       }
     } openOr {
       NodeSeq.Empty
