@@ -17,7 +17,7 @@ object Bundles {
 
   private def makeSecureIfNeeded(baseDomain: String) : String = {
     {
-      for (secureRequestHeader <- S.getHeader("X-Secure-Request")) yield {
+      for (secureRequestHeader <- S.getRequestHeader("X-Secure-Request")) yield {
         "s3.amazonaws.com/" + baseDomain
       }
     } openOr {
