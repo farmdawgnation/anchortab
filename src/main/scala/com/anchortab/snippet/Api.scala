@@ -58,6 +58,13 @@ object Api extends RestHelper with Loggable {
             }
 
           Tab.update("_id" -> tab._id, "$inc" -> ("stats.views" -> 1))
+
+          if (user.firstSteps.get(UserFirstStep.Keys.EmbedYourTab).isDefined) {
+            User.update("_id" -> user._id, "$unset" -> (
+              ("firstSteps." + UserFirstStep.Keys.EmbedYourTab) -> true)
+            )
+          }
+
           EventActor ! TrackEvent(Event.Types.TabView, remoteIp, userAgent, user._id, tab._id, Some(cookieId))
 
           val tabJson =

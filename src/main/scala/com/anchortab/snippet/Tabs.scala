@@ -52,6 +52,27 @@ object Tabs {
       RewriteResponse("manager" :: "tab" :: "subscribers" :: "export" :: Nil)
   }
 
+  def snippetHandlers : SnippetPF = {
+    case "no-tab-views-help" :: Nil => noTabViewsHelp
+  }
+
+  def noTabViewsHelp = {
+    {
+      for {
+        session <- userSession.is
+        numTabs = Tab.count("userId" -> session.userId)
+        numEmptyTabs = Tab.count(
+          ("userId" -> session.userId) ~
+          ("stats.views" -> 0)
+        ) if numEmptyTabs == numTabs
+      } yield {
+        PassThru
+      }
+    } openOr {
+      ClearNodes
+    }
+  }
+
   def tabName =
     "span *" #> requestTab.map(_.name)
 
@@ -187,6 +208,10 @@ object Tabs {
                       TabAppearance(appearanceDelay.toInt, font, colorScheme, customText),
                       serviceWrapper)
                   tab.save
+
+                  User.update("_id" -> session.userId, "$unset" -> (
+                    ("firstSteps." + UserFirstStep.Keys.CreateATab) -> true)
+                  )
 
                   NewTabCreated(tab.embedCode)
               }
