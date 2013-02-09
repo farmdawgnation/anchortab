@@ -15,6 +15,16 @@ case class BundleInfo(name:String, checksumInFilename:Boolean,
 object Bundles {
   val assetDomain = "assets.anchortab.com"
 
+  private def makeSecureIfNeeded(baseDomain: String) : String = {
+    {
+      for (secureRequestHeader <- S.getHeader("X-Secure-Request")) yield {
+        "s3.amazonaws.com/" + baseDomain
+      }
+    } openOr {
+      baseDomain
+    }
+  }
+
   private def readResource(resourcePath:String) : Box[String] = {
     for {
       url <- LiftRules.getResource(resourcePath)
@@ -44,7 +54,7 @@ object Bundles {
       bundle.split("\n").toList match {
         case bundle :: rest =>
           val bundleParts = bundle.split("->")
-          val bucket = tryo(bundleParts(1)) openOr assetDomain
+          val bucket = makeSecureIfNeeded(tryo(bundleParts(1)) openOr assetDomain)
 
           List((bundleParts(0), (bucket, rest)))
         case Nil =>
@@ -92,7 +102,7 @@ object Bundles {
           else
             bundle.name + "." + extension + "?" + bundle.version
 
-        tagGenerator("http://" + bundle.bucket + urlBase + "/" + bundleFilename)
+        tagGenerator("//" + bundle.bucket + urlBase + "/" + bundleFilename)
       }
     } openOr {
       NodeSeq.Empty
