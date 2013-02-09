@@ -11,7 +11,9 @@ All Rights Reserved
 ##
 googleAnalyticsAccount = anchortab?.googleAnalyticsAccount || "UA-35269224-4"
 apiDomain = anchortab?.apiDomain || "local.anchortab.com"
+secureApiDomain = anchortab?.secureApiDomain || "local.anchortab.com"
 resourcesDomain = anchortab?.resourcesDomain || "local.anchortab.com"
+secureResourcesDomain = anchortab?.secureResourcesDomain || "local.anchortab.com"
 jqVersion = "1.8.2"
 
 ##
