@@ -26,6 +26,9 @@ import me.frmr.wepay._
   import api.Preapproval
 
 case object LoginFailed extends SimpleAnchorTabEvent("login-failed")
+case class RedirectingToWePay(preapprovalUrl: String) extends SimpleAnchorTabEvent("redirecting-to-wepay")
+case class FormValidationError(fieldSelector: String, error: String) extends
+  SimpleAnchorTabEvent("form-validation-error")
 
 object userSession extends SessionVar[Box[UserSession]](Empty)
 object impersonatorSession extends SessionVar[Box[UserSession]](Empty)
@@ -266,21 +269,45 @@ object Authentication extends Loggable {
     }
 
     def processRegistration = {
-      // This may be poor design, but it's better than nesting right?
-      emailAddress match {
-        case "" =>
-          Alert("Email address is required.")
+      val validators = Map(
+        "input.email-address" -> (() =>
+          if (emailAddress.nonEmpty)
+            if (User.count("email" -> emailAddress) > 0)
+              Full("That email address is already in use by another user.")
+            else
+              Empty
+          else
+            Full("Email address is required.")
+        ),
+        "input.password" -> (() =>
+          if (requestedPassword.nonEmpty)
+            Empty
+          else
+            Full("Password is required.")
+        ),
+        "input.password-confirmation" -> (() =>
+          if (requestedPasswordConfirmation.nonEmpty)
+            if (requestedPassword != requestedPasswordConfirmation)
+              Full("Password and Confirm Password must match.")
+            else
+              Empty
+          else
+            Full("Password confirmation is required.")
+        )
+      )
 
-        case _ if requestedPassword == "" || requestedPasswordConfirmation == "" =>
-          Alert("Both password fields are required.")
+      val validationErrors: List[FormValidationError] = validators.flatMap { validator =>
+        val validatorSelector = validator._1
+        val validatorFunc = validator._2
 
-        case _ if User.count("email" -> emailAddress) > 0 =>
-          Alert("That email address is already in use by another user.")
+        validatorFunc() match {
+          case Full(validationError) => Some(FormValidationError(validatorSelector, validationError))
+          case _ => None
+        }
+      }.toList
 
-        case _ if requestedPassword != requestedPasswordConfirmation =>
-          Alert("The password and confirm password fields do not match.")
-
-        case _ =>
+      validationErrors match {
+        case Nil =>
           val user : Box[User] =
             for {
               plan <- (Plan.find(selectedPlan):Box[Plan]) ?~! "Plan could not be located."
@@ -312,14 +339,16 @@ object Authentication extends Loggable {
 
                 // Alert the user they're about to be redirected to WePay for payment, and
                 // then do the redirection.
-                Alert("You will now be sent to WePay to complete payment.") &
-                RedirectTo(wepayUri)
+                RedirectingToWePay(wepayUri)
               }
 
             case m =>
               logger.error("While registering account got: " + m)
               Alert("Something went wrong during account creation.")
           }
+
+        case errors =>
+          errors.foldLeft(Noop)(_ & _)
       }
     }
 

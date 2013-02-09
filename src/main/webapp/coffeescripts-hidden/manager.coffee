@@ -36,6 +36,38 @@ $(document).ready ->
   $("body").on 'click', '#modal-dismiss', (event) ->
     $.modal.close()
 
+  $(document).on 'form-validation-error', (event) ->
+    $target = $(event.fieldSelector)
+    $targetContainer = $target.closest("div")
+
+    $target.addClass "error"
+    $targetContainer.append $("<div />").addClass("validation-error").text(event.error)
+
+  $(document).on 'click', 'form .submit', (event) ->
+    $(".validation-error").remove()
+    $("input.error").removeClass("error")
+
+  $(document).on 'redirecting-to-wepay', (event) ->
+    nodes = [
+      $("<h1 />")
+        .text("Redirecting for Payment"),
+
+      $("<p />")
+        .text("You will now be redirected to WePay to enter your credit card information
+                and authorize a preapproval so we can withdraw your subscription fee monthly.
+                After you've successfully completed that process, you'll be redirected back
+                here."),
+
+      $("<button />")
+        .attr("id", "modal-dismiss")
+        .text("Continue to Payment")
+    ]
+
+    $("input.submit").attr("disabled", "disabled")
+    modal("wepay-redirect-modal", nodes, (_) ->
+      document.location = event.preapprovalUrl
+    )
+
   $(document).on 'tab-embed-code-received', (event) ->
     nodes = [
       $("<h1 />")
