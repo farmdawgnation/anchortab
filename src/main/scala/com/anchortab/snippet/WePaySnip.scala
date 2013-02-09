@@ -45,7 +45,8 @@ object WePaySnip extends Loggable {
 
             RedirectResponse("/manager/dashboard")
           } else {
-            RedirectResponse("/manager/dashboard")
+            // Eh, if we're not preapproved yet it will be a second. Kill some time.
+            RedirectResponse("/manager/payment-complete")
           }
         }
       }

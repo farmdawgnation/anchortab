@@ -26,6 +26,7 @@ import me.frmr.wepay._
   import api.Preapproval
 
 case object LoginFailed extends SimpleAnchorTabEvent("login-failed")
+case class RedirectingToWePay(preapprovalUrl: String) extends SimpleAnchorTabEvent("redirecting-to-wepay")
 
 object userSession extends SessionVar[Box[UserSession]](Empty)
 object impersonatorSession extends SessionVar[Box[UserSession]](Empty)
@@ -312,8 +313,7 @@ object Authentication extends Loggable {
 
                 // Alert the user they're about to be redirected to WePay for payment, and
                 // then do the redirection.
-                Alert("You will now be sent to WePay to complete payment.") &
-                RedirectTo(wepayUri)
+                RedirectingToWePay(wepayUri)
               }
 
             case m =>
