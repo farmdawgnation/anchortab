@@ -313,9 +313,15 @@ object Authentication extends Loggable {
               plan <- (Plan.find(selectedPlan):Box[Plan]) ?~! "Plan could not be located."
               subscription <- generateSubscriptionForPlan(plan)
             } yield {
+              val firstSteps = Map(
+                UserFirstStep.Keys.ConnectAnExternalService -> UserFirstStep.Steps.ConnectAnExternalService,
+                UserFirstStep.Keys.CreateATab -> UserFirstStep.Steps.CreateATab,
+                UserFirstStep.Keys.EmbedYourTab -> UserFirstStep.Steps.EmbedYourTab
+              )
+
               User(emailAddress, User.hashPassword(requestedPassword),
                    Some(UserProfile(Some(firstName), Some(lastName), Some(organization))),
-                   subscriptions = List(subscription))
+                   subscriptions = List(subscription), firstSteps = firstSteps)
             }
 
           user.foreach(_.save)
