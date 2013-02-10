@@ -83,7 +83,7 @@ object EmailActor extends LiftActor with Loggable {
 
   val welcomeEmailSubject = "Welcome to Anchor Tab!"
   val welcomeEmailTemplate = 
-    Templates.findRawTemplate("emails-hidden" :: "welcome-email" :: Nil, S.locale) openOr NodeSeq.Empty
+    Templates("emails-hidden" :: "welcome-email" :: Nil) openOr NodeSeq.Empty
 
   def messageHandler = {
     case SendWelcomeEmail(userEmail) =>
