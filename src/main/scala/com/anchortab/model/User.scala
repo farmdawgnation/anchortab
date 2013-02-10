@@ -68,6 +68,21 @@ case class UserInvoice(subscriptionId:ObjectId, price:Double, status:String, dat
 
 case class UserServiceCredentials(serviceName:String, userIdentifier:String, serviceCredentials:Map[String, String])
 
+case class UserFirstStep(description: String, href: String)
+object UserFirstStep {
+  object Keys {
+    val ConnectAnExternalService = "connect-an-external-serivce"
+    val CreateATab = "create-a-tab"
+    val EmbedYourTab = "embed-your-tab"
+  }
+
+  object Steps {
+    val ConnectAnExternalService = UserFirstStep("Connect to a Mailchimp or Constant Contact account.", "/manager/services")
+    val CreateATab = UserFirstStep("Create your first Anchor Tab.", "/manager/tabs/new")
+    val EmbedYourTab = UserFirstStep("Embed your Anchor Tab on your site.", "/manager/tabs")
+  }
+}
+
 /**
  * User model. This class represnts a distinct user on the system.
 **/
@@ -77,6 +92,7 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
                 invoices:List[UserInvoice] = List(),
                 serviceCredentials:List[UserServiceCredentials] = List(),
                 quotaCounts:Map[String, Long] = Map.empty,
+                firstSteps: Map[String, UserFirstStep] = Map.empty,
                 role:Option[String] = None, createdAt:DateTime = new DateTime,
                 _id:ObjectId = ObjectId.get) extends MongoDocument[User] {
   val meta = User

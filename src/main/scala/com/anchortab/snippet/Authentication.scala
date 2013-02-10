@@ -21,6 +21,7 @@ import com.mongodb.WriteConcern
 import org.bson.types.ObjectId
 
 import com.anchortab.model._
+import com.anchortab.actor._
 
 import me.frmr.wepay._
   import api.Preapproval
@@ -313,9 +314,15 @@ object Authentication extends Loggable {
               plan <- (Plan.find(selectedPlan):Box[Plan]) ?~! "Plan could not be located."
               subscription <- generateSubscriptionForPlan(plan)
             } yield {
+              val firstSteps = Map(
+                UserFirstStep.Keys.ConnectAnExternalService -> UserFirstStep.Steps.ConnectAnExternalService,
+                UserFirstStep.Keys.CreateATab -> UserFirstStep.Steps.CreateATab,
+                UserFirstStep.Keys.EmbedYourTab -> UserFirstStep.Steps.EmbedYourTab
+              )
+
               User(emailAddress, User.hashPassword(requestedPassword),
                    Some(UserProfile(Some(firstName), Some(lastName), Some(organization))),
-                   subscriptions = List(subscription))
+                   subscriptions = List(subscription), firstSteps = firstSteps)
             }
 
           user.foreach(_.save)
@@ -330,6 +337,9 @@ object Authentication extends Loggable {
               } {
                 InviteCode.update("_id" -> invite._id, "$inc" -> ("numberOfUses" -> 1))
               }
+
+              // Send welcome email
+              EmailActor ! SendWelcomeEmail(user.email)
 
               if (plans.filter(_._id.toString == selectedPlan).headOption.map(_.free_?) getOrElse true) {
                 loginResult

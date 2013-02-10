@@ -20,6 +20,8 @@ import net.liftweb._
   import mongodb._
     import BsonDSL._
 
+import com.anchortab.model.User
+
 class SimpleAnchorTabEvent(eventName:String) extends JsCmd {
   import Serialization._
 
@@ -56,6 +58,27 @@ object Util extends Loggable {
     case "user-name" :: Nil => userName _
     case "google-analytics" :: Nil => googleAnalytics _
     case "uservoice" :: Nil => uservoice _
+    case "first-steps" :: Nil => firstSteps
+  }
+
+  def firstSteps = {
+    {
+      for {
+        session <- userSession.is
+        user <- User.find(session.userId)
+          if ! user.firstSteps.isEmpty
+      } yield {
+        ClearClearable andThen
+        ".first-steps" #> {
+          "li" #> user.firstSteps.values.map { firstStep =>
+            "a [href]" #> firstStep.href &
+            "a *" #> firstStep.description
+          }
+        }
+      }
+    } openOr {
+      ClearNodes
+    }
   }
 
   def uservoice(xhtml: NodeSeq) = {

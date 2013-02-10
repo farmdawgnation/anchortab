@@ -17,7 +17,7 @@ import net.liftweb._
     import Extraction._
   import mongodb.BsonDSL._
 
-import com.anchortab.model.{User, UserServiceCredentials}
+import com.anchortab.model._
 import com.anchortab.constantcontact.ConstantContact
 import com.anchortab.mailchimp._
 
@@ -34,9 +34,12 @@ object OAuth extends Loggable {
           token <- ConstantContact.retrieveAccessTokenForCode(code)
         } yield {
           val serviceCredential = UserServiceCredentials("Constant Contact", username, Map("token" -> token))
-          User.update("_id" -> session.userId, "$addToSet" -> (
-            ("serviceCredentials" -> decompose(serviceCredential))
-          ))
+          User.update("_id" -> session.userId,
+            ("$addToSet" -> (("serviceCredentials" -> decompose(serviceCredential)))) ~
+            ("$unset" -> (
+              ("firstSteps." + UserFirstStep.Keys.ConnectAnExternalService) -> true
+            ))
+          )
 
           RedirectResponse("/manager/services")
         }
@@ -62,9 +65,12 @@ object OAuth extends Loggable {
           getAccountInfoMethod.apikey = token
           val accountInformation = mcClient.execute(getAccountInfoMethod)
           val serviceCredential = UserServiceCredentials("Mailchimp", accountInformation.username, Map("token" -> token))
-          User.update("_id" -> session.userId, "$addToSet" ->(
-            ("serviceCredentials" -> decompose(serviceCredential))
-          ))
+          User.update("_id" -> session.userId,
+            ("$addToSet" -> (("serviceCredentials" -> decompose(serviceCredential)))) ~
+            ("$unset" -> (
+              ("firstSteps." + UserFirstStep.Keys.ConnectAnExternalService) -> true
+            ))
+          )
 
           RedirectResponse("/manager/services")
         }

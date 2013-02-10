@@ -58,6 +58,13 @@ object Api extends RestHelper with Loggable {
             }
 
           Tab.update("_id" -> tab._id, "$inc" -> ("stats.views" -> 1))
+
+          if (user.firstSteps.get(UserFirstStep.Keys.EmbedYourTab).isDefined) {
+            User.update("_id" -> user._id, "$unset" -> (
+              ("firstSteps." + UserFirstStep.Keys.EmbedYourTab) -> true)
+            )
+          }
+
           EventActor ! TrackEvent(Event.Types.TabView, remoteIp, userAgent, user._id, tab._id, Some(cookieId))
 
           val tabJson =
@@ -68,7 +75,7 @@ object Api extends RestHelper with Loggable {
 
           Call(callbackFnName, tabJson)
         }
-      } ?~! "Unknown Tab." ~> 404
+      } ?~ "Unknown Tab." ~> 404
 
     // JSONP can't be semantic. :(
     case req @ Req("api" :: "v1" :: "embed" :: tabId :: "submit" :: Nil, _, GetRequest) =>
