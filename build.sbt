@@ -49,6 +49,8 @@ libraryDependencies ++= {
 
 mainClass in assembly := Some("bootstrap.Start")
 
+test in assembly := {}
+
 jarName in assembly := "anchortab.jar"
 
 mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>

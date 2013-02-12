@@ -5,35 +5,10 @@ import org.scalatest.selenium._
 import org.scalatest.concurrent._
 import org.scalatest.time._
 
-import com.thoughtworks.selenium.Wait
-
-import org.eclipse.jetty.server.handler.ContextHandler
-import org.eclipse.jetty.server.nio.SelectChannelConnector
-import org.eclipse.jetty.server.{Handler, Server}
-import org.eclipse.jetty.webapp.WebAppContext
-
-class PublicSpec extends FeatureSpec with GivenWhenThen 
-    with HtmlUnit with BeforeAndAfterAll with ShouldMatchers 
+trait PublicSpec extends FeatureSpec with GivenWhenThen
+    with Chrome with BeforeAndAfterAll with ShouldMatchers
     with Eventually with IntegrationPatience {
-  private var server : Server       = null
-  private val GUI_PORT              = 8080
-  private var host                  = "http://local.anchortab.com"
-
-  override def beforeAll() {
-    // Setting up the jetty instance which will be running the
-    // GUI for the duration of the tests
-    server  = new Server(GUI_PORT)
-    val context = new WebAppContext()
-    context.setServer(server)
-    context.setContextPath("/")
-    context.setWar("src/main/webapp")
-    server.setHandler(context)
-    server.start()
-  }
-
-  override def afterAll() {
-    server.stop()
-  }
+  def host: String
 
   info("As a public user")
   info("I want to be able to use the public Anchor Tab Site")
@@ -42,13 +17,44 @@ class PublicSpec extends FeatureSpec with GivenWhenThen
 
   implicitlyWait(Span(2, Seconds))
 
-  feature("Landing Page") {
-    scenario("I load the Anchor Tab Landing Page") {
-      When("I visit the landing page")
+  feature("Page Titles") {
+    scenario("I load the Anchor Tab Landing Page", AcceptanceTest) {
+      Given("I have navigated to the landing page")
       go to (host)
+
+      When("it loads")
 
       Then("the title should be 'Anchor Tab'")
       pageTitle should be ("Anchor Tab")
+    }
+
+    scenario("I visit the Anchor Tab About Us Page", AcceptanceTest) {
+      Given("I have navigated to the about us page")
+      go to (host + "/about-us")
+
+      When("it loads")
+
+      Then("the title should be 'About Us | Anchor Tab'")
+      pageTitle should be ("About Us | Anchor Tab")
+    }
+  }
+
+  feature("Login") {
+    scenario("Login details are invalid", AcceptanceTest) {
+      Given ("I am on the landing page")
+      go to (host)
+
+      When("I enter invalid login credentials")
+      textField(cssSelector(".email")).value = "awesome@sauce.com"
+      cssSelector(".password").element.underlying.sendKeys("bacon")
+      click on cssSelector(".submit")
+
+      // Give the AJAX request time.
+      Thread.sleep(500)
+
+      Then("The email and password fields should have the error CSS class")
+      cssSelector(".email").element.attribute("class") should be (Some("email error"))
+      cssSelector(".password").element.attribute("class") should be (Some("password error"))
     }
   }
 }
