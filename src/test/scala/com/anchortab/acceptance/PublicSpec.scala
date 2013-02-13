@@ -3,22 +3,18 @@ package com.anchortab.acceptance
 import org.scalatest._
 import org.scalatest.selenium._
 import org.scalatest.concurrent._
-import org.scalatest.time._
 
-trait PublicSpec extends FeatureSpec with GivenWhenThen
-    with Chrome with BeforeAndAfterAll with ShouldMatchers
-    with Eventually with IntegrationPatience {
-  def host: String
+trait PublicSpec extends AcceptanceSpec {
+  protected def host: String
 
   info("As a public user")
   info("I want to be able to use the public Anchor Tab Site")
   info("So I can gain information about Anchor Tab")
   info("And log into my account.")
-
-  implicitlyWait(Span(2, Seconds))
+  info("")
 
   feature("Page Titles") {
-    scenario("I load the Anchor Tab Landing Page", AcceptanceTest) {
+    scenario("I load the Anchor Tab Landing Page", AcceptanceTest, PublicTest) {
       Given("I have navigated to the landing page")
       go to (host)
 
@@ -28,7 +24,7 @@ trait PublicSpec extends FeatureSpec with GivenWhenThen
       pageTitle should be ("Anchor Tab")
     }
 
-    scenario("I visit the Anchor Tab About Us Page", AcceptanceTest) {
+    scenario("I visit the Anchor Tab About Us Page", AcceptanceTest, PublicTest) {
       Given("I have navigated to the about us page")
       go to (host + "/about-us")
 
@@ -40,7 +36,7 @@ trait PublicSpec extends FeatureSpec with GivenWhenThen
   }
 
   feature("Login") {
-    scenario("Login details are invalid", AcceptanceTest) {
+    scenario("Login details are invalid", AcceptanceTest, PublicTest) {
       Given ("I am on the landing page")
       go to (host)
 

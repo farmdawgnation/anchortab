@@ -16,6 +16,8 @@ import org.scalatest.Tag
 
 object AcceptanceTest extends Tag("com.anchortab.acceptance.AcceptanceTest")
 
+object PublicTest extends Tag("com.anchortab.acceptance.PublicTest")
+
 trait AcceptanceSpec extends FeatureSpec with GivenWhenThen 
     with Chrome with BeforeAndAfterAll with ShouldMatchers 
     with Eventually with IntegrationPatience
@@ -23,7 +25,9 @@ trait AcceptanceSpec extends FeatureSpec with GivenWhenThen
 class AnchorTabAcceptanceSpec extends AcceptanceSpec with PublicSpec {
   private var server : Server       = null
   private val GUI_PORT              = 8080
-  var host                  = "http://local.anchortab.com"
+  protected val host                  = "http://local.anchortab.com"
+
+  implicitlyWait(Span(2, Seconds))
 
   override def beforeAll() {
     // Setting up the jetty instance which will be running the
