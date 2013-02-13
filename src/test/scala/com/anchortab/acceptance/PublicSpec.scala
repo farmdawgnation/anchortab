@@ -4,9 +4,7 @@ import org.scalatest._
 import org.scalatest.selenium._
 import org.scalatest.concurrent._
 
-trait PublicSpec extends AcceptanceSpec {
-  protected def host: String
-
+class PublicSpec extends JettyAcceptanceSpec {
   info("As a public user")
   info("I want to be able to use the public Anchor Tab Site")
   info("So I can gain information about Anchor Tab")
@@ -55,7 +53,7 @@ trait PublicSpec extends AcceptanceSpec {
 
     scenario("Login details are valid", AcceptanceTest, PublicTest) {
       Given("There is a valid user in the database")
-      val (email, password) = generateValidUser
+      val (email, password) = validUser
 
       And("I am on the landing page")
       go to (host)

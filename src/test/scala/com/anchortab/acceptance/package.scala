@@ -14,6 +14,8 @@ import org.eclipse.jetty.webapp.WebAppContext
 
 import org.scalatest.Tag
 
+import net.liftweb.http._
+import net.liftweb.common._
 import net.liftweb.util._
   import Helpers._
 
@@ -27,17 +29,23 @@ object PublicTest extends Tag("com.anchortab.acceptance.PublicTest")
 trait AcceptanceSpec extends FeatureSpec with GivenWhenThen 
     with Chrome with BeforeAndAfterAll with ShouldMatchers 
     with Eventually with IntegrationPatience {
-  def generateValidUser = {
-    val email = randomString(32)
-    val password = randomString(32)
 
-    User(email, User.hashPassword(password)).save
+  private var validUserCache: Box[(String, String)] = Empty
+  def validUser = {
+    validUserCache openOr {
+      val email = randomString(32)
+      val password = randomString(32)
 
-    (email, password)
+      User(email, User.hashPassword(password)).save
+
+      validUserCache = Full((email, password))
+
+      (email, password)
+    }
   }
 }
 
-class AnchorTabAcceptanceSpec extends AcceptanceSpec with PublicSpec {
+trait JettyAcceptanceSpec extends AcceptanceSpec {
   private var server : Server       = null
   private val GUI_PORT              = 8080
   protected val host                  = "http://local.anchortab.com"
