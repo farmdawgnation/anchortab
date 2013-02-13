@@ -52,5 +52,24 @@ trait PublicSpec extends AcceptanceSpec {
       cssSelector(".email").element.attribute("class") should be (Some("email error"))
       cssSelector(".password").element.attribute("class") should be (Some("password error"))
     }
+
+    scenario("Login details are valid", AcceptanceTest, PublicTest) {
+      Given("There is a valid user in the database")
+      val (email, password) = generateValidUser
+
+      And("I am on the landing page")
+      go to (host)
+
+      When("I enter valid login credentials")
+      textField(cssSelector(".email")).value = email
+      cssSelector(".password").element.underlying.sendKeys(password)
+      click on cssSelector(".submit")
+
+      // AJAX wait
+      Thread.sleep(500)
+
+      Then("I am redirected to the tab manager dashboard")
+      currentUrl should be (host + "/manager/dashboard")
+    }
   }
 }

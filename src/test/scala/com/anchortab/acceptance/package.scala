@@ -14,13 +14,28 @@ import org.eclipse.jetty.webapp.WebAppContext
 
 import org.scalatest.Tag
 
+import net.liftweb.util._
+  import Helpers._
+
+import com.anchortab._
+  import model._
+
 object AcceptanceTest extends Tag("com.anchortab.acceptance.AcceptanceTest")
 
 object PublicTest extends Tag("com.anchortab.acceptance.PublicTest")
 
 trait AcceptanceSpec extends FeatureSpec with GivenWhenThen 
     with Chrome with BeforeAndAfterAll with ShouldMatchers 
-    with Eventually with IntegrationPatience
+    with Eventually with IntegrationPatience {
+  def generateValidUser = {
+    val email = randomString(32)
+    val password = randomString(32)
+
+    User(email, User.hashPassword(password)).save
+
+    (email, password)
+  }
+}
 
 class AnchorTabAcceptanceSpec extends AcceptanceSpec with PublicSpec {
   private var server : Server       = null
