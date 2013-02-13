@@ -47,6 +47,8 @@ libraryDependencies ++= {
   )
 }
 
+parallelExecution in Test := false
+
 mainClass in assembly := Some("bootstrap.Start")
 
 test in assembly := {}
