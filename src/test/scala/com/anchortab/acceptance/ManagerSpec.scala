@@ -3,7 +3,10 @@ package com.anchortab.acceptance
 import org.scalatest._
 import org.scalatest.selenium._
 
-class ManagerSpec extends JettyAcceptanceSpec {
+trait ManagerSpec extends AcceptanceSpec {
+  protected def host: String
+
+  info("")
   info("As a registered user")
   info("I want to be able to use the Tab Manager")
   info("So I can manager by tabs and my account.")

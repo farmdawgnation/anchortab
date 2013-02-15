@@ -4,7 +4,10 @@ import org.scalatest._
 import org.scalatest.selenium._
 import org.scalatest.concurrent._
 
-class PublicSpec extends JettyAcceptanceSpec {
+trait PublicSpec extends AcceptanceSpec {
+  protected def host: String
+
+  info("")
   info("As a public user")
   info("I want to be able to use the public Anchor Tab Site")
   info("So I can gain information about Anchor Tab")
