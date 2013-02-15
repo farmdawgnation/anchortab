@@ -41,11 +41,17 @@ libraryDependencies ++= {
     "org.joda"          % "joda-convert"        % "1.2",
     "org.mindrot"       % "jbcrypt"             % "0.3m",
     "me.frmr.wepay-scala" %% "wepay-scala"       % "0.9.1-SNAPSHOT",
-    "com.ecwid"         % "ecwid-mailchimp"     % "1.3.0.5"
+    "com.ecwid"         % "ecwid-mailchimp"     % "1.3.0.5",
+    "org.scalatest"     %% "scalatest"          % "2.0.M5b" % "test->default",
+    "org.seleniumhq.selenium" % "selenium-java" % "2.29.1"  % "test->default"
   )
 }
 
+parallelExecution in Test := false
+
 mainClass in assembly := Some("bootstrap.Start")
+
+test in assembly := {}
 
 jarName in assembly := "anchortab.jar"
 

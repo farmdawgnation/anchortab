@@ -64,7 +64,7 @@ object Tabs {
         numEmptyTabs = Tab.count(
           ("userId" -> session.userId) ~
           ("stats.views" -> 0)
-        ) if numEmptyTabs == numTabs
+        ) if numEmptyTabs == numTabs && numTabs > 0
       } yield {
         PassThru
       }
