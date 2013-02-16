@@ -3,8 +3,27 @@ package com.anchortab.acceptance
 import org.scalatest._
 import org.scalatest.selenium._
 
-trait ManagerSpec extends AcceptanceSpec {
-  protected def host: String
+import net.liftweb.util.Helpers._
+
+class ManagerSpec extends AnchorTabSpec {
+  val managerUrl = host + "/manager"
+
+  val manageTabsUrl = managerUrl + "/tabs"
+  val newTabsUrl = managerUrl + "/tabs/new"
+  def editTabUrl(tabId: String) = managerUrl + "/tabs/" + tabId + "/edit"
+
+  override def beforeAll() {
+    super.beforeAll()
+
+    val (email, password) = validUser
+
+    go to (host)
+    textField(cssSelector(".email")).value = email
+    cssSelector(".password").element.underlying.sendKeys(password)
+    click on cssSelector(".submit")
+
+    Thread.sleep(500)
+  }
 
   info("")
   info("As a registered user")
@@ -13,38 +32,209 @@ trait ManagerSpec extends AcceptanceSpec {
   info("")
 
   feature("Tab Management") {
-    scenario("User views /manager/tabs with no tabs on account") (pending)
+    scenario("User views Manage Tabs with no tabs on account") {
+      Given("I am on the tab manager homepager as a user with no tabs.")
+      go to (managerUrl)
 
-    scenario("User views /manager/tabs with one unviewed tab") (pending)
+      When("I click the 'Manage Tabs' item in the navigation")
+      click on cssSelector("nav .manage-tabs > a")
 
-    scenario("User creates a tab") (pending)
+      Then("I am on the 'Manage Tabs' page")
+      currentUrl should be (manageTabsUrl)
 
-    scenario("User edits a tab") (pending)
+      And("The 'Manage Tabs' navigation item is highlighted")
+      cssSelector("nav .manage-tabs").element.attribute("class") should be (Some("manage-tabs selected"))
 
-    scenario("User deletes a tab") (pending)
+      And("The no tabs message is displayed on the page")
+      cssSelector("tr.empty-list td").element.text should be ("You currently have no tabs.")
+    }
 
-    scenario("User retrieves embed code for a tab") (pending)
+    scenario("User clicks new tab button") {
+      Given("I am on the tab management screen")
+      go to (manageTabsUrl)
+
+      When("I click the New Tab button")
+      click on cssSelector(".new-tab-button")
+
+      Then("I am taken to the new tab form")
+      eventually {
+        currentUrl should be (newTabsUrl)
+      }
+    }
+
+    scenario("User creates a new tab") {
+      val tabName = randomString(32)
+
+      Given("I am at the new tab form")
+      go to (newTabsUrl)
+
+      When("I complete the New Tab form")
+      textField("tab-name").value = tabName
+      textField("custom-text").value = randomString(32)
+
+      And("click the save tab button")
+      click on cssSelector("input.submit")
+
+      Then("The embed code modal should display")
+      eventually {
+        cssSelector("#embed-code-modal").findElement should not be (None)
+      }
+
+      When("I click the close button on the embed code modal")
+      click on cssSelector("#modal-dismiss")
+
+      Then("I am taken back to the manage tabs screen")
+      eventually {
+        currentUrl should be (manageTabsUrl)
+      }
+
+      And("my new tab is displayed on the tabs list")
+      val tabNames: List[String] =
+        cssSelector(".tab-list .tab-name").findAllElements.map(_.text).toList
+      tabNames should contain (tabName)
+    }
+
+    scenario("User edits a tab") {
+      Given("I am on the manage tabs screen")
+
+      When("I click the edit button for a tab")
+
+      Then("I should be taken to the edit form for the tab")
+
+      And("the name field should match the name of the tab")
+
+      When("I change the name of the tab")
+
+      And("I save my changes")
+
+      Then("I should be redirected back to the manage tabs screen")
+
+      And("the new tab name should be in the tabs list in place of the old name")
+      pending
+    }
+
+    scenario("User retrieves embed code for a tab") {
+      Given("I am on the manage tabs screen")
+
+      When("I click the embed code button")
+
+      Then("I should be presented with a modal that has the embed code for that tab")
+      pending
+    }
+
+    scenario("User deletes a tab") {
+      Given("I am on the manage tabs screen")
+
+      When("I delete a tab")
+
+      Then("the tab should disappear from the tabs list")
+      pending
+    }
   }
 
   feature("Profile Management") {
-    scenario("User views their profile") (pending)
+    scenario("User views their profile") {
+      Given("I am on the tab manager dashboard")
 
-    scenario("User updates profile information") (pending)
+      When("I click 'Profile' in the navigation")
 
-    scenario("User attempts to remove email from profile") (pending)
+      Then("I should be directed to my profile form")
 
-    scenario("User changes their password") (pending)
+      And("the 'Profile' item in the navigation should be highlighted")
 
-    scenario("User attempts to change their password, but doesn't match confirmation") (pending)
+      And("my email address should appear in the email field")
+      pending
+    }
+
+    scenario("User updates profile information") {
+      Given("I am on the profile form")
+
+      When("I update my profile information")
+
+      And("click save")
+
+      Then("a profile updated message should appear")
+
+      And("my new profile information should be reflected when I reload the page")
+      pending
+    }
+
+    scenario("User attempts to remove email from profile") {
+      Given("I am on the profile form")
+
+      When("I attempt to remove my email from the profile")
+
+      Then("I get a validation error")
+      pending
+    }
+
+    scenario("User changes their password") {
+      Given("I am on the profile form")
+
+      And("I enter a new value for my password")
+
+      Then("I should get a profile updated message")
+      pending
+    }
+
+    scenario("User attempts to change their password, but doesn't match confirmation") {
+      Given("I am on the profile form")
+
+      And("I mismatch values while attempting to change my password")
+
+      Then("I should get a validation error")
+      pending
+    }
   }
 
   feature("Connected Services Management") {
-    scenario("User does not have a connected Constant Contact account") (pending)
+    scenario("User navigates to connected services page") {
+      Given("I am on the tab manager dashboard")
 
-    scenario("User does have a connected Constant Contact account") (pending)
+      When("I click the 'Connected Services' link")
 
-    scenario("User does not have a connected MailChimp account") (pending)
+      Then("I should be taken to the Connected Services page")
 
-    scenario("User does have a connected MailChimp account") (pending)
+      And("The 'Connected Services' item in the navigation should be highlighted")
+      pending
+    }
+
+    scenario("User connects to Constant Contact") {
+      Given("I am on the connected serivces page")
+
+      And("I don't have a connected constant contact account")
+
+      When("I click the connect button")
+
+      And("enter my Constant Contact login credentials")
+
+      And("click login")
+
+      Then("I should be back on the Connected Services page")
+
+      And("my Constant Contact username should appear under Constant Contact")
+
+      And("the disconnect button should be visible")
+      pending
+    }
+
+    scenario("User connects to MailChimp") {
+      Given("I am on the connected serivces page")
+
+      And("I don't have a connected MailChimp account")
+
+      When("I click the connect button")
+
+      And("enter my MailChimp login credentials")
+
+      And("click login")
+
+      Then("I should be back on the Connected Services page")
+
+      And("my MailChimp username should appear under MailChimp")
+
+      And("the disconnect button should be visible")
+      pending
+    }
   }
 }

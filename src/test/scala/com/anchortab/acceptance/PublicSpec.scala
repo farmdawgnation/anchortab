@@ -4,9 +4,7 @@ import org.scalatest._
 import org.scalatest.selenium._
 import org.scalatest.concurrent._
 
-trait PublicSpec extends AcceptanceSpec {
-  protected def host: String
-
+class PublicSpec extends AnchorTabSpec {
   info("")
   info("As a public user")
   info("I want to be able to use the public Anchor Tab Site")
@@ -46,12 +44,11 @@ trait PublicSpec extends AcceptanceSpec {
       cssSelector(".password").element.underlying.sendKeys("bacon")
       click on cssSelector(".submit")
 
-      // Give the AJAX request time.
-      Thread.sleep(500)
-
       Then("The email and password fields should have the error CSS class")
-      cssSelector(".email").element.attribute("class") should be (Some("email error"))
-      cssSelector(".password").element.attribute("class") should be (Some("password error"))
+      eventually {
+        cssSelector(".email").element.attribute("class") should be (Some("email error"))
+        cssSelector(".password").element.attribute("class") should be (Some("password error"))
+      }
     }
 
     scenario("Login details are valid", AcceptanceTest, PublicTest) {
@@ -66,11 +63,10 @@ trait PublicSpec extends AcceptanceSpec {
       cssSelector(".password").element.underlying.sendKeys(password)
       click on cssSelector(".submit")
 
-      // AJAX wait
-      Thread.sleep(500)
-
       Then("I am redirected to the tab manager dashboard")
-      currentUrl should be (host + "/manager/dashboard")
+      eventually {
+        currentUrl should be (host + "/manager/dashboard")
+      }
     }
   }
 }

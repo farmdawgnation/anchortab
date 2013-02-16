@@ -45,7 +45,7 @@ trait AcceptanceSpec extends FeatureSpec with GivenWhenThen
   }
 }
 
-class AnchorTabSpec extends AcceptanceSpec with PublicSpec with ManagerSpec {
+class AnchorTabSpec extends AcceptanceSpec {
   private var server : Server       = null
   private val GUI_PORT              = 8080
   protected val host                  = "http://local.anchortab.com"
@@ -66,5 +66,6 @@ class AnchorTabSpec extends AcceptanceSpec with PublicSpec with ManagerSpec {
 
   override def afterAll() {
     server.stop()
+    quit()
   }
 }
