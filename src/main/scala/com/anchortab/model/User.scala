@@ -5,6 +5,7 @@ import scala.collection.immutable.HashMap
 import net.liftweb._
   import common._
   import mongodb._
+    import BsonDSL._
   import util.Helpers._
   import json._
     import ext._
@@ -152,6 +153,7 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
   lazy val asJson = {
     implicit val formats = DefaultFormats
 
+    ("id" -> _id.toString) ~
     ("email" -> email) ~
     ("profile" -> decompose(profile)) ~
     ("role" -> role) ~

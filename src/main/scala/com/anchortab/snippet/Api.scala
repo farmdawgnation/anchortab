@@ -139,27 +139,6 @@ object Api extends RestHelper with Loggable {
         }
       } ?~ "Authentication Failed." ~> 401
 
-    case Req("api" :: "v1" :: "user" :: id :: Nil, _, GetRequest) =>
-      {
-        for {
-          currentUser <- statelessUser.is
-            if id == currentUser._id || currentUser.admin_?
-          user <- (User.find(id):Box[User]) ?~! "User not found." ~> 404
-        } yield {
-          user.asJson
-        }
-      } ?~ "Authentication Failed." ~> 401
-
-    case Req("api" :: "v1" :: "user" :: "find" :: email :: Nil, _, GetRequest) =>
-      {
-        for {
-          currentUser <- statelessUser.is if currentUser.admin_?
-          user <- (User.find("email" -> email):Box[User]) ?~! "User not found." ~> 404
-        } yield {
-          user.asJson
-        }
-      } ?~ "Authentication Failed." ~> 401
-
     case Req("api" :: "v1" :: "user" :: userId :: "tabs" :: AsInt(page) :: Nil, _, GetRequest) =>
       {
         for {
@@ -230,5 +209,69 @@ object Api extends RestHelper with Loggable {
           JObject(Nil)
         }
       } ?~ "Tab not found." ~> 404
+
+    //////////
+    // API "admin" resource.
+    //////////
+    case req @ Req("api" :: "v1" :: "admin" :: "users" :: Nil, _, GetRequest) =>
+      {
+        for {
+          currentUser <- statelessUser.is
+            if currentUser.admin_?
+        } yield {
+          decompose(User.findAll.map(_.asJson))
+        }
+      } ?~ "Authentication Failed." ~> 401
+
+    case req @ Req("api" :: "v1" :: "admin" :: "users" :: "find" :: Nil, _, GetRequest) =>
+      {
+        for {
+          currentUser <- statelessUser.is if currentUser.admin_?
+          email <- req.param("email") ?~! "The Email parameter is required." ~> 400
+          user <- (User.find("email" -> email):Box[User]) ?~! "User not found." ~> 404
+        } yield {
+          user.asJson
+        }
+      } ?~ "Authentication Failed." ~> 401
+
+    case req @ Req("api" :: "v1" :: "admin" :: "users" :: Nil, _, PostRequest) =>
+      {
+        for {
+          currentUser <- statelessUser.is if currentUser.admin_?
+          requestBody <- req.body ?~ "No request body." ~> 400
+          requestJson <- tryo(Serialization.read[JValue](requestBody.toString)) ?~ "Error reading JSON." ~> 400
+          user <- tryo(requestJson.extract[User]) ?~ "Couldn't extract user." ~> 400
+        } yield {
+          user.copy(
+            password = User.hashPassword(user.password)
+          ).save
+
+          ("id" -> user._id.toString):JObject
+        }
+      } ?~ "Authentication failed." ~> 401
+
+    case req @ Req("api" :: "v1" :: "admin" :: "user" :: id :: Nil, _, GetRequest) =>
+      {
+        for {
+          currentUser <- statelessUser.is
+            if currentUser.admin_?
+          user <- (User.find(id):Box[User]) ?~! "User not found." ~> 404
+        } yield {
+          user.asJson
+        }
+      } ?~ "Authentication Failed." ~> 401
+
+    case req @ Req("api" :: "v1" :: "admin" :: "user" :: id :: Nil, _, DeleteRequest) =>
+      {
+        for {
+          currentUser <- statelessUser.is
+            if currentUser.admin_?
+          user <- (User.find(id):Box[User]) ?~! "User not found." ~> 404
+        } yield {
+          user.delete
+
+          OkResponse()
+        }
+      } ?~ "Authentication failed." ~> 401
   }
 }
