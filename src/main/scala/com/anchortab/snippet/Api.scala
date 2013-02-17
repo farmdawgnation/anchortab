@@ -125,7 +125,7 @@ object Api extends RestHelper with Loggable {
 
           Call(callbackFnName, submitResult)
         }
-      }
+      } ?~ "Unknwon Tab" ~> 404
 
     //////////
     // API "user" resource.
@@ -137,7 +137,7 @@ object Api extends RestHelper with Loggable {
         } yield {
           user.asJson
         }
-      } ?~! "Authentication Failed." ~> 401
+      } ?~ "Authentication Failed." ~> 401
 
     case Req("api" :: "v1" :: "user" :: id :: Nil, _, GetRequest) =>
       {
@@ -148,7 +148,7 @@ object Api extends RestHelper with Loggable {
         } yield {
           user.asJson
         }
-      } ?~! "Authentication Failed." ~> 401
+      } ?~ "Authentication Failed." ~> 401
 
     case Req("api" :: "v1" :: "user" :: "find" :: email :: Nil, _, GetRequest) =>
       {
@@ -158,7 +158,7 @@ object Api extends RestHelper with Loggable {
         } yield {
           user.asJson
         }
-      } ?~! "Authentication Failed." ~> 401
+      } ?~ "Authentication Failed." ~> 401
 
     case Req("api" :: "v1" :: "user" :: userId :: "tabs" :: AsInt(page) :: Nil, _, GetRequest) =>
       {
@@ -173,14 +173,14 @@ object Api extends RestHelper with Loggable {
 
           ("tabs" -> userTabs):JObject
         }
-      } ?~! "Authentication Failed." ~> 401
+      } ?~ "Authentication Failed." ~> 401
 
     case req @ Req("api" :: "v1" :: "user" :: userId :: "tabs" :: Nil, _, PostRequest) =>
       {
         for {
           currentUser <- statelessUser.is
             if userId == currentUser._id || currentUser.admin_?
-          name <- req.param("name")
+          name <- req.param("name") ?~! "The name parameters is required." ~> 400
         } yield {
           val tab = Tab(name, new ObjectId(userId), TabAppearance.defaults)
           tab.save
@@ -188,7 +188,7 @@ object Api extends RestHelper with Loggable {
           ("success" -> 1) ~
           ("tabId" -> tab._id)
         }
-      } ?~! "Authentication Failed." ~> 401
+      } ?~ "Authentication Failed." ~> 401
 
     //////////
     // API "tab" resource
@@ -202,7 +202,7 @@ object Api extends RestHelper with Loggable {
         } yield {
           tab.asJson
         }
-      } ?~! "Tab not found." ~> 404
+      } ?~ "Tab not found." ~> 404
 
     case req @ Req("api" :: "v1" :: "tab" :: tabId :: "appearance" :: Nil, _, PutRequest) =>
       {
@@ -229,6 +229,6 @@ object Api extends RestHelper with Loggable {
 
           JObject(Nil)
         }
-      } ?~! "Tab not found." ~> 404
+      } ?~ "Tab not found." ~> 404
   }
 }
