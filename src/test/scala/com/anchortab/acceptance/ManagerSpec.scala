@@ -5,7 +5,14 @@ import org.scalatest.selenium._
 
 import net.liftweb.util.Helpers._
 
-class ManagerSpec extends AnchorTabSpec {
+class RemoteManagerSpec(remoteUrl: String) extends PublicSpecImpl {
+  protected val host = remoteUrl
+}
+
+class ManagerSpec extends ManagerSpecImpl with AnchorTabSpec
+trait ManagerSpecImpl extends AcceptanceSpec {
+  protected def host: String
+
   val managerUrl = host + "/manager"
 
   val manageTabsUrl = managerUrl + "/tabs"

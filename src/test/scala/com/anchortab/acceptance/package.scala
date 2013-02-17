@@ -45,7 +45,7 @@ trait AcceptanceSpec extends FeatureSpec with GivenWhenThen
   }
 }
 
-class AnchorTabSpec extends AcceptanceSpec {
+trait AnchorTabSpec extends AcceptanceSpec {
   private var server : Server       = null
   private val GUI_PORT              = 8080
   protected val host                  = "http://local.anchortab.com"

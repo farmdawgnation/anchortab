@@ -4,7 +4,14 @@ import org.scalatest._
 import org.scalatest.selenium._
 import org.scalatest.concurrent._
 
-class PublicSpec extends AnchorTabSpec {
+class RemotePublicSpec(remoteUrl: String) extends PublicSpecImpl {
+  protected val host = remoteUrl
+}
+
+class PublicSpec extends PublicSpecImpl with AnchorTabSpec
+trait PublicSpecImpl extends AcceptanceSpec {
+  protected def host: String
+
   info("")
   info("As a public user")
   info("I want to be able to use the public Anchor Tab Site")
