@@ -110,6 +110,7 @@ object Tabs {
     ".empty-list" #> (tabs.isEmpty ? PassThru | ClearNodes) andThen
     ".subscriber" #> (tabs.isEmpty ? ClearNodes | PassThru) andThen
     ".subscriber" #> tabs.map { tab =>
+      ".subscriber [data-tab-id]" #> tab._id.toString &
       ".tab-name *" #> tab.name &
       ".view-count *" #> tab.stats.views &
       ".subscription-count *" #> tab.stats.submissions &
