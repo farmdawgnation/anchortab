@@ -104,7 +104,6 @@ object Tabs {
     def delete(tabId:ObjectId)() = {
       Tab.delete("_id" -> tabId)
 
-      Alert("Tab deleted.") &
       Reload
     }
 
