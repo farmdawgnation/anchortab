@@ -9,7 +9,7 @@ class RemoteManagerSpec(remoteUrl: String) extends PublicSpecImpl {
   protected val host = remoteUrl
 }
 
-class ManagerSpec extends ManagerSpecImpl with AnchorTabSpec
+class ManagerSpec extends AnchorTabSpec with ManagerSpecImpl
 trait ManagerSpecImpl extends AcceptanceSpec {
   protected def host: String
 
@@ -17,7 +17,7 @@ trait ManagerSpecImpl extends AcceptanceSpec {
 
   val manageTabsUrl = managerUrl + "/tabs"
   val newTabsUrl = managerUrl + "/tabs/new"
-  def editTabUrl(tabId: String) = managerUrl + "/tabs/" + tabId + "/edit"
+  def editTabUrl(tabId: String) = managerUrl + "/tab/" + tabId + "/edit"
 
   override def beforeAll() {
     super.beforeAll()
@@ -103,39 +103,66 @@ trait ManagerSpecImpl extends AcceptanceSpec {
 
     scenario("User edits a tab") {
       Given("I am on the manage tabs screen")
+      go to (manageTabsUrl)
 
       When("I click the edit button for a tab")
+      val tabId = cssSelector(".subscriber").element.attribute("data-tab-id") getOrElse ""
+      val tabName = cssSelector(".tab-name").element.text
+      click on cssSelector(".edit-tab")
 
       Then("I should be taken to the edit form for the tab")
+      eventually {
+        currentUrl should be (editTabUrl(tabId))
+      }
 
       And("the name field should match the name of the tab")
+      textField(cssSelector("#tab-name")).value should be (tabName)
 
       When("I change the name of the tab")
+      val newTabName = randomString(20)
+      textField(cssSelector("#tab-name")).value = newTabName
 
       And("I save my changes")
+      click on cssSelector(".submit")
 
       Then("I should be redirected back to the manage tabs screen")
+      eventually {
+        currentUrl should be (manageTabsUrl)
+      }
 
       And("the new tab name should be in the tabs list in place of the old name")
-      pending
+      cssSelector(".tab-name").element.text should be (newTabName)
     }
 
     scenario("User retrieves embed code for a tab") {
       Given("I am on the manage tabs screen")
+      go to (manageTabsUrl)
 
       When("I click the embed code button")
+      val tabId = cssSelector(".subscriber").element.attribute("data-tab-id") getOrElse ""
+      click on cssSelector(".get-code")
 
       Then("I should be presented with a modal that has the embed code for that tab")
-      pending
+      eventually {
+        cssSelector("#embed-code-modal").findElement should not be (None)
+      }
+
+      And("the embed code should contain the tab id somewhere in the code")
+      textArea(cssSelector("#embed-code-modal textarea")).value should include regex(tabId)
     }
 
     scenario("User deletes a tab") {
       Given("I am on the manage tabs screen")
+      go to (manageTabsUrl)
 
       When("I delete a tab")
+      val tabId = cssSelector(".subscriber").element.attribute("data-tab-id") getOrElse ""
+      click on cssSelector(".delete-tab")
 
       Then("the tab should disappear from the tabs list")
-      pending
+      eventually {
+        cssSelector(".subscriber").findElement should be (None)
+      }
     }
   }
 
