@@ -161,10 +161,11 @@ object Accounts {
 
           (email, passwordChange) match {
             case ("", _) =>
-              Alert("Email is a required field. It must have a value.")
+              FormValidationError(".email", "Email is a required field.")
 
             case (_, Failure(msg, _, _)) =>
-              Alert(msg)
+              FormValidationError(".change-password", "") &
+              FormValidationError(".confirm-password", msg)
 
             case (_, Empty) =>
               User.update("_id" -> user._id, "$set" -> (
@@ -172,7 +173,7 @@ object Accounts {
                 ("profile" -> decompose(userProfile))
               ))
 
-              Alert("Profile updated.")
+              Reload
 
             case (_, Full(pw)) =>
               User.update("_id" -> user._id, "$set" -> (
@@ -181,7 +182,7 @@ object Accounts {
                 pw
               ))
 
-              Alert("Profile updated.")
+              Reload
           }
         }
 
