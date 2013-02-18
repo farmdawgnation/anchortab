@@ -40,8 +40,11 @@ trait AcceptanceSpec extends FeatureSpec with GivenWhenThen
   val testAuthorization: String
 
   var validUser: (String, String) = ("", "")
+  var validUserObjectId = ""
 
   override def beforeAll() {
+    implicit val formats = DefaultFormats
+
     val email = randomString(32)
     val password = randomString(32)
     validUser = (email, password)
@@ -56,7 +59,26 @@ trait AcceptanceSpec extends FeatureSpec with GivenWhenThen
     val request = url(testHost) / "api" / "v1" / "admin" / "users" << requestBody <:< authorization
     val response = Http(request OK as.String)
 
-    // Wait to complete
+    // Record the object Id
+    val responseJson = response()
+
+    for {
+      responseJvalue <- tryo(Serialization.read[JValue](new String(responseJson)))
+      id <- tryo(responseJvalue \ "id").map(_.extract[String])
+    } {
+      validUserObjectId = id
+    }
+  }
+
+  override def afterAll() {
+    // Clean house
+    val authorization = Map(
+      "Authorization" -> ("Bearer " + testAuthorization)
+    )
+    val request = (url(testHost) / "api" / "v1" / "admin" / "user" / validUserObjectId).DELETE <:< authorization
+    val response = Http(request OK as.String)
+
+    // Wait for completion
     response()
   }
 }
@@ -84,6 +106,8 @@ trait AnchorTabSpec extends AcceptanceSpec {
   }
 
   override def afterAll() {
+    super.afterAll()
+
     server.stop()
     quit()
   }

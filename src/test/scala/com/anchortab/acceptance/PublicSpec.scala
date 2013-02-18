@@ -4,7 +4,7 @@ import org.scalatest._
 import org.scalatest.selenium._
 import org.scalatest.concurrent._
 
-//case class RemotePublicSpec(testHost: String, testAuthorization: String) extends PublicSpecImpl
+case class RemotePublicSpec(testHost: String, testAuthorization: String) extends PublicSpecImpl
 
 class PublicSpec extends PublicSpecImpl with AnchorTabSpec
 trait PublicSpecImpl extends AcceptanceSpec {
