@@ -239,12 +239,12 @@ object Api extends RestHelper with Loggable {
         for {
           currentUser <- statelessUser.is if currentUser.admin_?
           requestBody <- req.body ?~ "No request body." ~> 400
-          requestJson <- tryo(Serialization.read[JValue](requestBody.toString)) ?~ "Error reading JSON." ~> 400
-          user <- tryo(requestJson.extract[User]) ?~ "Couldn't extract user." ~> 400
+          requestJson <- tryo(Serialization.read[JValue](new String(requestBody))) ?~ "Error reading JSON." ~> 400
+          email <- tryo(requestJson \ "email").map(_.extract[String])
+          password <- tryo(requestJson \ "password").map(_.extract[String])
         } yield {
-          user.copy(
-            password = User.hashPassword(user.password)
-          ).save
+          val user = User(email, User.hashPassword(password))
+          user.save
 
           ("id" -> user._id.toString):JObject
         }
