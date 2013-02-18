@@ -21,6 +21,8 @@ trait ManagerSpecImpl extends AcceptanceSpec {
 
   val profileUrl = managerUrl + "/account"
 
+  val connectedServicesUrl = managerUrl + "/services"
+
   override def beforeAll() {
     super.beforeAll()
 
@@ -49,7 +51,9 @@ trait ManagerSpecImpl extends AcceptanceSpec {
       click on cssSelector("nav .manage-tabs > a")
 
       Then("I am on the 'Manage Tabs' page")
-      currentUrl should be (manageTabsUrl)
+      eventually {
+        currentUrl should be (manageTabsUrl)
+      }
 
       And("The 'Manage Tabs' navigation item is highlighted")
       cssSelector("nav .manage-tabs").element.attribute("class") should be (Some("manage-tabs selected"))
@@ -177,7 +181,9 @@ trait ManagerSpecImpl extends AcceptanceSpec {
       click on cssSelector("nav .profile a")
 
       Then("I should be directed to my profile form")
-      currentUrl should be (profileUrl)
+      eventually {
+        currentUrl should be (profileUrl)
+      }
 
       And("the 'Profile' item in the navigation should be highlighted")
       cssSelector("nav .profile").element.attribute("class") should be (Some("profile selected"))
@@ -251,51 +257,104 @@ trait ManagerSpecImpl extends AcceptanceSpec {
   feature("Connected Services Management") {
     scenario("User navigates to connected services page") {
       Given("I am on the tab manager dashboard")
+      go to (managerUrl)
 
       When("I click the 'Connected Services' link")
+      click on cssSelector("nav .connected-services > a")
 
       Then("I should be taken to the Connected Services page")
+      eventually {
+        currentUrl should be (connectedServicesUrl)
+      }
 
       And("The 'Connected Services' item in the navigation should be highlighted")
-      pending
+      cssSelector("nav .connected-services").element.attribute("class") should be (Some("connected-services selected"))
     }
 
     scenario("User connects to Constant Contact") {
+      val constantContactTestUsername = "hello@anchortab.com"
+      val constantContactTestPassword = "AncH0r"
+
       Given("I am on the connected serivces page")
+      go to (connectedServicesUrl)
 
       And("I don't have a connected constant contact account")
+      cssSelector(".constant-contact-connection .connection-status").element.text should be ("Not connected.")
 
       When("I click the connect button")
+      click on cssSelector(".constant-contact-connection .connect-service")
 
-      And("enter my Constant Contact login credentials")
+      Then("I should be directed to a Constant Contact login page")
+      eventually {
+        currentUrl should startWith ("https://login.constantcontact.com/login/?goto")
+      }
+
+      When("I enter my Constant Contact login credentials")
+      click on cssSelector("#luser")
+      pressKeys(constantContactTestUsername)
+      click on "lpass"
+      pressKeys(constantContactTestPassword)
 
       And("click login")
+      click on "_save"
+
+      Then("I should be presented with the Constant Contact grant access page")
+      eventually {
+        currentUrl should be ("https://oauth2.constantcontact.com/oauth2/oauth/confirm_access")
+      }
+
+      When("I click grant access")
+      click on cssSelector("#authorize")
 
       Then("I should be back on the Connected Services page")
+      eventually {
+        currentUrl should be (connectedServicesUrl)
+      }
 
       And("my Constant Contact username should appear under Constant Contact")
+      cssSelector(".constant-contact-connection .connection-status").element.text should be ("Connected to " + constantContactTestUsername + ".")
 
       And("the disconnect button should be visible")
-      pending
+      cssSelector(".constant-contact-connection .disconnect-service").findElement should not be (None)
     }
 
     scenario("User connects to MailChimp") {
+      val mailChimpTestUsername = "anchortabseleniumtests"
+      val mailChimpTestPassword = "AncH0r"
+
       Given("I am on the connected serivces page")
+      go to (connectedServicesUrl)
 
       And("I don't have a connected MailChimp account")
+      cssSelector(".mailchimp-connection .connection-status").element.text should be ("Not connected.")
 
       When("I click the connect button")
+      click on cssSelector(".mailchimp-connection .connect-service")
 
-      And("enter my MailChimp login credentials")
+      Then("I should be directed to the MailChimp login page")
+      eventually {
+        currentUrl should startWith ("https://login.mailchimp.com/oauth2/authorize")
+      }
+
+      When("I enter my MailChimp login credentials")
+      click on "username"
+      pressKeys(mailChimpTestUsername)
+      click on "password"
+      pressKeys(mailChimpTestPassword)
 
       And("click login")
+      click on cssSelector("fieldset > input")
 
-      Then("I should be back on the Connected Services page")
+      Then("I should be redirected back to the Connected Services page")
+      eventually {
+        currentUrl should be (connectedServicesUrl)
+      }
 
       And("my MailChimp username should appear under MailChimp")
+      cssSelector(".mailchimp-connection .connection-status").element.text should be ("Connected to " + mailChimpTestUsername + ".")
 
       And("the disconnect button should be visible")
-      pending
+      cssSelector(".mailchimp-connection .disconnect-service").findElement should not be (None)
     }
   }
 }
