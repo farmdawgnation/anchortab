@@ -4,13 +4,11 @@ import org.scalatest._
 import org.scalatest.selenium._
 import org.scalatest.concurrent._
 
-class RemotePublicSpec(remoteUrl: String) extends PublicSpecImpl {
-  protected val host = remoteUrl
-}
+//case class RemotePublicSpec(testHost: String, testAuthorization: String) extends PublicSpecImpl
 
 class PublicSpec extends PublicSpecImpl with AnchorTabSpec
 trait PublicSpecImpl extends AcceptanceSpec {
-  protected def host: String
+  val testHost: String
 
   info("")
   info("As a public user")
@@ -22,7 +20,7 @@ trait PublicSpecImpl extends AcceptanceSpec {
   feature("Page Titles") {
     scenario("I load the Anchor Tab Landing Page", AcceptanceTest, PublicTest) {
       Given("I have navigated to the landing page")
-      go to (host)
+      go to (testHost)
 
       When("it loads")
 
@@ -32,7 +30,7 @@ trait PublicSpecImpl extends AcceptanceSpec {
 
     scenario("I visit the Anchor Tab About Us Page", AcceptanceTest, PublicTest) {
       Given("I have navigated to the about us page")
-      go to (host + "/about-us")
+      go to (testHost + "/about-us")
 
       When("it loads")
 
@@ -44,7 +42,7 @@ trait PublicSpecImpl extends AcceptanceSpec {
   feature("Login") {
     scenario("Login details are invalid", AcceptanceTest, PublicTest) {
       Given ("I am on the landing page")
-      go to (host)
+      go to (testHost)
 
       When("I enter invalid login credentials")
       textField(cssSelector(".email")).value = "awesome@sauce.com"
@@ -63,7 +61,7 @@ trait PublicSpecImpl extends AcceptanceSpec {
       val (email, password) = validUser
 
       And("I am on the landing page")
-      go to (host)
+      go to (testHost)
 
       When("I enter valid login credentials")
       textField(cssSelector(".email")).value = email
@@ -72,7 +70,7 @@ trait PublicSpecImpl extends AcceptanceSpec {
 
       Then("I am redirected to the tab manager dashboard")
       eventually {
-        currentUrl should be (host + "/manager/dashboard")
+        currentUrl should be (testHost + "/manager/dashboard")
       }
     }
   }

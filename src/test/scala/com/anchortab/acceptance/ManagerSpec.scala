@@ -5,15 +5,13 @@ import org.scalatest.selenium._
 
 import net.liftweb.util.Helpers._
 
-class RemoteManagerSpec(remoteUrl: String) extends PublicSpecImpl {
-  protected val host = remoteUrl
-}
+//case class RemoteManagerSpec(testHost: String, testAuthorization: String) extends PublicSpecImpl
 
 class ManagerSpec extends AnchorTabSpec with ManagerSpecImpl
 trait ManagerSpecImpl extends AcceptanceSpec {
-  protected def host: String
+  val testHost: String
 
-  val managerUrl = host + "/manager"
+  val managerUrl = testHost + "/manager"
 
   val manageTabsUrl = managerUrl + "/tabs"
   val newTabsUrl = managerUrl + "/tabs/new"
@@ -28,7 +26,7 @@ trait ManagerSpecImpl extends AcceptanceSpec {
 
     val (email, password) = validUser
 
-    go to (host)
+    go to (testHost)
     textField(cssSelector(".email")).value = email
     cssSelector(".password").element.underlying.sendKeys(password)
     click on cssSelector(".submit")

@@ -18,9 +18,15 @@ import net.liftweb.http._
 import net.liftweb.common._
 import net.liftweb.util._
   import Helpers._
+import net.liftweb.json._
+  import JsonDSL._
+  import Extraction._
+  import Serialization._
 
 import com.anchortab._
   import model._
+
+import dispatch._
 
 object AcceptanceTest extends Tag("com.anchortab.acceptance.AcceptanceTest")
 
@@ -30,25 +36,36 @@ trait AcceptanceSpec extends FeatureSpec with GivenWhenThen
     with Chrome with BeforeAndAfterAll with ShouldMatchers 
     with Eventually with IntegrationPatience {
 
-  private var validUserCache: Box[(String, String)] = Empty
-  def validUser = {
-    validUserCache openOr {
-      val email = randomString(32)
-      val password = randomString(32)
+  val testHost: String
+  val testAuthorization: String
 
-      User(email, User.hashPassword(password)).save
+  var validUser: (String, String) = ("", "")
 
-      validUserCache = Full((email, password))
+  override def beforeAll() {
+    val email = randomString(32)
+    val password = randomString(32)
+    validUser = (email, password)
 
-      (email, password)
-    }
+    val authorization = Map(
+      "Authorization" -> ("Bearer " + testAuthorization)
+    )
+    val requestJson =
+      ("email" -> email) ~
+      ("password" -> password)
+    val requestBody = compact(render(requestJson))
+    val request = url(testHost) / "api" / "v1" / "admin" / "users" << requestBody <:< authorization
+    val response = Http(request OK as.String)
+
+    // Wait to complete
+    response()
   }
 }
 
 trait AnchorTabSpec extends AcceptanceSpec {
   private var server : Server       = null
   private val GUI_PORT              = 8080
-  protected val host                  = "http://local.anchortab.com"
+  val testHost            = "http://local.anchortab.com"
+  val testAuthorization   = "NZDTCNLTJVINNUW3RMEQTPWFW0VOBU52"
 
   implicitlyWait(Span(2, Seconds))
 
@@ -62,6 +79,8 @@ trait AnchorTabSpec extends AcceptanceSpec {
     context.setWar("src/main/webapp")
     server.setHandler(context)
     server.start()
+
+    super.beforeAll()
   }
 
   override def afterAll() {
