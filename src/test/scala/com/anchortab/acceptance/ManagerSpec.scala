@@ -19,6 +19,8 @@ trait ManagerSpecImpl extends AcceptanceSpec {
   val newTabsUrl = managerUrl + "/tabs/new"
   def editTabUrl(tabId: String) = managerUrl + "/tab/" + tabId + "/edit"
 
+  val profileUrl = managerUrl + "/account"
+
   override def beforeAll() {
     super.beforeAll()
 
@@ -169,55 +171,80 @@ trait ManagerSpecImpl extends AcceptanceSpec {
   feature("Profile Management") {
     scenario("User views their profile") {
       Given("I am on the tab manager dashboard")
+      go to (managerUrl)
 
       When("I click 'Profile' in the navigation")
+      click on cssSelector("nav .profile a")
 
       Then("I should be directed to my profile form")
+      currentUrl should be (profileUrl)
 
       And("the 'Profile' item in the navigation should be highlighted")
+      cssSelector("nav .profile").element.attribute("class") should be (Some("profile selected"))
 
       And("my email address should appear in the email field")
-      pending
+      val currentUserEmail = cssSelector("header .user-info span").element.text
+      textField(cssSelector(".email")).value should be (currentUserEmail)
     }
 
     scenario("User updates profile information") {
       Given("I am on the profile form")
+      go to (profileUrl)
 
       When("I update my profile information")
+      val newFirstName = randomString(32)
+      val newLastName = randomString(32)
+      val newOrganization = randomString(32)
+
+      textField(cssSelector(".first-name")).value = newFirstName
+      textField(cssSelector(".last-name")).value = newLastName
+      textField(cssSelector(".organization")).value = newOrganization
 
       And("click save")
-
-      Then("a profile updated message should appear")
+      click on cssSelector(".submit")
 
       And("my new profile information should be reflected when I reload the page")
-      pending
+      // Give the reload time to happen.
+      Thread.sleep(100)
+      textField(cssSelector(".first-name")).value should be (newFirstName)
+      textField(cssSelector(".last-name")).value should be (newLastName)
+      textField(cssSelector(".organization")).value should be (newOrganization)
     }
 
     scenario("User attempts to remove email from profile") {
       Given("I am on the profile form")
+      go to (profileUrl)
 
       When("I attempt to remove my email from the profile")
+      textField(cssSelector(".email")).value = ""
+      click on cssSelector(".submit")
 
       Then("I get a validation error")
-      pending
-    }
-
-    scenario("User changes their password") {
-      Given("I am on the profile form")
-
-      And("I enter a new value for my password")
-
-      Then("I should get a profile updated message")
-      pending
+      eventually {
+        cssSelector(".email").element.attribute("class") should be (Some("email error"))
+        cssSelector(".email + .validation-error").element.text should be ("Email is a required field.")
+      }
     }
 
     scenario("User attempts to change their password, but doesn't match confirmation") {
       Given("I am on the profile form")
+      go to (profileUrl)
 
-      And("I mismatch values while attempting to change my password")
+      When("I mismatch values while attempting to change my password")
+      click on cssSelector(".change-password")
+      pressKeys(randomString(32))
+      click on cssSelector(".confirm-password")
+      pressKeys(randomString(32))
+
+      And("click submit")
+      click on cssSelector(".submit")
 
       Then("I should get a validation error")
-      pending
+      eventually {
+        cssSelector(".change-password").element.attribute("class") should be (Some("change-password error"))
+        cssSelector(".confirm-password").element.attribute("class") should be (Some("confirm-password error"))
+        cssSelector(".confirm-password + .validation-error").element.text should be ("The passwords you selected do not match.")
+      }
     }
   }
 
