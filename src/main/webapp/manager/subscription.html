@@ -9,14 +9,16 @@
       <lift:pwn-if-not-logged-in />
       <h2>Subscription</h2>
 
-      <p>
-        You are currently a part of the beta preview release of Anchor Tab. As such, changing your subscription
-        from your control panel isn't possible yet. Please <a href="mailto:hello@anchortab.com">holler at us</a>
-        if you experience problems with your quotas and we can most likely bump you.
+      <p class="helpful">
+        You've been placed on a new plan by an Anchor Tab Administrator. We need you to set up the billing
+        for the new plan by January 23rd, 2013. Please see the "Billing Information" section below.
       </p>
 
-      <!--
-      <h2>Change Subscription</h2>
+      <p>
+        You are currently subscribed to the Special Plan. This plan was assigned to your account by an
+        Anchor Tab Administrator, so you must <a href="mailto:hello@anchortab.com">contact us</a> to have
+        it changed.
+      </p>
 
       <p>
         You are currently subscribed to the Freeloader plan. You may change you plan by selecting a different
@@ -29,49 +31,52 @@
           <th>&nbsp;</th>
         </tr>
         <tr>
-          <td>Freeloader</td>
-          <td><button class="select-plan">Select</button></td>
-        </tr>
-        <tr>
-          <td>Amateur</td>
+          <td>
+            Freeloader (Free)
+            <span class="plan-details">1 Tab, 5 submissions/month</span>
+          </td>
           <td>Current Plan</td>
         </tr>
         <tr>
-          <td>Professional</td>
+          <td>
+            Amateur ($5/mo)
+            <span class="plan-details">Unlimited Tabs, 25 submissions/month</span>
+          </td>
+          <td><button class="select-plan">Select</button></td>
+        </tr>
+        <tr>
+          <td>
+            Professional
+            <span class="plan-details">Unlimited Tabs, 70 submissions/month</span>
+          </td>
           <td><button class="select-plan">Select</button></td>
         </tr>
       </table>
 
-      <h2>Billing Information</h2>
+      <div class="billing-information">
+        <h2>Billing Information</h2>
 
-      <p>
-        Your billing information is one file and you were last billed on October 20th, 2012.
-        <a href="#">Update your billing information.</a>
-      </p>
+        <div class="provisional-plan">
+          <p>
+            Your current subscription is provisional, and still needs a billing preapproval to
+            be fully active. To approve billing, please click the button below.
+          </p>
 
-      <table class="billing-summary">
-        <tr class="header">
-          <th>Date</th>
-          <th>Summary</th>
-          <th>Amount</th>
-        </tr>
-        <tr>
-          <td>10/20/2012</td>
-          <td>Amateur Plan</td>
-          <td>$20.00</td>
-        </tr>
-        <tr>
-          <td>09/20/2012</td>
-          <td>Amateur Plan</td>
-          <td>$20.00</td>
-        </tr>
-        <tr>
-          <td>08/20/2012</td>
-          <td>Amateur Plan</td>
-          <td>$20.00</td>
-        </tr>
-      </table>
-      -->
+          <p>
+            <button class="setup-billing">Setup Billing</button>
+          </p>
+        </div>
+
+        <div class="billing-information-on-file">
+          <p>
+            Your billing information is on file and you were last billed on October 20th, 2012.
+          </p>
+
+          <p>
+            <button class="update-billing-information">Update Billing Information</button>
+          </p>
+        </div>
+      </div>
     </div>
   </body>
 </html>

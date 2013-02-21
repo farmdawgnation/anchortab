@@ -324,11 +324,18 @@ body
             &:last-child
               text-align: right
 
-          .select-plan
+            > .plan-details
+              font-weight: normal
+              display: block
+
+          .select-plan,
             +pretty-button
 
         .billing-summary
           +pretty-table
+
+        .update-billing-information, .setup-billing
+          +pretty-button
 
         .subscriber-list
           +pretty-table
