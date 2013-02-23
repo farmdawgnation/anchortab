@@ -58,7 +58,26 @@ object Subscription extends Loggable {
   }
 
   def planSelection = {
-    PassThru
+    {
+      for {
+        session <- userSession.is
+        user <- User.find(session.userId)
+        subscription <- user.subscription
+        currentPlan <- Plan.find(subscription.planId) if currentPlan.visibleOnRegistration
+      } yield {
+        val plans = Plan.findAll(("visibleOnRegistration" -> true))
+
+        ClearClearable andThen
+        ".plan" #> plans.map { plan =>
+          ".plan-name *" #> plan.registrationTitle &
+          ".plan-details *" #> "TODO" &
+          ".select-plan" #> ((plan._id == currentPlan._id) ? ClearNodes | PassThru) &
+          ".current-plan" #> ((plan._id == currentPlan._id) ? PassThru | ClearNodes)
+        }
+      }
+    } openOr {
+      ClearNodes
+    }
   }
 
   def billingSummary = {
