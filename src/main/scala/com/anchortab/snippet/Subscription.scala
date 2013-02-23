@@ -13,6 +13,8 @@ import net.liftweb._
   import util._
     import Helpers._
 
+import org.bson.types.ObjectId
+
 import com.anchortab.model._
 
 object Subscription extends Loggable {
@@ -58,6 +60,14 @@ object Subscription extends Loggable {
   }
 
   def planSelection = {
+    def changeSubscription(newPlanId: ObjectId) = {
+      // TODO
+    }
+
+    def cancelSubscription(subscription: UserSubscription) = {
+      // TODO
+    }
+
     {
       for {
         session <- userSession.is
@@ -70,9 +80,9 @@ object Subscription extends Loggable {
         ClearClearable andThen
         ".plan" #> plans.map { plan =>
           ".plan-name *" #> plan.registrationTitle &
-          ".plan-details *" #> "TODO" &
+          ".plan-details *" #> plan.description &
           ".select-plan" #> ((plan._id == currentPlan._id) ? ClearNodes | PassThru) &
-          ".current-plan" #> ((plan._id == currentPlan._id) ? PassThru | ClearNodes)
+          ".cancel-plan" #> ((plan._id == currentPlan._id) ? PassThru | ClearNodes)
         }
       }
     } openOr {
@@ -81,6 +91,20 @@ object Subscription extends Loggable {
   }
 
   def billingSummary = {
-    PassThru
+    {
+      for {
+        session <- userSession.is
+        user <- User.find(session.userId)
+        subscription <- user.subscription if subscription.price > 0
+      } yield {
+        if (subscription.active_?) {
+          ".need-billing-information" #> ClearNodes
+        } else {
+          ".billing-information-on-file" #> ClearNodes
+        }
+      }
+    } openOr {
+      ".billing-information" #> ClearNodes
+    }
   }
 }
