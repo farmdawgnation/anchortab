@@ -13,6 +13,8 @@ import net.liftweb._
   import util._
     import Helpers._
 
+import com.anchortab.model._
+
 object Subscription extends Loggable {
   def snippetHandlers : SnippetPF = {
     case "subscription-summary" :: Nil => subscriptionSummary
@@ -21,7 +23,38 @@ object Subscription extends Loggable {
   }
 
   def subscriptionSummary = {
-    PassThru
+    {
+      for {
+        session <- userSession.is
+        user <- User.find(session.userId)
+        subscription <- user.subscription
+        plan <- Plan.find(subscription.planId)
+      } yield {
+        val provisionalMessage = {
+          if (subscription.provisional_?)
+            ".provisional-plan" #> PassThru &
+            ".provisional-expiration *" #> subscription.provisionalGracePeriodEnd.toString()
+          else
+            ".provisional-plan" #> ClearNodes
+        }
+
+        val planStatus = {
+          if (plan.visibleOnRegistration)
+            ".special-plan-assignment" #> ClearNodes
+          else
+            ".subscribed" #> ClearNodes
+        }
+
+        provisionalMessage andThen
+        planStatus andThen
+        ".plan-name *" #> plan.name &
+        ".not-subscribed" #> ClearNodes
+      }
+    } openOr {
+      ".provisional-plan" #> ClearNodes &
+      ".special-plan-assignment" #> ClearNodes &
+      ".subscribed" #> ClearNodes
+    }
   }
 
   def planSelection = {
