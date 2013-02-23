@@ -9,23 +9,25 @@
       <lift:pwn-if-not-logged-in />
       <h2>Subscription</h2>
 
-      <p class="helpful">
-        You've been placed on a new plan by an Anchor Tab Administrator. We need you to set up the billing
-        for the new plan by January 23rd, 2013. Please see the "Billing Information" section below.
-      </p>
+      <div data-lift="subscription-summary">
+        <p class="helpful">
+          You've been placed on a new plan by an Anchor Tab Administrator. We need you to set up the billing
+          for the new plan by January 23rd, 2013. Please see the "Billing Information" section below.
+        </p>
 
-      <p>
-        You are currently subscribed to the Special Plan. This plan was assigned to your account by an
-        Anchor Tab Administrator, so you must <a href="mailto:hello@anchortab.com">contact us</a> to have
-        it changed.
-      </p>
+        <p>
+          You are currently subscribed to the Special Plan. This plan was assigned to your account by an
+          Anchor Tab Administrator, so you must <a href="mailto:hello@anchortab.com">contact us</a> to have
+          it changed.
+        </p>
 
-      <p>
-        You are currently subscribed to the Freeloader plan. You may change you plan by selecting a different
-        plan below.
-      </p>
+        <p>
+          You are currently subscribed to the Freeloader plan. You may change you plan by selecting a different
+          plan below.
+        </p>
+      </div>
 
-      <table class="plan-selection">
+      <table class="plan-selection" data-lift="plan-selection">
         <tr class="header">
           <th>Plan</th>
           <th>&nbsp;</th>
@@ -37,14 +39,14 @@
           </td>
           <td>Current Plan</td>
         </tr>
-        <tr>
+        <tr class="clearable">
           <td>
             Amateur ($5/mo)
             <span class="plan-details">Unlimited Tabs, 25 submissions/month</span>
           </td>
           <td><button class="select-plan">Select</button></td>
         </tr>
-        <tr>
+        <tr class="clearable">
           <td>
             Professional
             <span class="plan-details">Unlimited Tabs, 70 submissions/month</span>
@@ -53,7 +55,7 @@
         </tr>
       </table>
 
-      <div class="billing-information">
+      <div class="billing-information" data-lift="billing-summary">
         <h2>Billing Information</h2>
 
         <div class="provisional-plan">

@@ -60,6 +60,7 @@ class Boot {
     LiftRules.snippets.append(Admin.snippetHandlers)
     LiftRules.snippets.append(Invites.snippetHandlers)
     LiftRules.snippets.append(Tabs.snippetHandlers)
+    LiftRules.snippets.append(Subscription.snippetHandlers)
 
     //Init the jQuery module, see http://liftweb.net/jquery for more information.
     LiftRules.jsArtifacts = JQueryArtifacts
