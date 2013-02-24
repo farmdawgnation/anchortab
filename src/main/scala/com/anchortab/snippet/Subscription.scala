@@ -5,6 +5,7 @@ import scala.xml.NodeSeq
 import net.liftweb._
   import common._
   import http._
+    import SHtml._
     import js._
       import JsCmds._
     import LiftRules._
@@ -15,9 +16,21 @@ import net.liftweb._
 
 import org.bson.types.ObjectId
 
+import me.frmr.wepay._
+  import api.Preapproval
+
 import com.anchortab.model._
 
 object Subscription extends Loggable {
+  implicit val authenticationToken : Option[WePayToken] = {
+    for {
+      anchortabUserId <- Props.getLong("wepay.anchorTabUserId")
+      anchortabAccessToken <- Props.get("wepay.anchorTabAccessToken")
+    } yield {
+      WePayToken(anchortabUserId, anchortabAccessToken, "BEARER", None)
+    }
+  }
+
   def snippetHandlers : SnippetPF = {
     case "subscription-summary" :: Nil => subscriptionSummary
     case "plan-selection" :: Nil => planSelection
@@ -60,12 +73,38 @@ object Subscription extends Loggable {
   }
 
   def planSelection = {
-    def changeSubscription(newPlanId: ObjectId) = {
+    def changeSubscription(user: User, subscription: UserSubscription, newPlanId: ObjectId) = {
       // TODO
     }
 
-    def cancelSubscription(subscription: UserSubscription) = {
-      // TODO
+    def cancelSubscription(user: User, subscription: UserSubscription)() = {
+      {
+        if (! subscription.lastBilled.isDefined) {
+          Some(Alert("Sorry, we can't cancel your subscription until you've been billed for your current one. Email hello@anchortab.com if you believe this is an error."))
+        } else {
+          for {
+            preapprovalId <- subscription.preapprovalId
+            cencelResult <- Preapproval.cancel(preapprovalId)
+          } yield {
+            val newSubscription =
+              subscription.copy(
+                status = "cancelled",
+                ends = subscription.lastBilled.map(_.plusMonths(1))
+              )
+
+            val otherSubscriptions = user.subscriptions.filterNot(_._id == newSubscription._id)
+            val newUser = user.copy(
+              subscriptions = otherSubscriptions ++ (newSubscription :: Nil)
+            )
+            newUser.save
+
+            Alert("Your subscription is cancelled.") &
+            Reload
+          }
+        }
+      } getOrElse {
+        Alert("An unexpected error occured while canceling. Email us at hello@anchortab.com to let us know you saw this error.")
+      }
     }
 
     {
@@ -82,7 +121,8 @@ object Subscription extends Loggable {
           ".plan-name *" #> plan.registrationTitle &
           ".plan-details *" #> plan.description &
           ".select-plan" #> ((plan._id == currentPlan._id) ? ClearNodes | PassThru) &
-          ".cancel-plan" #> ((plan._id == currentPlan._id) ? PassThru | ClearNodes)
+          ".cancel-plan" #> ((plan._id == currentPlan._id) ? PassThru | ClearNodes) &
+          ".cancel-plan [onclick]" #> ajaxInvoke(cancelSubscription(user, subscription) _)
         }
       }
     } openOr {
