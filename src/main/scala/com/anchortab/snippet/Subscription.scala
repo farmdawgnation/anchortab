@@ -16,6 +16,8 @@ import net.liftweb._
 
 import org.bson.types.ObjectId
 
+import org.joda.time._
+
 import me.frmr.wepay._
   import api.Preapproval
 
@@ -78,25 +80,35 @@ object Subscription extends Loggable {
     }
 
     def cancelSubscription(user: User, subscription: UserSubscription)() = {
+      def recordCancel(cancelDate: Option[DateTime] = None) = {
+        val newSubscription =
+          subscription.copy(
+            status = "cancelled",
+            ends = cancelDate
+          )
+
+        val otherSubscriptions = user.subscriptions.filterNot(_._id == newSubscription._id)
+        val newUser = user.copy(
+          subscriptions = otherSubscriptions ++ (newSubscription :: Nil)
+        )
+        newUser.save
+      }
+
       {
-        if (! subscription.lastBilled.isDefined) {
+        if (subscription.price == 0) {
+          recordCancel()
+          Some(
+            Alert("Your subscription is cancelled.") &
+            Reload
+          )
+        } else if (! subscription.lastBilled.isDefined) {
           Some(Alert("Sorry, we can't cancel your subscription until you've been billed for your current one. Email hello@anchortab.com if you believe this is an error."))
         } else {
           for {
             preapprovalId <- subscription.preapprovalId
             cencelResult <- Preapproval.cancel(preapprovalId)
           } yield {
-            val newSubscription =
-              subscription.copy(
-                status = "cancelled",
-                ends = subscription.lastBilled.map(_.plusMonths(1))
-              )
-
-            val otherSubscriptions = user.subscriptions.filterNot(_._id == newSubscription._id)
-            val newUser = user.copy(
-              subscriptions = otherSubscriptions ++ (newSubscription :: Nil)
-            )
-            newUser.save
+            recordCancel(subscription.lastBilled.map(_.plusMonths(1)))
 
             Alert("Your subscription is cancelled.") &
             Reload
@@ -111,9 +123,22 @@ object Subscription extends Loggable {
       for {
         session <- userSession.is
         user <- User.find(session.userId)
-        subscription <- user.subscription
-        currentPlan <- Plan.find(subscription.planId) if currentPlan.visibleOnRegistration
       } yield {
+        val subscription = user.subscription
+        val currentPlan = user.subscription.flatMap { sub =>
+          Plan.find(sub.planId)
+        } getOrElse Plan.DefaultPlan
+
+        val cancelClick = {
+          for {
+            sub <- subscription
+          } yield {
+            cancelSubscription(user, sub) _
+          }
+        } getOrElse {
+          () => Noop
+        }
+
         val plans = Plan.findAll(("visibleOnRegistration" -> true))
 
         ClearClearable andThen
@@ -122,7 +147,7 @@ object Subscription extends Loggable {
           ".plan-details *" #> plan.description &
           ".select-plan" #> ((plan._id == currentPlan._id) ? ClearNodes | PassThru) &
           ".cancel-plan" #> ((plan._id == currentPlan._id) ? PassThru | ClearNodes) &
-          ".cancel-plan [onclick]" #> ajaxInvoke(cancelSubscription(user, subscription) _)
+          ".cancel-plan [onclick]" #> ajaxInvoke(cancelClick)
         }
       }
     } openOr {
