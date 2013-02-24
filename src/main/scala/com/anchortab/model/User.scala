@@ -43,7 +43,7 @@ case class UserSubscription(planId:ObjectId, price:Double, term:PlanTerm,
                             preapprovalId:Option[Long] = None, preapprovalUri:Option[String] = None,
                             createdAt:DateTime = new DateTime, status:String = "new",
                             begins:DateTime = new DateTime, ends:Option[DateTime] = None,
-                            miracleFrom:Option[ObjectId] = None,
+                            lastBilled:Option[DateTime] = None, miracleFrom:Option[ObjectId] = None,
                             _id:ObjectId = ObjectId.get) {
   val provisionalGracePeriodInDays = 7
 

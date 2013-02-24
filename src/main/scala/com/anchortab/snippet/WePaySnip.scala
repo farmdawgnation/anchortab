@@ -16,6 +16,9 @@ import net.liftweb._
 
 import me.frmr.wepay._
   import api.Preapproval
+  import api.Checkout
+
+import org.joda.time._
 
 import com.anchortab.model._
 
@@ -88,7 +91,29 @@ object WePaySnip extends Loggable {
 
     case req @ Req("wepay-ipn" :: Nil, _, _) if req.param("checkout_id").isDefined =>
       () => {
-        Full(OkResponse())
+        for {
+          checkout_id_str <- req.param("checkout_id")
+          checkoutId <- tryo(checkout_id_str.toLong)
+          checkout <- Checkout.find(checkoutId)
+          checkoutState <- checkout.state
+          checkoutAuthorization <- checkout.authorization
+          preapprovalId <- checkoutAuthorization.preapproval_id
+          preapprovingUser <- User.find("subscriptions.preapprovalId" -> preapprovalId)
+          preapprovedSubscription <- preapprovingUser.subscriptions
+            .filter(_.preapprovalId.map(_ == preapprovalId) getOrElse false).headOption
+        } yield {
+          if (checkoutState == "captured" || checkoutState == "settled") {
+            val updatedSubscription = preapprovedSubscription.copy(
+              lastBilled = Some(new DateTime())
+            )
+
+            val otherSubscriptions = preapprovingUser.subscriptions.filterNot(_._id == updatedSubscription._id)
+            val updatedUser = preapprovingUser.copy(subscriptions = otherSubscriptions ++ (updatedSubscription :: Nil))
+            updatedUser.save
+          }
+
+          OkResponse()
+        }
       }
   }
 }
