@@ -84,6 +84,9 @@ object UserFirstStep {
   }
 }
 
+case class UserPasswordResetKey(key: String = randomString(32),
+                                expires: DateTime = (new DateTime()).plusHours(24))
+
 /**
  * User model. This class represnts a distinct user on the system.
 **/
@@ -94,6 +97,7 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
                 serviceCredentials:List[UserServiceCredentials] = List(),
                 quotaCounts:Map[String, Long] = Map.empty,
                 firstSteps: Map[String, UserFirstStep] = Map.empty,
+                passwordResetKey: Option[UserPasswordResetKey] = None,
                 role:Option[String] = None, createdAt:DateTime = new DateTime,
                 _id:ObjectId = ObjectId.get) extends MongoDocument[User] {
   val meta = User
