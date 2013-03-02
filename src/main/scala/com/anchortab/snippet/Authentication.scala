@@ -34,6 +34,7 @@ case class FormValidationError(fieldSelector: String, error: String) extends
 object userSession extends SessionVar[Box[UserSession]](Empty)
 object impersonatorSession extends SessionVar[Box[UserSession]](Empty)
 object statelessUser extends RequestVar[Box[User]](Empty)
+object passwordResetUser extends RequestVar[Box[User]](Empty)
 
 object Authentication extends Loggable {
   implicit val authenticationToken : Option[WePayToken] = {
@@ -111,10 +112,26 @@ object Authentication extends Loggable {
       }
   }
 
+  def statelessRewrite : RewritePF = {
+    case RewriteRequest(ParsePath("lost-sticky-note" :: passwordResetKey :: Nil, _, _, _), _, _) =>
+      {
+        for {
+          user <- User.findAll("passwordResetKey.key" -> passwordResetKey).headOption
+            if user.passwordResetKey.map(_.expires isAfterNow).getOrElse(false)
+        } yield {
+          passwordResetUser(Full(user))
+          RewriteResponse("lost-sticky-note" :: Nil)
+        }
+      } getOrElse {
+        S.redirectTo("/amnesia")
+      }
+  }
+
   def snippetHandlers : SnippetPF = {
     case "login-form" :: Nil => loginForm
     case "registration-form" :: Nil => registrationForm
     case "forgot-password-form" :: Nil => forgotPasswordForm
+    case "reset-password-form" :: Nil => resetPasswordForm
     case "redirect-to-dashboard-if-logged-in" :: Nil => redirectToDashboardIfLoggedIn
     case "pwn-if-not-logged-in" :: Nil => pwnIfNotLoggedIn
     case "show-if-logged-in" :: Nil => showIfLoggedIn
@@ -407,6 +424,45 @@ object Authentication extends Loggable {
 
     "form" #> { ns:NodeSeq =>
       ajaxForm(bind(ns))
+    }
+  }
+
+  def resetPasswordForm = {
+    var newPassword = ""
+    var confirmPassword = ""
+
+    def processResetPassword(user: User)() = {
+      if (newPassword.trim.length == 0 || confirmPassword.trim.length == 0) {
+        FormValidationError(".password", "") &
+        FormValidationError(".password-confirmation", "Please choose a password with characters.")
+      } else if(newPassword != confirmPassword) {
+        FormValidationError(".password", "") &
+        FormValidationError(".password-confirmation" ,"Your passwords do not match.")
+      } else {
+        user.copy(
+          password = User.hashPassword(newPassword),
+          passwordResetKey = None
+        ).save
+
+        RedirectTo("/manager")
+      }
+    }
+
+    {
+      for {
+        user <- passwordResetUser
+      } yield {
+        val bind =
+          ".password" #> password(newPassword, newPassword = _) &
+          ".password-confirmation" #> password(confirmPassword, confirmPassword = _) &
+          ".submit" #> ajaxSubmit("Reset Password", processResetPassword(user) _)
+
+        "form" #> { ns:NodeSeq =>
+          ajaxForm(bind(ns))
+        }
+      }
+    } openOr {
+      S.redirectTo("/amnesia")
     }
   }
 }

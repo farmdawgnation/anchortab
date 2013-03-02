@@ -51,6 +51,7 @@ class Boot {
     LiftRules.statelessRewrite.append(Invites.statelessRewrite)
     LiftRules.statelessRewrite.append(Tabs.statelessRewrite)
     LiftRules.statelessRewrite.append(Admin.statelessRewrite)
+    LiftRules.statelessRewrite.append(Authentication.statelessRewrite)
 
     // Add Snippet handlers
     LiftRules.snippets.append(Bundles.snippetHandlers)
