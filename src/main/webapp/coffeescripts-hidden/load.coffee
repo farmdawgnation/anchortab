@@ -235,6 +235,11 @@ loadAnchorTab = ->
   # safely without things getting hairy. If we find out in the future that things are wonky about that
   # then we'll have to refactor some of this code, I suppose.
   $ = jQuery # In case we're in compability mode.
+
+  # If the page we're on has done something incredibly stupid and runs this script twice, we need to
+  # bail so we don't load two Anchor Tabs on one page.
+  return if $("#anchor-tab").length > 0
+
   tabId = $("#anchortab-loader").data('tab-id')
   tabJson = "//" + apiDomain + "/api/v1/embed/" + tabId
 
