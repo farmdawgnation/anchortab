@@ -111,7 +111,11 @@ submitEmail = (event) ->
     data:
       email: email
     success: (event) ->
-      $("#anchor-tab").addClass("success")
+      $("#anchor-tab")
+        .find(".success-message")
+          .text(event.message)
+        .end()
+        .addClass("success")
 
       gaqInfo = "Domain: " + document.domain
       _gaq.push ["at._trackEvent", "Submission", "Email Submitted", gaqInfo]
@@ -198,7 +202,7 @@ displayTab = (tabJson) ->
       .append(
         $("<p />")
           .addClass("success-message")
-          .text("Thank you for adding your email to our list! Expect to hear from us soon!")
+          .text("Success!")
       )
 
   if $.browser.msie

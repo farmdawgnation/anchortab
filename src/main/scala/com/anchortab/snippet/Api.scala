@@ -100,26 +100,37 @@ object Api extends RestHelper with Loggable {
             }
 
           // Ensure this new subscriber is unique.
-          if (! tab.hasSubscriber_?(email)) {
-            implicit val formats = Tab.formats
-
-            val subscriberInformation = TabSubscriber(email)
-
-            Tab.update("_id" -> tab._id, (
-              ("$inc" -> ("stats.submissions" -> 1)) ~
-              ("$addToSet" -> ("subscribers" -> decompose(subscriberInformation)))
-            ))
-
-            for {
-              serviceWrapper <- tab.service
-            } {
-              ServiceWrapperSubmissionActor ! SubscribeEmailToServiceWrapper(serviceWrapper, email)
-            }
-          }
-
           val submitResult =
-            ("success" -> 1) ~
-            ("email" -> email)
+            if (! tab.hasSubscriber_?(email)) {
+              implicit val formats = Tab.formats
+
+              val subscriberInformation = TabSubscriber(email)
+
+              Tab.update("_id" -> tab._id, (
+                ("$inc" -> ("stats.submissions" -> 1)) ~
+                ("$addToSet" -> ("subscribers" -> decompose(subscriberInformation)))
+              ))
+
+              val successMessage = {
+                for {
+                  serviceWrapper <- tab.service
+                } yield {
+                  ServiceWrapperSubmissionActor ! SubscribeEmailToServiceWrapper(serviceWrapper, email)
+
+                  "Success! An email has been sent to confirm your subscription."
+                }
+              } getOrElse {
+                "Success! You're on the list. Expect to hear from us soon."
+              }
+
+              ("success" -> 1) ~
+              ("email" -> email) ~
+              ("message" -> successMessage)
+            } else {
+              ("success" -> 0) ~
+              ("email" -> email) ~
+              ("message" -> "Your email is already subscribed to this list, it seems.")
+            }
 
           EventActor ! TrackEvent(Event.Types.TabSubmit, remoteIp, userAgent, user._id, tab._id, Some(cookieId))
 
