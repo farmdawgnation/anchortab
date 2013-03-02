@@ -380,17 +380,33 @@ object Authentication extends Loggable {
   def forgotPasswordForm = {
     var recoveryEmailAddress = ""
 
+    def processForgotPassword = {
+      {
+        for {
+          user <- User.findAll("email" -> recoveryEmailAddress).headOption
+          request <- S.request
+        } yield {
+          val resetKey = UserPasswordResetKey()
+          val userWithReset = user.copy(passwordResetKey = Some(resetKey))
+          userWithReset.save
+
+          val resetLink = "http://" + request.hostName + "/lost-sticky-note/" + resetKey.key
+
+          EmailActor ! SendForgotPasswordEmail(userWithReset.email, resetLink)
+
+          RedirectTo("/amnesia-complete")
+        }
+      } getOrElse {
+        FormValidationError(".email-address", "We don't have an account with that email.")
+      }
+    }
+
     val bind =
-      ".recovery-email" #> text(recoveryEmailAddress, recoveryEmailAddress = _) &
-      ".submit" #> ajaxSubmit("Send Reset Email", () => processForgotPassword(recoveryEmailAddress))
+      ".email-address" #> text(recoveryEmailAddress, recoveryEmailAddress = _) &
+      ".submit" #> ajaxSubmit("Send Password Reset", processForgotPassword _)
 
     "form" #> { ns:NodeSeq =>
       ajaxForm(bind(ns))
     }
-  }
-
-  private def processForgotPassword(email:String) = {
-    // FIXME
-    logger.info("Password recovery requested for " + email)
   }
 }
