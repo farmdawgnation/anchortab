@@ -114,17 +114,14 @@ object Authentication extends Loggable {
 
   def statelessRewrite : RewritePF = {
     case RewriteRequest(ParsePath("lost-sticky-note" :: passwordResetKey :: Nil, _, _, _), _, _) =>
-      {
-        for {
-          user <- User.findAll("passwordResetKey.key" -> passwordResetKey).headOption
-            if user.passwordResetKey.map(_.expires isAfterNow).getOrElse(false)
-        } yield {
-          passwordResetUser(Full(user))
-          RewriteResponse("lost-sticky-note" :: Nil)
-        }
-      } getOrElse {
-        S.redirectTo("/amnesia")
+      for {
+        user <- User.findAll("passwordResetKey.key" -> passwordResetKey).headOption
+          if user.passwordResetKey.map(_.expires isAfterNow).getOrElse(false)
+      } yield {
+        passwordResetUser(Full(user))
       }
+
+      RewriteResponse("lost-sticky-note" :: Nil)
   }
 
   def snippetHandlers : SnippetPF = {
