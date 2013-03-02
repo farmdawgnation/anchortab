@@ -69,6 +69,21 @@ class Boot {
     // Force the request to be UTF-8
     LiftRules.early.append(_.setCharacterEncoding("UTF-8"))
 
+    // Force URLs processing sensitive data to SSL in production.
+    if (Props.productionMode) {
+      val sslProtectedPaths = "/(register|accept-invite|admin|manager|session)".r
+      LiftRules.earlyResponse.append { req =>
+        val uriAndQueryString = req.uri + (req.request.queryString.map(s => "?"+s) openOr "")
+
+        if (! req.header("X-Secure-Request").isDefined && sslProtectedPaths.findFirstMatchIn(req.uri).isDefined) {
+          val uri = "https://%s%s".format(req.request.serverName, uriAndQueryString)
+          Full(PermRedirectResponse(uri, req, req.cookies: _*))
+        } else {
+          Empty
+        }
+      }
+    }
+
     // Use HTML5 for rendering
     LiftRules.htmlProperties.default.set((r: Req) =>
       new Html5Properties(r.userAgent))
