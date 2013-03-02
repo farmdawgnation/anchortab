@@ -1,7 +1,5 @@
 package com.anchortab.snippet
 
-import com.anchortab._
-
 import scala.xml.NodeSeq
 
 import net.liftweb._
@@ -18,6 +16,7 @@ import net.liftweb._
     import JsonDSL._
   import mongodb.BsonDSL._
 
+import com.anchortab._
 import com.anchortab.model.{InviteCode, Plan}
 
 import org.bson.types.ObjectId

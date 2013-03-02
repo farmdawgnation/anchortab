@@ -104,13 +104,13 @@ object Tabs {
     def delete(tabId:ObjectId)() = {
       Tab.delete("_id" -> tabId)
 
-      Alert("Tab deleted.") &
       Reload
     }
 
     ".empty-list" #> (tabs.isEmpty ? PassThru | ClearNodes) andThen
     ".subscriber" #> (tabs.isEmpty ? ClearNodes | PassThru) andThen
     ".subscriber" #> tabs.map { tab =>
+      ".subscriber [data-tab-id]" #> tab._id.toString &
       ".tab-name *" #> tab.name &
       ".view-count *" #> tab.stats.views &
       ".subscription-count *" #> tab.stats.submissions &

@@ -100,32 +100,43 @@ object Api extends RestHelper with Loggable {
             }
 
           // Ensure this new subscriber is unique.
-          if (! tab.hasSubscriber_?(email)) {
-            implicit val formats = Tab.formats
-
-            val subscriberInformation = TabSubscriber(email)
-
-            Tab.update("_id" -> tab._id, (
-              ("$inc" -> ("stats.submissions" -> 1)) ~
-              ("$addToSet" -> ("subscribers" -> decompose(subscriberInformation)))
-            ))
-
-            for {
-              serviceWrapper <- tab.service
-            } {
-              ServiceWrapperSubmissionActor ! SubscribeEmailToServiceWrapper(serviceWrapper, email)
-            }
-          }
-
           val submitResult =
-            ("success" -> 1) ~
-            ("email" -> email)
+            if (! tab.hasSubscriber_?(email)) {
+              implicit val formats = Tab.formats
+
+              val subscriberInformation = TabSubscriber(email)
+
+              Tab.update("_id" -> tab._id, (
+                ("$inc" -> ("stats.submissions" -> 1)) ~
+                ("$addToSet" -> ("subscribers" -> decompose(subscriberInformation)))
+              ))
+
+              val successMessage = {
+                for {
+                  serviceWrapper <- tab.service
+                } yield {
+                  ServiceWrapperSubmissionActor ! SubscribeEmailToServiceWrapper(serviceWrapper, email)
+
+                  "Success! An email has been sent to confirm your subscription."
+                }
+              } getOrElse {
+                "Success! You're on the list. Expect to hear from us soon."
+              }
+
+              ("success" -> 1) ~
+              ("email" -> email) ~
+              ("message" -> successMessage)
+            } else {
+              ("success" -> 0) ~
+              ("email" -> email) ~
+              ("message" -> "Your email is already subscribed to this list, it seems.")
+            }
 
           EventActor ! TrackEvent(Event.Types.TabSubmit, remoteIp, userAgent, user._id, tab._id, Some(cookieId))
 
           Call(callbackFnName, submitResult)
         }
-      }
+      } ?~ "Unknwon Tab" ~> 404
 
     //////////
     // API "user" resource.
@@ -137,28 +148,7 @@ object Api extends RestHelper with Loggable {
         } yield {
           user.asJson
         }
-      } ?~! "Authentication Failed." ~> 401
-
-    case Req("api" :: "v1" :: "user" :: id :: Nil, _, GetRequest) =>
-      {
-        for {
-          currentUser <- statelessUser.is
-            if id == currentUser._id || currentUser.admin_?
-          user <- (User.find(id):Box[User]) ?~! "User not found." ~> 404
-        } yield {
-          user.asJson
-        }
-      } ?~! "Authentication Failed." ~> 401
-
-    case Req("api" :: "v1" :: "user" :: "find" :: email :: Nil, _, GetRequest) =>
-      {
-        for {
-          currentUser <- statelessUser.is if currentUser.admin_?
-          user <- (User.find("email" -> email):Box[User]) ?~! "User not found." ~> 404
-        } yield {
-          user.asJson
-        }
-      } ?~! "Authentication Failed." ~> 401
+      } ?~ "Authentication Failed." ~> 401
 
     case Req("api" :: "v1" :: "user" :: userId :: "tabs" :: AsInt(page) :: Nil, _, GetRequest) =>
       {
@@ -173,14 +163,14 @@ object Api extends RestHelper with Loggable {
 
           ("tabs" -> userTabs):JObject
         }
-      } ?~! "Authentication Failed." ~> 401
+      } ?~ "Authentication Failed." ~> 401
 
     case req @ Req("api" :: "v1" :: "user" :: userId :: "tabs" :: Nil, _, PostRequest) =>
       {
         for {
           currentUser <- statelessUser.is
             if userId == currentUser._id || currentUser.admin_?
-          name <- req.param("name")
+          name <- req.param("name") ?~! "The name parameters is required." ~> 400
         } yield {
           val tab = Tab(name, new ObjectId(userId), TabAppearance.defaults)
           tab.save
@@ -188,7 +178,7 @@ object Api extends RestHelper with Loggable {
           ("success" -> 1) ~
           ("tabId" -> tab._id)
         }
-      } ?~! "Authentication Failed." ~> 401
+      } ?~ "Authentication Failed." ~> 401
 
     //////////
     // API "tab" resource
@@ -202,7 +192,7 @@ object Api extends RestHelper with Loggable {
         } yield {
           tab.asJson
         }
-      } ?~! "Tab not found." ~> 404
+      } ?~ "Tab not found." ~> 404
 
     case req @ Req("api" :: "v1" :: "tab" :: tabId :: "appearance" :: Nil, _, PutRequest) =>
       {
@@ -229,6 +219,70 @@ object Api extends RestHelper with Loggable {
 
           JObject(Nil)
         }
-      } ?~! "Tab not found." ~> 404
+      } ?~ "Tab not found." ~> 404
+
+    //////////
+    // API "admin" resource.
+    //////////
+    case req @ Req("api" :: "v1" :: "admin" :: "users" :: Nil, _, GetRequest) =>
+      {
+        for {
+          currentUser <- statelessUser.is
+            if currentUser.admin_?
+        } yield {
+          decompose(User.findAll.map(_.asJson))
+        }
+      } ?~ "Authentication Failed." ~> 401
+
+    case req @ Req("api" :: "v1" :: "admin" :: "users" :: "find" :: Nil, _, GetRequest) =>
+      {
+        for {
+          currentUser <- statelessUser.is if currentUser.admin_?
+          email <- req.param("email") ?~! "The Email parameter is required." ~> 400
+          user <- (User.find("email" -> email):Box[User]) ?~! "User not found." ~> 404
+        } yield {
+          user.asJson
+        }
+      } ?~ "Authentication Failed." ~> 401
+
+    case req @ Req("api" :: "v1" :: "admin" :: "users" :: Nil, _, PostRequest) =>
+      {
+        for {
+          currentUser <- statelessUser.is if currentUser.admin_?
+          requestBody <- req.body ?~ "No request body." ~> 400
+          requestJson <- tryo(Serialization.read[JValue](new String(requestBody))) ?~ "Error reading JSON." ~> 400
+          email <- tryo(requestJson \ "email").map(_.extract[String])
+          password <- tryo(requestJson \ "password").map(_.extract[String])
+        } yield {
+          val user = User(email, User.hashPassword(password))
+          user.save
+
+          ("id" -> user._id.toString):JObject
+        }
+      } ?~ "Authentication failed." ~> 401
+
+    case req @ Req("api" :: "v1" :: "admin" :: "user" :: id :: Nil, _, GetRequest) =>
+      {
+        for {
+          currentUser <- statelessUser.is
+            if currentUser.admin_?
+          user <- (User.find(id):Box[User]) ?~! "User not found." ~> 404
+        } yield {
+          user.asJson
+        }
+      } ?~ "Authentication Failed." ~> 401
+
+    case req @ Req("api" :: "v1" :: "admin" :: "user" :: id :: Nil, _, DeleteRequest) =>
+      {
+        for {
+          currentUser <- statelessUser.is
+            if currentUser.admin_?
+          user <- (User.find(id):Box[User]) ?~! "User not found." ~> 404
+        } yield {
+          user.delete
+
+          OkResponse()
+        }
+      } ?~ "Authentication failed." ~> 401
   }
 }
