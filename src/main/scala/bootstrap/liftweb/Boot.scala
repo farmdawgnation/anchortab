@@ -71,7 +71,7 @@ class Boot {
 
     // Force URLs processing sensitive data to SSL in production.
     if (Props.productionMode) {
-      val sslProtectedPaths = "/(amnesia|register|accept-invite|admin|manager|session)".r
+      val sslProtectedPaths = "/(lost-sticky-note|amnesia|register|accept-invite|admin|manager|session)".r
       LiftRules.earlyResponse.append { req =>
         val uriAndQueryString = req.uri + (req.request.queryString.map(s => "?"+s) openOr "")
 
