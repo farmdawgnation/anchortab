@@ -96,6 +96,7 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
                 invoices:List[UserInvoice] = List(),
                 serviceCredentials:List[UserServiceCredentials] = List(),
                 quotaCounts:Map[String, Long] = Map.empty,
+                quotasLastReset:Option[DateTime] = None,
                 firstSteps: Map[String, UserFirstStep] = Map.empty,
                 passwordResetKey: Option[UserPasswordResetKey] = None,
                 role:Option[String] = None, createdAt:DateTime = new DateTime,
