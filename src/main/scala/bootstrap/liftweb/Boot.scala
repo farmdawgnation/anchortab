@@ -86,6 +86,38 @@ class Boot {
       }
     }
 
+    // If we receive a jQuery JSONP call and we don't call the callback, add in a bogus
+    // call to the callback function.
+    LiftRules.responseTransformers.append { response =>
+      response.toResponse match {
+        case resp @ InMemoryResponse(data, headers, _, _) =>
+          {
+            for(callback <- S.param("callback")) yield {
+              val dataStr = new String(data)
+
+              if (! dataStr.contains(callback)) {
+                val updatedData = dataStr + "\n" + callback + "();"
+                val updatedHeaders = headers.collect {
+                  case (headerName, value) if headerName == "Content-Length" =>
+                    (headerName, updatedData.length.toString)
+
+                  case otherHeader => otherHeader
+                }
+
+                resp.copy(data = updatedData.getBytes("UTF-8"), headers = updatedHeaders)
+              } else {
+                resp
+              }
+            }
+          } openOr {
+            resp
+          }
+
+        case _ =>
+          response
+      }
+    }
+
     // Use HTML5 for rendering
     LiftRules.htmlProperties.default.set((r: Req) =>
       new Html5Properties(r.userAgent))
