@@ -24,6 +24,7 @@ import org.bson.types.ObjectId
 
 case object ScheduleQuotaReset
 case object QuotaReset
+case class CheckQuotaCounts(userId: ObjectId)
 
 object QuotasActor extends LiftActor with Loggable {
   def messageHandler = {
@@ -52,5 +53,20 @@ object QuotasActor extends LiftActor with Loggable {
         ),
         Multi
       )
+
+    case CheckQuotaCounts(userId) =>
+      for {
+        user <- User.find(userId)
+          if ! user.admin_?
+      } {
+        logger.info("Checking quota for " + user.email)
+        if (! user.withinQuotaFor_?(Plan.Quotas.Views) ||
+            ! user.withinQuotaFor_?(Plan.Quotas.EmailSubscriptions)) {
+          EmailActor ! SendQuotaErrorEmail(user.email)
+        } else if(user.nearQuotaFor_?(Plan.Quotas.Views) ||
+                  user.nearQuotaFor_?(Plan.Quotas.EmailSubscriptions)) {
+          EmailActor ! SendQuotaWarningEmail(user.email)
+        }
+      }
   }
 }

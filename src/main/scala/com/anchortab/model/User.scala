@@ -142,6 +142,17 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
     serviceCredentials.filter(_.serviceName == serviceName).headOption
   }
 
+  def nearQuotaFor_?(quotaedEvent:String) = {
+    {
+      for {
+        quotaLimit <- plan.quotas.get(quotaedEvent)
+        currentUsage <- quotaCounts.get(quotaedEvent)
+      } yield {
+        currentUsage > (quotaLimit * 0.75)
+      }
+    }.foldLeft(false)(_ && _)
+  }
+
   def withinQuotaFor_?(quotaedEvent:String) = {
     {
       for {

@@ -73,6 +73,7 @@ object Api extends RestHelper with Loggable {
             )
           )
 
+          QuotasActor ! CheckQuotaCounts(user._id)
           EventActor ! TrackEvent(Event.Types.TabView, remoteIp, userAgent, user._id, tab._id, Some(cookieId))
 
           val tabJson =
@@ -146,6 +147,7 @@ object Api extends RestHelper with Loggable {
               ("message" -> "Your email is already subscribed to this list, it seems.")
             }
 
+          QuotasActor ! CheckQuotaCounts(user._id)
           EventActor ! TrackEvent(Event.Types.TabSubmit, remoteIp, userAgent, user._id, tab._id, Some(cookieId))
 
           Call(callbackFnName, submitResult)
