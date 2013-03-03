@@ -11,6 +11,7 @@ import net.liftweb._
   import mongodb._
 
 import com.anchortab.snippet._
+import com.anchortab.actor._
 
 import net.liftmodules.JQueryModule
 
@@ -88,5 +89,8 @@ class Boot {
     // Use HTML5 for rendering
     LiftRules.htmlProperties.default.set((r: Req) =>
       new Html5Properties(r.userAgent))
+
+    // Schedule quota reset
+    QuotasActor ! ScheduleQuotaReset
   }
 }
