@@ -60,11 +60,20 @@ object Api extends RestHelper with Loggable {
           Tab.update("_id" -> tab._id, "$inc" -> ("stats.views" -> 1))
 
           if (user.firstSteps.get(UserFirstStep.Keys.EmbedYourTab).isDefined) {
-            User.update("_id" -> user._id, "$unset" -> (
-              ("firstSteps." + UserFirstStep.Keys.EmbedYourTab) -> true)
+            User.update("_id" -> user._id,
+              "$unset" -> (
+                ("firstSteps." + UserFirstStep.Keys.EmbedYourTab) -> true
+              )
             )
           }
 
+          User.update("_id" -> user._id,
+            "$inc" -> (
+              ("quotaCounts." + Plan.Quotas.Views) -> 1
+            )
+          )
+
+          QuotasActor ! CheckQuotaCounts(user._id)
           EventActor ! TrackEvent(Event.Types.TabView, remoteIp, userAgent, user._id, tab._id, Some(cookieId))
 
           val tabJson =
@@ -106,6 +115,12 @@ object Api extends RestHelper with Loggable {
 
               val subscriberInformation = TabSubscriber(email)
 
+              User.update("_id" -> user._id,
+                "$inc" -> (
+                  ("quotaCounts." + Plan.Quotas.EmailSubscriptions) -> 1
+                )
+              )
+
               Tab.update("_id" -> tab._id, (
                 ("$inc" -> ("stats.submissions" -> 1)) ~
                 ("$addToSet" -> ("subscribers" -> decompose(subscriberInformation)))
@@ -132,6 +147,7 @@ object Api extends RestHelper with Loggable {
               ("message" -> "Your email is already subscribed to this list, it seems.")
             }
 
+          QuotasActor ! CheckQuotaCounts(user._id)
           EventActor ! TrackEvent(Event.Types.TabSubmit, remoteIp, userAgent, user._id, tab._id, Some(cookieId))
 
           Call(callbackFnName, submitResult)
