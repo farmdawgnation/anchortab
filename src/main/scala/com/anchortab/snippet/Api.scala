@@ -60,11 +60,20 @@ object Api extends RestHelper with Loggable {
           Tab.update("_id" -> tab._id, "$inc" -> ("stats.views" -> 1))
 
           if (user.firstSteps.get(UserFirstStep.Keys.EmbedYourTab).isDefined) {
-            User.update("_id" -> user._id, "$unset" -> (
-              ("firstSteps." + UserFirstStep.Keys.EmbedYourTab) -> true)
+            User.update("_id" -> user._id,
+              "$unset" -> (
+                ("firstSteps." + UserFirstStep.Keys.EmbedYourTab) -> true
+              )
             )
           }
 
+          User.update("_id" -> user._id,
+            "$inc" -> (
+              ("quotaCounts." + Plan.Quotas.Views) -> 1
+            )
+          )
+
+          QuotasActor ! CheckQuotaCounts(user._id)
           EventActor ! TrackEvent(Event.Types.TabView, remoteIp, userAgent, user._id, tab._id, Some(cookieId))
 
           val tabJson =
@@ -100,27 +109,45 @@ object Api extends RestHelper with Loggable {
             }
 
           // Ensure this new subscriber is unique.
-          if (! tab.hasSubscriber_?(email)) {
-            implicit val formats = Tab.formats
-
-            val subscriberInformation = TabSubscriber(email)
-
-            Tab.update("_id" -> tab._id, (
-              ("$inc" -> ("stats.submissions" -> 1)) ~
-              ("$addToSet" -> ("subscribers" -> decompose(subscriberInformation)))
-            ))
-
-            for {
-              serviceWrapper <- tab.service
-            } {
-              ServiceWrapperSubmissionActor ! SubscribeEmailToServiceWrapper(serviceWrapper, email)
-            }
-          }
-
           val submitResult =
-            ("success" -> 1) ~
-            ("email" -> email)
+            if (! tab.hasSubscriber_?(email)) {
+              implicit val formats = Tab.formats
 
+              val subscriberInformation = TabSubscriber(email)
+
+              User.update("_id" -> user._id,
+                "$inc" -> (
+                  ("quotaCounts." + Plan.Quotas.EmailSubscriptions) -> 1
+                )
+              )
+
+              Tab.update("_id" -> tab._id, (
+                ("$inc" -> ("stats.submissions" -> 1)) ~
+                ("$addToSet" -> ("subscribers" -> decompose(subscriberInformation)))
+              ))
+
+              val successMessage = {
+                for {
+                  serviceWrapper <- tab.service
+                } yield {
+                  ServiceWrapperSubmissionActor ! SubscribeEmailToServiceWrapper(serviceWrapper, email)
+
+                  "Success! An email has been sent to confirm your subscription."
+                }
+              } getOrElse {
+                "Success! You're on the list. Expect to hear from us soon."
+              }
+
+              ("success" -> 1) ~
+              ("email" -> email) ~
+              ("message" -> successMessage)
+            } else {
+              ("success" -> 0) ~
+              ("email" -> email) ~
+              ("message" -> "Your email is already subscribed to this list, it seems.")
+            }
+
+          QuotasActor ! CheckQuotaCounts(user._id)
           EventActor ! TrackEvent(Event.Types.TabSubmit, remoteIp, userAgent, user._id, tab._id, Some(cookieId))
 
           Call(callbackFnName, submitResult)

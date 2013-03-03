@@ -16,6 +16,22 @@ scrollableElement = (els) ->
   return [];
 
 $(document).ready ->
+  window.liftAjax.lift_actualAjaxCall = (data, version, onSuccess, onFailure) ->
+    hostnamePrefix = ""
+
+    # In production, we want all AJAX calls from the landing (which is only login atm)
+    # to be transmitted via HTTPS to protect user passwords.
+    if window.location.hostname == "anchortab.com"
+      hostnamePrefix = "https://anchortab.com"
+
+    jQuery.ajax
+      url : hostnamePrefix + liftAjax.addPageNameAndVersion("/ajax_request/", version),
+      data : data,
+      dataType : "jsonp",
+      success : onSuccess,
+      error : onFailure,
+      crossDomain: true
+
   $('body').on 'click', '.get-started-now', ->
     $targetElem = $("section.plans-and-pricing")
     targetTop = $targetElem.offset().top

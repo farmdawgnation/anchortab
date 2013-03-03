@@ -111,7 +111,11 @@ submitEmail = (event) ->
     data:
       email: email
     success: (event) ->
-      $("#anchor-tab").addClass("success")
+      $("#anchor-tab")
+        .find(".success-message")
+          .text(event.message)
+        .end()
+        .addClass("success")
 
       gaqInfo = "Domain: " + document.domain
       _gaq.push ["at._trackEvent", "Submission", "Email Submitted", gaqInfo]
@@ -198,7 +202,7 @@ displayTab = (tabJson) ->
       .append(
         $("<p />")
           .addClass("success-message")
-          .text("Thank you for adding your email to our list! Expect to hear from us soon!")
+          .text("Success!")
       )
 
   if $.browser.msie
@@ -235,6 +239,11 @@ loadAnchorTab = ->
   # safely without things getting hairy. If we find out in the future that things are wonky about that
   # then we'll have to refactor some of this code, I suppose.
   $ = jQuery # In case we're in compability mode.
+
+  # If the page we're on has done something incredibly stupid and runs this script twice, we need to
+  # bail so we don't load two Anchor Tabs on one page.
+  return if $("#anchor-tab").length > 0
+
   tabId = $("#anchortab-loader").data('tab-id')
   tabJson = "//" + apiDomain + "/api/v1/embed/" + tabId
 
