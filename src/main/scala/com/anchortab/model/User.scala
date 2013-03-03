@@ -91,6 +91,9 @@ object UserFirstStep {
   }
 }
 
+case class UserPasswordResetKey(key: String = randomString(32),
+                                expires: DateTime = (new DateTime()).plusHours(24))
+
 /**
  * User model. This class represnts a distinct user on the system.
 **/
@@ -100,7 +103,9 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
                 invoices:List[UserInvoice] = List(),
                 serviceCredentials:List[UserServiceCredentials] = List(),
                 quotaCounts:Map[String, Long] = Map.empty,
+                quotasLastReset:Option[DateTime] = None,
                 firstSteps: Map[String, UserFirstStep] = Map.empty,
+                passwordResetKey: Option[UserPasswordResetKey] = None,
                 role:Option[String] = None, createdAt:DateTime = new DateTime,
                 _id:ObjectId = ObjectId.get) extends MongoDocument[User] {
   val meta = User
@@ -144,6 +149,17 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
     serviceCredentials.filter(_.serviceName == serviceName).headOption
   }
 
+  def nearQuotaFor_?(quotaedEvent:String) = {
+    {
+      for {
+        quotaLimit <- plan.quotas.get(quotaedEvent)
+        currentUsage <- quotaCounts.get(quotaedEvent)
+      } yield {
+        currentUsage > (quotaLimit * 0.75)
+      }
+    }.foldLeft(false)(_ && _)
+  }
+
   def withinQuotaFor_?(quotaedEvent:String) = {
     {
       for {
@@ -155,7 +171,10 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
     }.foldLeft(true)(_ && _)
   }
 
-  lazy val tabsActive_? = admin_? || withinQuotaFor_?(Plan.Quotas.EmailSubscriptions)
+  lazy val tabsActive_? = admin_? || (
+    withinQuotaFor_?(Plan.Quotas.EmailSubscriptions) &&
+    withinQuotaFor_?(Plan.Quotas.Views)
+  )
 
   lazy val asJson = {
     implicit val formats = DefaultFormats

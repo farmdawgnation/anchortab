@@ -34,6 +34,7 @@ case class FormValidationError(fieldSelector: String, error: String) extends
 object userSession extends SessionVar[Box[UserSession]](Empty)
 object impersonatorSession extends SessionVar[Box[UserSession]](Empty)
 object statelessUser extends RequestVar[Box[User]](Empty)
+object passwordResetUser extends RequestVar[Box[User]](Empty)
 
 object Authentication extends Loggable {
   implicit val authenticationToken : Option[WePayToken] = {
@@ -111,10 +112,23 @@ object Authentication extends Loggable {
       }
   }
 
+  def statelessRewrite : RewritePF = {
+    case RewriteRequest(ParsePath("lost-sticky-note" :: passwordResetKey :: Nil, _, _, _), _, _) =>
+      for {
+        user <- User.findAll("passwordResetKey.key" -> passwordResetKey).headOption
+          if user.passwordResetKey.map(_.expires isAfterNow).getOrElse(false)
+      } yield {
+        passwordResetUser(Full(user))
+      }
+
+      RewriteResponse("lost-sticky-note" :: Nil)
+  }
+
   def snippetHandlers : SnippetPF = {
     case "login-form" :: Nil => loginForm
     case "registration-form" :: Nil => registrationForm
     case "forgot-password-form" :: Nil => forgotPasswordForm
+    case "reset-password-form" :: Nil => resetPasswordForm
     case "redirect-to-dashboard-if-logged-in" :: Nil => redirectToDashboardIfLoggedIn
     case "pwn-if-not-logged-in" :: Nil => pwnIfNotLoggedIn
     case "show-if-logged-in" :: Nil => showIfLoggedIn
@@ -380,17 +394,72 @@ object Authentication extends Loggable {
   def forgotPasswordForm = {
     var recoveryEmailAddress = ""
 
+    def processForgotPassword = {
+      {
+        for {
+          user <- User.findAll("email" -> recoveryEmailAddress).headOption
+          request <- S.request
+        } yield {
+          val resetKey = UserPasswordResetKey()
+          val userWithReset = user.copy(passwordResetKey = Some(resetKey))
+          userWithReset.save
+
+          val resetLink = "http://" + request.hostName + "/lost-sticky-note/" + resetKey.key
+
+          EmailActor ! SendForgotPasswordEmail(userWithReset.email, resetLink)
+
+          RedirectTo("/amnesia-complete")
+        }
+      } getOrElse {
+        FormValidationError(".email-address", "We don't have an account with that email.")
+      }
+    }
+
     val bind =
-      ".recovery-email" #> text(recoveryEmailAddress, recoveryEmailAddress = _) &
-      ".submit" #> ajaxSubmit("Send Reset Email", () => processForgotPassword(recoveryEmailAddress))
+      ".email-address" #> text(recoveryEmailAddress, recoveryEmailAddress = _) &
+      ".submit" #> ajaxSubmit("Send Password Reset", processForgotPassword _)
 
     "form" #> { ns:NodeSeq =>
       ajaxForm(bind(ns))
     }
   }
 
-  private def processForgotPassword(email:String) = {
-    // FIXME
-    logger.info("Password recovery requested for " + email)
+  def resetPasswordForm = {
+    var newPassword = ""
+    var confirmPassword = ""
+
+    def processResetPassword(user: User)() = {
+      if (newPassword.trim.length == 0 || confirmPassword.trim.length == 0) {
+        FormValidationError(".password", "") &
+        FormValidationError(".password-confirmation", "Please choose a password with characters.")
+      } else if(newPassword != confirmPassword) {
+        FormValidationError(".password", "") &
+        FormValidationError(".password-confirmation" ,"Your passwords do not match.")
+      } else {
+        user.copy(
+          password = User.hashPassword(newPassword),
+          passwordResetKey = None
+        ).save
+
+        RedirectTo("/manager")
+      }
+    }
+
+    {
+      for {
+        user <- passwordResetUser
+      } yield {
+        val bind =
+          ".password" #> password(newPassword, newPassword = _) &
+          ".password-confirmation" #> password(confirmPassword, confirmPassword = _) &
+          ".submit" #> ajaxSubmit("Reset Password", processResetPassword(user) _)
+
+        "form" #> { ns:NodeSeq =>
+          ajaxForm(bind(ns))
+        }
+      }
+    } openOr {
+      S.redirectTo("/amnesia")
+    }
   }
 }
