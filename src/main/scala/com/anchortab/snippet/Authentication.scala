@@ -298,12 +298,6 @@ object Authentication extends Loggable {
               Empty
           else
             Full("Password confirmation is required.")
-        ),
-        "#card-number" -> (() =>
-          if (! selectedPlan.free_? && stripeToken.isEmpty)
-            Full("A valid card is required.")
-          else
-            Empty
         )
       )
 
@@ -331,10 +325,15 @@ object Authentication extends Loggable {
                 UserFirstStep.Keys.EmbedYourTab -> UserFirstStep.Steps.EmbedYourTab
               )
 
+              val userActiveCard = customer.activeCard.map { card =>
+                UserActiveCard(card.last4, card.`type`, card.expMonth, card.expYear)
+              }
+
               User(emailAddress, User.hashPassword(requestedPassword),
                    Some(UserProfile(Some(firstName), Some(lastName), Some(organization))),
                    subscriptions = List(subscription), firstSteps = firstSteps,
-                   stripeCustomerId = Some(customer.id))
+                   stripeCustomerId = Some(customer.id),
+                   activeCard = userActiveCard)
             }
 
           user.foreach(_.save)

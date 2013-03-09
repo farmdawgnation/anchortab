@@ -94,6 +94,8 @@ object UserFirstStep {
 case class UserPasswordResetKey(key: String = randomString(32),
                                 expires: DateTime = (new DateTime()).plusHours(24))
 
+case class UserActiveCard(last4: String, cardType: String, expMonth: Int, expYear: Int)
+
 /**
  * User model. This class represnts a distinct user on the system.
 **/
@@ -108,6 +110,7 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
                 passwordResetKey: Option[UserPasswordResetKey] = None,
                 role:Option[String] = None, createdAt:DateTime = new DateTime,
                 stripeCustomerId:Option[String] = None,
+                activeCard:Option[UserActiveCard] = None,
                 _id:ObjectId = ObjectId.get) extends MongoDocument[User] {
   val meta = User
 
