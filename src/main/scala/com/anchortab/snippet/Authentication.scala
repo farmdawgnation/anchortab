@@ -234,6 +234,7 @@ object Authentication extends Loggable {
     if (Props.mode == Props.RunModes.Production && ! inviteCode.is.isDefined)
       S.redirectTo("/")
 
+    var stripeToken = ""
     var emailAddress = ""
     var requestedPassword = ""
     var requestedPasswordConfirmation = ""
@@ -355,6 +356,7 @@ object Authentication extends Loggable {
 
     val bind =
       ".plan-selection" #> select(planSelections, Empty, selectedPlan = _) &
+      "#stripe-token" #> hidden(stripeToken = _, stripeToken) &
       ".email-address" #> text(emailAddress, emailAddress = _) &
       ".password" #> password(requestedPassword, requestedPassword = _) &
       ".password-confirmation" #> password(requestedPasswordConfirmation, requestedPasswordConfirmation = _) &
