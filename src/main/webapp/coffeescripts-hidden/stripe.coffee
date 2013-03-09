@@ -7,6 +7,8 @@ $(document).ready ->
   $("#card-billing-zip").payment('restrictNumeric')
 
   $(".stripe-form .submit").on "click", (event) ->
+    return if $(".plan-selection").find(":selected").innerText().match(/\(Free\)$/)
+
     event.preventDefault()
     event.stopPropagation()
 

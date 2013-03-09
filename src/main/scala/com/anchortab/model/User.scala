@@ -107,6 +107,7 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
                 firstSteps: Map[String, UserFirstStep] = Map.empty,
                 passwordResetKey: Option[UserPasswordResetKey] = None,
                 role:Option[String] = None, createdAt:DateTime = new DateTime,
+                stripeCustomerId:Option[String] = None,
                 _id:ObjectId = ObjectId.get) extends MongoDocument[User] {
   val meta = User
 
