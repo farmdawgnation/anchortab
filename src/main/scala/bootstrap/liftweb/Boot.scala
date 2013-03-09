@@ -15,6 +15,8 @@ import com.anchortab.actor._
 
 import net.liftmodules.JQueryModule
 
+import com.stripe
+
 
 /**
  * A class that's instantiated early and run.  It allows the application
@@ -124,5 +126,8 @@ class Boot {
 
     // Schedule quota reset
     QuotasActor ! ScheduleQuotaReset
+
+    // Set Stripe API key
+    stripe.apiKey = "sk_test_eIk3iZ4csTxHtFmmh86M0E1n"
   }
 }

@@ -10,7 +10,7 @@ import org.joda.time.DateTime
 
 import org.bson.types.ObjectId
 
-case class PlanTerm(description:String, abbreveation:String)
+case class PlanTerm(description:String, abbreveation:String, stripeCode:String)
 
 /**
  * Model for a Plan that users can subscribe to on Anchor Tab.
@@ -22,7 +22,8 @@ case class Plan(name:String, description:String, price:Double,
                 features:Map[String,Boolean], quotas:Map[String, Long],
                 visibleOnRegistration:Boolean = true,
                 starts:Option[DateTime] = None, ends:Option[DateTime] = None,
-                term:PlanTerm = Plan.MonthlyTerm, _id:ObjectId = ObjectId.get
+                term:PlanTerm = Plan.MonthlyTerm, stripeId: Option[String] = None,
+                _id:ObjectId = ObjectId.get
     ) extends MongoDocument[Plan] {
   val meta = Plan
 
@@ -50,8 +51,8 @@ case class Plan(name:String, description:String, price:Double,
 object Plan extends MongoDocumentMeta[Plan] {
   override def formats = allFormats ++ JodaTimeSerializers.all
 
-  val MonthlyTerm = PlanTerm("monthly", "mo")
-  val YearlyTerm = PlanTerm("yearly", "yr")
+  val MonthlyTerm = PlanTerm("monthly", "mo", "month")
+  val YearlyTerm = PlanTerm("yearly", "yr", "year")
 
   val terms = MonthlyTerm :: YearlyTerm :: Nil
 
