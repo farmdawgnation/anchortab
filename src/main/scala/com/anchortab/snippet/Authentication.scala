@@ -298,6 +298,12 @@ object Authentication extends Loggable {
               Empty
           else
             Full("Password confirmation is required.")
+        ),
+        "#card-number" -> (() =>
+          if (! selectedPlan.free_? && stripeToken.isEmpty)
+            Full("A valid card is required.")
+          else
+            Empty
         )
       )
 
