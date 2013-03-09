@@ -45,7 +45,6 @@ class Boot {
     // Authentication dispatch.
     LiftRules.dispatch.append(Authentication.dispatch)
     LiftRules.dispatch.append(OAuth.dispatch)
-    LiftRules.dispatch.append(WePaySnip.dispatch)
 
     // Add API to stateless rewrites
     LiftRules.statelessRewrite.append(Api.statelessRewrite)
@@ -84,6 +83,38 @@ class Boot {
         } else {
           Empty
         }
+      }
+    }
+
+    // If we receive a jQuery JSONP call and we don't call the callback, add in a bogus
+    // call to the callback function.
+    LiftRules.responseTransformers.append { response =>
+      response.toResponse match {
+        case resp @ InMemoryResponse(data, headers, _, _) =>
+          {
+            for(callback <- S.param("callback")) yield {
+              val dataStr = new String(data)
+
+              if (! dataStr.contains(callback)) {
+                val updatedData = dataStr + "\n" + callback + "();"
+                val updatedHeaders = headers.collect {
+                  case (headerName, value) if headerName == "Content-Length" =>
+                    (headerName, updatedData.length.toString)
+
+                  case otherHeader => otherHeader
+                }
+
+                resp.copy(data = updatedData.getBytes("UTF-8"), headers = updatedHeaders)
+              } else {
+                resp
+              }
+            }
+          } openOr {
+            resp
+          }
+
+        case _ =>
+          response
       }
     }
 
