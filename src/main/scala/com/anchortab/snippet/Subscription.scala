@@ -97,7 +97,7 @@ object Subscription extends Loggable {
           periodEnd <- stripeSubscription.currentPeriodEnd
           updatedSubscription = subscription.copy(
             status = "cancelled",
-            ends = Some(new DateTime(periodEnd))
+            ends = Some(new DateTime(periodEnd * 1000))
           )
         } yield {
           val allButCurrentSubscription = user.subscriptions.filter { sub =>
