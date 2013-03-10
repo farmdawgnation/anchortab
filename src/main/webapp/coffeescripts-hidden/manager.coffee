@@ -73,7 +73,8 @@ $(document).ready ->
       if response.error
         anchortabSite.validationError("#card-number", response.error.message)
       else
-        event.updateStripeTokenFn(response.id)
+        updateStripeTokenFn = eval("(" + event.updateStripeTokenFn + ")")
+        updateStripeTokenFn(response.id)
 
     nodes = [
       $("<h1 />")

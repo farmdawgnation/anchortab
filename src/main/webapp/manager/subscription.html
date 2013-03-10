@@ -77,26 +77,28 @@
       <div class="billing-information" data-lift="billing-summary">
         <h2>Billing Information</h2>
 
-        <div class="need-billing-information">
-          <p>
-            Your current subscription is provisional, and still needs a billing preapproval to
-            be fully active. To approve billing, please click the button below.
-          </p>
-
-          <p>
-            <button class="setup-billing">Setup Billing</button>
-          </p>
-        </div>
-
         <div class="billing-information-on-file">
           <p>
-            Your billing information is on file.
+            We have the following billing information on file:
           </p>
 
-          <p>
-            <button class="update-billing-information">Update Billing Information</button>
+          <p class="billing-card-details">
+            <span class="card-type">MasterCard</span>
+            (**** **** **** <span class="last4">1234</span>)
+            expiring
+            <span class="expMonth">4</span>
+            /
+            <span class="expYear">14</span>
           </p>
         </div>
+
+        <div class="no-billing-information">
+          <p>We have no billing information for your account.</p>
+        </div>
+
+        <p>
+          <button class="update-billing-information">Update Billing Information</button>
+        </p>
       </div>
     </div>
   </body>

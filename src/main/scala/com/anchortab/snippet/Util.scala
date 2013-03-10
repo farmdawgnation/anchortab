@@ -45,6 +45,14 @@ class CallableFunction(name:String, callback:(String)=>JsCmd, args:List[String] 
     ).toJsCmd
 }
 
+class AnonCallableFunction(callback:(String)=>JsCmd, args:List[String] = List()) extends JsCmd {
+  override val toJsCmd =
+    AnonFunc(
+      args.mkString(","),
+      ajaxCall(JsRaw("Array.prototype.slice.call(arguments).join('|')"), callback)._2
+    ).toJsCmd
+}
+
 object currentPageTitle extends RequestVar[Box[String]](Empty)
 
 object Util extends Loggable {

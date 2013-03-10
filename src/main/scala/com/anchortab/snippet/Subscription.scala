@@ -19,8 +19,15 @@ import org.bson.types.ObjectId
 import org.joda.time._
 
 import com.anchortab.model._
+import com.anchortab.util._
 
 import com.stripe
+
+case class SubmitBillingInfoToStripe(submitBillingInfoFunc: (String)=>JsCmd) extends
+  AnonCallableFunction(submitBillingInfoFunc)
+
+case class UpdateBillingInformation(updateStripeTokenFn: JsCmd) extends
+  AnchorTabEvent("update-billing-information", ("updateStripeTokenFn" -> updateStripeTokenFn.toJsCmd))
 
 object Subscription extends Loggable {
   def snippetHandlers : SnippetPF = {
@@ -148,18 +155,24 @@ object Subscription extends Loggable {
   }
 
   def billingSummary = {
+    def submitBillingUpdateToStripe(token: String) = {
+      Alert("OHAI: " + token)
+    }
+
     {
       for {
         session <- userSession.is
         user <- User.find(session.userId)
-        subscription <- user.subscription
-          if subscription.price > 0 && ! subscription.cancelled_?
       } yield {
-        if (subscription.active_?) {
-          ".need-billing-information" #> ClearNodes
-        } else {
-          ".billing-information-on-file" #> ClearNodes
+        ".no-billing-information" #> (user.activeCard.isDefined ? ClearNodes | PassThru) &
+        ".billing-information-on-file" #> user.activeCard.map { card =>
+          ".card-type *" #> card.cardType &
+          ".last4 *" #> card.last4 &
+          ".expMonth *" #> card.expMonth &
+          ".expYear *" #> card.expYear
         }
+        ".update-billing-information [onclick]" #> ajaxInvoke(() =>
+          UpdateBillingInformation(SubmitBillingInfoToStripe(submitBillingUpdateToStripe)))
       }
     } openOr {
       ".billing-information" #> ClearNodes
