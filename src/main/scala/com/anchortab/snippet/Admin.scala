@@ -3,6 +3,7 @@ package com.anchortab.snippet
 import scala.xml.NodeSeq
 
 import java.text.SimpleDateFormat
+import java.util.UUID
 
 import net.liftweb._
   import http._
@@ -20,6 +21,8 @@ import net.liftweb._
   import mongodb.BsonDSL._
 
 import com.anchortab.model._
+
+import com.stripe
 
 import org.bson.types.ObjectId
 
@@ -130,12 +133,68 @@ object Admin {
 
       requestPlanId.is match {
         case Empty =>
-          Plan( planName, planDescription, planPrice, features, quotas, visible,
-                term = planTerm).save
+          val stripeId: Box[String] = {
+            if (planPrice > 0) {
+              val idString = "ANCHORTAB-" + UUID.randomUUID
 
-          RedirectTo("/admin/plans")
+              val planResult = tryo(stripe.Plan.create(Map(
+                "amount" -> (planPrice * 100).toInt,
+                "currency" -> "usd",
+                "interval" -> planTerm.stripeCode,
+                "name" -> planName,
+                "id" -> idString
+              )))
+
+              planResult.map(_ => idString)
+            } else {
+              Empty
+            }
+          }
+
+          stripeId match {
+            case fail:Failure =>
+              Alert("Error from Stripe: " + fail.toString)
+
+            case _ =>
+              Plan( planName, planDescription, planPrice, features, quotas,
+                visible, term = planTerm, stripeId = stripeId).save
+
+              RedirectTo("/admin/plans")
+          }
 
         case Full(requestPlanId) =>
+          val stripePlanIdUpdate = {
+            if (requestPlan.map(_.price).map(_ != planPrice).openOr(false) ||
+                requestPlan.map(_.term).map(_ != planTerm).openOr(false) ||
+                requestPlan.map(_.name).map(_ != planName).openOr(false)) {
+              // Delete old plan, create new.
+              requestPlan.flatMap(_.stripeId).foreach { stripeId =>
+                tryo(stripe.Plan.retrieve(stripeId)).map { plan =>
+                  plan.delete()
+                }
+              }
+
+              if (planPrice > 0) {
+                val idString = "ANCHORTAB-" + UUID.randomUUID
+
+                val planResult = tryo(stripe.Plan.create(Map(
+                  "amount" -> (planPrice * 100).toInt,
+                  "currency" -> "usd",
+                  "interval" -> planTerm.stripeCode,
+                  "name" -> planName,
+                  "id" -> idString
+                )))
+
+                planResult.map(_ => idString)
+              } else {
+                Empty
+              }
+            } else {
+              // do nothing
+              requestPlan.flatMap(_.stripeId)
+            }
+          }
+
           Plan.update("_id" -> new ObjectId(requestPlanId), "$set" -> (
             ("name" -> planName) ~
             ("description" -> planDescription) ~
@@ -143,7 +202,8 @@ object Admin {
             ("features" -> features) ~
             ("quotas" -> quotas) ~
             ("visibleOnRegistration" -> visible) ~
-            ("term" -> decompose(planTerm))
+            ("term" -> decompose(planTerm)) ~
+            ("stripeId" -> stripePlanIdUpdate.toOption)
           ))
 
           RedirectTo("/admin/plans")

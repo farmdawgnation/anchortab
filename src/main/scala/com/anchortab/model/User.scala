@@ -43,19 +43,26 @@ case class UserSubscription(planId:ObjectId, price:Double, term:PlanTerm,
                             preapprovalId:Option[Long] = None, preapprovalUri:Option[String] = None,
                             createdAt:DateTime = new DateTime, status:String = "new",
                             begins:DateTime = new DateTime, ends:Option[DateTime] = None,
-                            miracleFrom:Option[ObjectId] = None,
+                            lastBilled:Option[DateTime] = None, miracleFrom:Option[ObjectId] = None,
                             _id:ObjectId = ObjectId.get) {
+  val provisionalGracePeriodInDays = 7
+
   lazy val new_? = status == "new"
+  lazy val provisional_? = status == "provisional"
   lazy val active_? = status == "active"
   lazy val cancelled_? = status == "cancelled"
   lazy val stopped_? = status == "stopped"
   lazy val miracle_? = miracleFrom.isDefined
+
+  lazy val provisionalGracePeriodEnd = begins.plusDays(provisionalGracePeriodInDays)
 
   // A valid subscription is any subscription that allows your tabs to display
   // on your site.
   lazy val valid_? = {
     if (active_?)
       begins.isBeforeNow && ends.map(_ isAfterNow).getOrElse(true)
+    else if (provisional_?)
+      begins.isBeforeNow && provisionalGracePeriodEnd.isAfterNow
     else if (cancelled_?)
       ends.map(_ isAfterNow).getOrElse(false)
     else
@@ -87,6 +94,8 @@ object UserFirstStep {
 case class UserPasswordResetKey(key: String = randomString(32),
                                 expires: DateTime = (new DateTime()).plusHours(24))
 
+case class UserActiveCard(last4: String, cardType: String, expMonth: Int, expYear: Int)
+
 /**
  * User model. This class represnts a distinct user on the system.
 **/
@@ -100,6 +109,8 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
                 firstSteps: Map[String, UserFirstStep] = Map.empty,
                 passwordResetKey: Option[UserPasswordResetKey] = None,
                 role:Option[String] = None, createdAt:DateTime = new DateTime,
+                stripeCustomerId:Option[String] = None,
+                activeCard:Option[UserActiveCard] = None,
                 _id:ObjectId = ObjectId.get) extends MongoDocument[User] {
   val meta = User
 

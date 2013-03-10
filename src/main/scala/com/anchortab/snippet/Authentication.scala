@@ -23,8 +23,7 @@ import org.bson.types.ObjectId
 import com.anchortab.model._
 import com.anchortab.actor._
 
-import me.frmr.wepay._
-  import api.Preapproval
+import com.stripe
 
 case object LoginFailed extends SimpleAnchorTabEvent("login-failed")
 case class RedirectingToWePay(preapprovalUrl: String) extends SimpleAnchorTabEvent("redirecting-to-wepay")
@@ -37,15 +36,6 @@ object statelessUser extends RequestVar[Box[User]](Empty)
 object passwordResetUser extends RequestVar[Box[User]](Empty)
 
 object Authentication extends Loggable {
-  implicit val authenticationToken : Option[WePayToken] = {
-    for {
-      anchortabUserId <- Props.getLong("wepay.anchorTabUserId")
-      anchortabAccessToken <- Props.get("wepay.anchorTabAccessToken")
-    } yield {
-      WePayToken(anchortabUserId, anchortabAccessToken, "BEARER", None)
-    }
-  }
-
   /**
    * Handle authentication for stateless requests (the API).
   **/
@@ -246,6 +236,7 @@ object Authentication extends Loggable {
     if (Props.mode == Props.RunModes.Production && ! inviteCode.is.isDefined)
       S.redirectTo("/")
 
+    var stripeToken = ""
     var emailAddress = ""
     var requestedPassword = ""
     var requestedPasswordConfirmation = ""
@@ -264,23 +255,22 @@ object Authentication extends Loggable {
       (plan._id.toString, plan.registrationTitle)
     }
 
-    def generateSubscriptionForPlan(plan:Plan) = {
-      if (plan.free_?) {
-        Full(UserSubscription(plan._id, plan.price, plan.term, status="active"))
+    def createStripeCustomer(plan: Plan) = {
+      if (plan.stripeId.isDefined) {
+        tryo(stripe.Customer.create(Map(
+          "plan" -> plan.stripeId.getOrElse(""),
+          "email" -> emailAddress,
+          "card" -> stripeToken
+        )))
       } else {
-        for {
-          accountId <- Props.getLong("wepay.anchorTabAccountId") ?~! "No WePay Account ID found."
-          redirectUri <- Props.get("wepay.anchorTabRedirectUri") ?~! "No redirect URI found."
-          callbackUri <- Props.get("wepay.anchorTabCallbackUri") ?~! "No callback URI found."
-          preapproval <- Preapproval(accountId, plan.price, plan.name, plan.term.description,
-                                    redirect_uri = Some(redirectUri), callback_uri = Some(callbackUri),
-                                    fee_payer = Some("payee"), auto_recur = Some(true)).save
-          preapprovalId = preapproval.preapproval_id
-          preapprovalUri <- preapproval.preapproval_uri
-        } yield {
-          UserSubscription(plan._id, plan.price, plan.term, Some(preapprovalId), Some(preapprovalUri))
-        }
+        tryo(stripe.Customer.create(Map(
+          "email" -> emailAddress
+        )))
       }
+    }
+
+    def generateSubscriptionForPlan(plan:Plan) = {
+      Full(UserSubscription(plan._id, plan.price, plan.term, status="active"))
     }
 
     def processRegistration = {
@@ -327,6 +317,7 @@ object Authentication extends Loggable {
             for {
               plan <- (Plan.find(selectedPlan):Box[Plan]) ?~! "Plan could not be located."
               subscription <- generateSubscriptionForPlan(plan)
+              customer <- createStripeCustomer(plan)
             } yield {
               val firstSteps = Map(
                 UserFirstStep.Keys.ConnectAnExternalService -> UserFirstStep.Steps.ConnectAnExternalService,
@@ -334,9 +325,15 @@ object Authentication extends Loggable {
                 UserFirstStep.Keys.EmbedYourTab -> UserFirstStep.Steps.EmbedYourTab
               )
 
+              val userActiveCard = customer.activeCard.map { card =>
+                UserActiveCard(card.last4, card.`type`, card.expMonth, card.expYear)
+              }
+
               User(emailAddress, User.hashPassword(requestedPassword),
                    Some(UserProfile(Some(firstName), Some(lastName), Some(organization))),
-                   subscriptions = List(subscription), firstSteps = firstSteps)
+                   subscriptions = List(subscription), firstSteps = firstSteps,
+                   stripeCustomerId = Some(customer.id),
+                   activeCard = userActiveCard)
             }
 
           user.foreach(_.save)
@@ -355,16 +352,7 @@ object Authentication extends Loggable {
               // Send welcome email
               EmailActor ! SendWelcomeEmail(user.email)
 
-              if (plans.filter(_._id.toString == selectedPlan).headOption.map(_.free_?) getOrElse true) {
-                loginResult
-              } else {
-                val wepayUri =
-                  user.subscriptions.headOption.flatMap(_.preapprovalUri) getOrElse "#"
-
-                // Alert the user they're about to be redirected to WePay for payment, and
-                // then do the redirection.
-                RedirectingToWePay(wepayUri)
-              }
+              loginResult
 
             case m =>
               logger.error("While registering account got: " + m)
@@ -378,6 +366,7 @@ object Authentication extends Loggable {
 
     val bind =
       ".plan-selection" #> select(planSelections, Empty, selectedPlan = _) &
+      "#stripe-token" #> hidden(stripeToken = _, stripeToken) &
       ".email-address" #> text(emailAddress, emailAddress = _) &
       ".password" #> password(requestedPassword, requestedPassword = _) &
       ".password-confirmation" #> password(requestedPasswordConfirmation, requestedPasswordConfirmation = _) &

@@ -30,3 +30,12 @@ jquery.modal.js
 dashboard
 highcharts/highcharts.js
 weeks-performance-graph.js
+
+register
+jquery.payment.js
+stripe.js
+register.js
+
+subscription
+jquery.payment.js
+stripe.js

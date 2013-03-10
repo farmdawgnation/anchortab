@@ -15,6 +15,8 @@ import com.anchortab.actor._
 
 import net.liftmodules.JQueryModule
 
+import com.stripe
+
 
 /**
  * A class that's instantiated early and run.  It allows the application
@@ -45,7 +47,6 @@ class Boot {
     // Authentication dispatch.
     LiftRules.dispatch.append(Authentication.dispatch)
     LiftRules.dispatch.append(OAuth.dispatch)
-    LiftRules.dispatch.append(WePaySnip.dispatch)
 
     // Add API to stateless rewrites
     LiftRules.statelessRewrite.append(Api.statelessRewrite)
@@ -62,6 +63,7 @@ class Boot {
     LiftRules.snippets.append(Admin.snippetHandlers)
     LiftRules.snippets.append(Invites.snippetHandlers)
     LiftRules.snippets.append(Tabs.snippetHandlers)
+    LiftRules.snippets.append(Subscription.snippetHandlers)
 
     //Init the jQuery module, see http://liftweb.net/jquery for more information.
     LiftRules.jsArtifacts = JQueryArtifacts
@@ -86,11 +88,46 @@ class Boot {
       }
     }
 
+    // If we receive a jQuery JSONP call and we don't call the callback, add in a bogus
+    // call to the callback function.
+    LiftRules.responseTransformers.append { response =>
+      response.toResponse match {
+        case resp @ InMemoryResponse(data, headers, _, _) =>
+          {
+            for(callback <- S.param("callback")) yield {
+              val dataStr = new String(data)
+
+              if (! dataStr.contains(callback)) {
+                val updatedData = dataStr + "\n" + callback + "();"
+                val updatedHeaders = headers.collect {
+                  case (headerName, value) if headerName == "Content-Length" =>
+                    (headerName, updatedData.length.toString)
+
+                  case otherHeader => otherHeader
+                }
+
+                resp.copy(data = updatedData.getBytes("UTF-8"), headers = updatedHeaders)
+              } else {
+                resp
+              }
+            }
+          } openOr {
+            resp
+          }
+
+        case _ =>
+          response
+      }
+    }
+
     // Use HTML5 for rendering
     LiftRules.htmlProperties.default.set((r: Req) =>
       new Html5Properties(r.userAgent))
 
     // Schedule quota reset
     QuotasActor ! ScheduleQuotaReset
+
+    // Set Stripe API key
+    stripe.apiKey = "sk_test_eIk3iZ4csTxHtFmmh86M0E1n"
   }
 }

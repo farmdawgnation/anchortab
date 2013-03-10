@@ -134,6 +134,9 @@ body
   font-size: 12px
   line-height: 1.5em
 
+  #update-billing-modal > form
+    +pretty-form
+
   #manager-container
     width: 946px
     background-color: #d5d5d5
@@ -338,11 +341,18 @@ body
             &:last-child
               text-align: right
 
-          .select-plan
+            > .plan-details
+              font-weight: normal
+              display: block
+
+          .select-plan, .cancel-plan
             +pretty-button
 
-        .billing-summary
-          +pretty-table
+        .billing-information
+          margin-top: 35px
+
+        .update-billing-information, .setup-billing
+          +pretty-button
 
         .subscriber-list
           +pretty-table
