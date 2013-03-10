@@ -71,6 +71,7 @@ object Subscription extends Loggable {
         provisionalMessage andThen
         planStatus andThen
         ".plan-name *" #> plan.name &
+        ".ending-date *" #> subscription.ends.map(_.toString()) &
         ".not-subscribed" #> ClearNodes
       }
     } openOr {
@@ -82,8 +83,38 @@ object Subscription extends Loggable {
   }
 
   def planSelection = {
-    def changeSubscription(user: User, subscription: UserSubscription, newPlanId: ObjectId) = {
-      // TODO
+    def changeSubscription(user: User, subscription: Option[UserSubscription], newPlanId: ObjectId)() = {
+      {
+        for {
+          plan <- Plan.find(newPlanId)
+          newPlanStripeId <- plan.stripeId
+          customerId <- user.stripeCustomerId
+          customer <- tryo(stripe.Customer.retrieve(customerId))
+          updatedStripeSubscription <- tryo(customer.updateSubscription(Map(
+            "plan" -> newPlanStripeId
+          )))
+          updatedSubscription = subscription.map(_.copy(
+            status = "cancelled",
+            ends = Some(new DateTime())
+          ))
+          newSubscription = UserSubscription(newPlanId, plan.price, plan.term, status = "active")
+        } yield {
+          val allButCurrentSubscription = user.subscriptions.filter { sub =>
+            sub._id != (updatedSubscription.map(_._id) getOrElse "")
+          }
+
+          val newSubscriptions = (updatedSubscription :: Some(newSubscription) :: Nil).flatten
+          val updatedUser = user.copy(
+            subscriptions = allButCurrentSubscription ++ newSubscriptions
+          )
+
+          updatedUser.save
+
+          Reload
+        }
+      } getOrElse {
+        Alert("Something went wrong changing subscriptions.")
+      }
     }
 
     def cancelSubscription(user: User, subscription: UserSubscription)() = {
@@ -138,19 +169,16 @@ object Subscription extends Loggable {
         }
 
         val plans = Plan.findAll(("visibleOnRegistration" -> true))
+        val currentSubscriptionCanceling = subscription.map(_.cancelled_?).getOrElse(false)
 
-        if (! subscription.map(_.cancelled_?).getOrElse(false)) {
-          ClearClearable andThen
-          ".plan" #> plans.map { plan =>
-            ".plan-name *" #> plan.registrationTitle &
-            ".ending-date *" #> subscription.flatMap(_.ends.map(_.toString())).getOrElse("") &
-            ".plan-details *" #> plan.description &
-            ".select-plan" #> ((plan._id == currentPlan._id) ? ClearNodes | PassThru) &
-            ".cancel-plan" #> ((plan._id == currentPlan._id) ? PassThru | ClearNodes) &
-            ".cancel-plan [onclick]" #> ajaxInvoke(cancelClick)
-          }
-        } else {
-          ClearNodes
+        ClearClearable andThen
+        ".plan" #> plans.map { plan =>
+          ".plan-name *" #> plan.registrationTitle &
+          ".plan-details *" #> plan.description &
+          ".select-plan" #> ((plan._id == currentPlan._id || currentSubscriptionCanceling) ? ClearNodes | PassThru) &
+          ".select-plan [onclick]" #> ajaxInvoke(changeSubscription(user, subscription, plan._id) _) &
+          ".cancel-plan" #> ((plan._id == currentPlan._id && ! currentSubscriptionCanceling) ? PassThru | ClearNodes) &
+          ".cancel-plan [onclick]" #> ajaxInvoke(cancelClick)
         }
       }
     } openOr {
