@@ -11,8 +11,10 @@ import net.liftweb._
     import LiftRules._
   import json._
     import JsonDSL._
+    import Extraction._
   import util._
     import Helpers._
+  import mongodb.BsonDSL._
 
 import org.bson.types.ObjectId
 
@@ -30,6 +32,8 @@ case class UpdateBillingInformation(updateStripeTokenFn: JsCmd) extends
   AnchorTabEvent("update-billing-information", ("updateStripeTokenFn" -> updateStripeTokenFn.toJsCmd))
 
 object Subscription extends Loggable {
+  implicit val formats = DefaultFormats
+
   def snippetHandlers : SnippetPF = {
     case "subscription-summary" :: Nil => subscriptionSummary
     case "plan-selection" :: Nil => planSelection
@@ -156,7 +160,33 @@ object Subscription extends Loggable {
 
   def billingSummary = {
     def submitBillingUpdateToStripe(token: String) = {
-      Alert("OHAI: " + token)
+      val billingUpdateResult = {
+        for {
+          session <- userSession.is
+          user <- User.find(session.userId)
+          customerId <- user.stripeCustomerId
+          customer <- tryo(stripe.Customer.retrieve(customerId))
+          updatedCustomer <- tryo(customer.update(Map("card" -> token)))
+          card <- updatedCustomer.activeCard
+        } yield {
+          User.update("_id" -> user._id, "$set" -> (
+            "activeCard" -> decompose(
+              UserActiveCard(card.last4, card.`type`, card.expMonth, card.expYear)
+            )
+          ))
+        }
+      }
+
+      billingUpdateResult match {
+        case Empty =>
+          Alert("An internal error occured. Please contact us and let us know.")
+
+        case Failure(msg, _, _) =>
+          Alert("An error occured while updating billing information: " + msg)
+
+        case _ =>
+          Reload
+      }
     }
 
     {
@@ -170,7 +200,7 @@ object Subscription extends Loggable {
           ".last4 *" #> card.last4 &
           ".expMonth *" #> card.expMonth &
           ".expYear *" #> card.expYear
-        }
+        } &
         ".update-billing-information [onclick]" #> ajaxInvoke(() =>
           UpdateBillingInformation(SubmitBillingInfoToStripe(submitBillingUpdateToStripe)))
       }
