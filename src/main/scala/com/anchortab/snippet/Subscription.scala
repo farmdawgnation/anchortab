@@ -44,10 +44,15 @@ object Subscription extends Loggable {
         }
 
         val planStatus = {
-          if (plan.visibleOnRegistration)
+          if (plan.visibleOnRegistration && ! subscription.cancelled_?)
+            ".special-plan-assignment" #> ClearNodes andThen
+            ".cancelled-subscription" #> ClearNodes
+          else if (subscription.cancelled_?)
+            ".subscribed" #> ClearNodes andThen
             ".special-plan-assignment" #> ClearNodes
           else
-            ".subscribed" #> ClearNodes
+            ".subscribed" #> ClearNodes andThen
+            ".cancelled-subscription" #> ClearNodes
         }
 
         provisionalMessage andThen
@@ -56,6 +61,7 @@ object Subscription extends Loggable {
         ".not-subscribed" #> ClearNodes
       }
     } openOr {
+      ".cancelled-subscription" #> ClearNodes &
       ".provisional-plan" #> ClearNodes &
       ".special-plan-assignment" #> ClearNodes &
       ".subscribed" #> ClearNodes
@@ -68,8 +74,34 @@ object Subscription extends Loggable {
     }
 
     def cancelSubscription(user: User, subscription: UserSubscription)() = {
-      // TODO
-      Alert("coming soon")
+      {
+        for {
+          customerId <- user.stripeCustomerId
+          customer <- tryo(stripe.Customer.retrieve(customerId))
+          stripeSubscription <- tryo(customer.cancelSubscription(Map(
+            "at_period_end" -> true
+          )))
+          periodEnd <- stripeSubscription.currentPeriodEnd
+          updatedSubscription = subscription.copy(
+            status = "cancelled",
+            ends = Some(new DateTime(periodEnd))
+          )
+        } yield {
+          val allButCurrentSubscription = user.subscriptions.filter { sub =>
+            sub._id != updatedSubscription._id
+          }
+
+          val updatedUser = user.copy(
+            subscriptions = allButCurrentSubscription ++ (updatedSubscription :: Nil)
+          )
+
+          updatedUser.save
+
+          Reload
+        }
+      } getOrElse {
+        Alert("Error while canceling subscription. Please contact us.")
+      }
     }
 
     {
@@ -94,13 +126,18 @@ object Subscription extends Loggable {
 
         val plans = Plan.findAll(("visibleOnRegistration" -> true))
 
-        ClearClearable andThen
-        ".plan" #> plans.map { plan =>
-          ".plan-name *" #> plan.registrationTitle &
-          ".plan-details *" #> plan.description &
-          ".select-plan" #> ((plan._id == currentPlan._id) ? ClearNodes | PassThru) &
-          ".cancel-plan" #> ((plan._id == currentPlan._id) ? PassThru | ClearNodes) &
-          ".cancel-plan [onclick]" #> ajaxInvoke(cancelClick)
+        if (! subscription.map(_.cancelled_?).getOrElse(false)) {
+          ClearClearable andThen
+          ".plan" #> plans.map { plan =>
+            ".plan-name *" #> plan.registrationTitle &
+            ".ending-date *" #> subscription.flatMap(_.ends.map(_.toString())).getOrElse("") &
+            ".plan-details *" #> plan.description &
+            ".select-plan" #> ((plan._id == currentPlan._id) ? ClearNodes | PassThru) &
+            ".cancel-plan" #> ((plan._id == currentPlan._id) ? PassThru | ClearNodes) &
+            ".cancel-plan [onclick]" #> ajaxInvoke(cancelClick)
+          }
+        } else {
+          ClearNodes
         }
       }
     } openOr {
@@ -113,7 +150,8 @@ object Subscription extends Loggable {
       for {
         session <- userSession.is
         user <- User.find(session.userId)
-        subscription <- user.subscription if subscription.price > 0
+        subscription <- user.subscription
+          if subscription.price > 0 && ! subscription.cancelled_?
       } yield {
         if (subscription.active_?) {
           ".need-billing-information" #> ClearNodes
