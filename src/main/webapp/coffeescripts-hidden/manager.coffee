@@ -68,6 +68,104 @@ $(document).ready ->
       document.location = event.preapprovalUrl
     )
 
+  $(document).on 'update-billing-information', (event) ->
+    stripeCallback = (status, response) ->
+      if response.error
+        anchortabSite.validationError("#card-number", response.error.message)
+      else
+        event.updateStripeTokenFn(response.id)
+
+    nodes = [
+      $("<h1 />")
+        .text("Update Billing Information"),
+
+      $("<p />")
+        .text("Please enter your new billing information below."),
+
+      $("<form />")
+      .addClass("billing-information-form")
+      .addClass("stripe-form")
+      .append(
+        $("<input />")
+          .attr("type", "hidden")
+          .attr("id", "stripe-token")
+      )
+      .append(
+        $("<div />")
+        .append(
+          $("<label />")
+            .attr("for", "card-number")
+            .text("Card number:")
+        )
+        .append(
+          $("<input />")
+            .attr("type", "text")
+            .attr("id", "card-number")
+            .attr("placeholder", "0000 0000 0000 0000")
+        )
+      )
+      .append(
+        $("<div />")
+        .append(
+          $("<label />")
+            .attr("for", "card-cvc")
+            .text("CVC:")
+        )
+        .append(
+          $("<input />")
+            .attr("type", "text")
+            .attr("id", "card-cvc")
+            .attr("placeholder", "000")
+            .attr("autocomplete", "off")
+        )
+      )
+      .append(
+        $("<div />")
+        .append(
+          $("<label />")
+            .attr("for", "card-expiry")
+            .text("Expires:")
+        )
+        .append(
+          $("<input />")
+            .attr("type", "text")
+            .attr("id", "card-expiry")
+            .attr("placeholder", "MM / YY")
+        )
+      )
+      .append(
+        $("<div />")
+        .append(
+          $("<label />")
+            .attr("for", "card-billing-zip")
+            .text("Billing ZIP:")
+        )
+        .append(
+          $("<input />")
+            .attr("type", "text")
+            .attr("id", "card-billing-zip")
+            .attr("placeholder", "00000")
+        )
+      )
+      .append(
+        $("<input />")
+          .attr("type", "submit")
+          .attr("class", "submit")
+          .attr("value", "Update")
+          .click((event) ->
+            event.preventDefault()
+            event.stopPropagation()
+
+            anchortabSite.event("validate-stripe-form",
+              stripeCallback: stripeCallback
+            )
+          )
+      )
+    ]
+
+    modal("update-billing-modal", nodes)
+    anchortabSite.event("stripe-form-ready")
+
   $(document).on 'tab-embed-code-received', (event) ->
     nodes = [
       $("<h1 />")

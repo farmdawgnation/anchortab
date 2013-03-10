@@ -20,6 +20,8 @@ import org.joda.time._
 
 import com.anchortab.model._
 
+import com.stripe
+
 object Subscription extends Loggable {
   def snippetHandlers : SnippetPF = {
     case "subscription-summary" :: Nil => subscriptionSummary
