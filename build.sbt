@@ -28,7 +28,7 @@ seq(resourceManagementSettings :_*)
 scalacOptions ++= Seq("-deprecation", "-unchecked")
 
 libraryDependencies ++= {
-  val liftVersion = "2.5-RC1"
+  val liftVersion = "2.5-RC2"
   Seq(
     "net.liftweb"       %% "lift-webkit"        % liftVersion        % "compile",
     "net.liftweb"       %% "lift-mongodb"       % liftVersion        % "compile",
