@@ -128,6 +128,6 @@ class Boot {
     QuotasActor ! ScheduleQuotaReset
 
     // Set Stripe API key
-    stripe.apiKey = "sk_test_eIk3iZ4csTxHtFmmh86M0E1n"
+    stripe.apiKey = Props.get("stripe.apiKey") openOr "sk_test_eIk3iZ4csTxHtFmmh86M0E1n"
   }
 }
