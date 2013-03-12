@@ -40,13 +40,11 @@ case class UserAuthorizationKey(appName:String, key:String = randomString(32),
 case class UserProfile(firstName:Option[String], lastName:Option[String],
                        organization:Option[String])
 case class UserSubscription(planId:ObjectId, price:Double, term:PlanTerm,
-                            createdAt:DateTime = new DateTime, status:String = "new",
+                            createdAt:DateTime = new DateTime, status:String = "trial",
                             begins:DateTime = new DateTime, ends:Option[DateTime] = None,
                             lastBilled:Option[DateTime] = None,
                             _id:ObjectId = ObjectId.get) {
-  val provisionalGracePeriodInDays = 7
-
-  lazy val new_? = status == "new"
+  lazy val trial_? = status == "trial"
   lazy val active_? = status == "active"
   lazy val cancelled_? = status == "cancelled"
   lazy val stopped_? = status == "stopped"
@@ -54,7 +52,7 @@ case class UserSubscription(planId:ObjectId, price:Double, term:PlanTerm,
   // A valid subscription is any subscription that allows your tabs to display
   // on your site.
   lazy val valid_? = {
-    if (active_?)
+    if (trial_? || active_?)
       begins.isBeforeNow && ends.map(_ isAfterNow).getOrElse(true)
     else if (cancelled_?)
       ends.map(_ isAfterNow).getOrElse(false)
