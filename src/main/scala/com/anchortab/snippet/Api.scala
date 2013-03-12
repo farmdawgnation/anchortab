@@ -22,7 +22,6 @@ import org.bson.types.ObjectId
 
 import com.anchortab.model._
 import com.anchortab.actor._
-import com.anchortab.actor.{EventActor, TrackEvent}
 
 object Api extends RestHelper with Loggable {
   def statelessRewrite : RewritePF = {
