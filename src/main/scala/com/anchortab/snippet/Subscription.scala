@@ -48,14 +48,6 @@ object Subscription extends Loggable {
         subscription <- user.subscription
         plan <- Plan.find(subscription.planId)
       } yield {
-        val provisionalMessage = {
-          if (subscription.provisional_?)
-            ".provisional-plan" #> PassThru &
-            ".provisional-expiration *" #> subscription.provisionalGracePeriodEnd.toString()
-          else
-            ".provisional-plan" #> ClearNodes
-        }
-
         val planStatus = {
           if (plan.visibleOnRegistration && ! subscription.cancelled_?)
             ".special-plan-assignment" #> ClearNodes andThen
@@ -68,7 +60,6 @@ object Subscription extends Loggable {
             ".cancelled-subscription" #> ClearNodes
         }
 
-        provisionalMessage andThen
         planStatus andThen
         ".plan-name *" #> plan.name &
         ".ending-date *" #> subscription.ends.map(_.toString()) &

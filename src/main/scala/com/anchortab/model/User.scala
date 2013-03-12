@@ -40,29 +40,22 @@ case class UserAuthorizationKey(appName:String, key:String = randomString(32),
 case class UserProfile(firstName:Option[String], lastName:Option[String],
                        organization:Option[String])
 case class UserSubscription(planId:ObjectId, price:Double, term:PlanTerm,
-                            preapprovalId:Option[Long] = None, preapprovalUri:Option[String] = None,
                             createdAt:DateTime = new DateTime, status:String = "new",
                             begins:DateTime = new DateTime, ends:Option[DateTime] = None,
-                            lastBilled:Option[DateTime] = None, miracleFrom:Option[ObjectId] = None,
+                            lastBilled:Option[DateTime] = None,
                             _id:ObjectId = ObjectId.get) {
   val provisionalGracePeriodInDays = 7
 
   lazy val new_? = status == "new"
-  lazy val provisional_? = status == "provisional"
   lazy val active_? = status == "active"
   lazy val cancelled_? = status == "cancelled"
   lazy val stopped_? = status == "stopped"
-  lazy val miracle_? = miracleFrom.isDefined
-
-  lazy val provisionalGracePeriodEnd = begins.plusDays(provisionalGracePeriodInDays)
 
   // A valid subscription is any subscription that allows your tabs to display
   // on your site.
   lazy val valid_? = {
     if (active_?)
       begins.isBeforeNow && ends.map(_ isAfterNow).getOrElse(true)
-    else if (provisional_?)
-      begins.isBeforeNow && provisionalGracePeriodEnd.isAfterNow
     else if (cancelled_?)
       ends.map(_ isAfterNow).getOrElse(false)
     else
