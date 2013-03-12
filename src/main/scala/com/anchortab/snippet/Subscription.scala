@@ -91,7 +91,8 @@ object Subscription extends Loggable {
           customerId <- user.stripeCustomerId
           customer <- tryo(stripe.Customer.retrieve(customerId))
           updatedStripeSubscription <- tryo(customer.updateSubscription(Map(
-            "plan" -> newPlanStripeId
+            "plan" -> newPlanStripeId,
+            "trial_end" -> "now"
           )))
           updatedSubscription = subscription.map(_.copy(
             status = "cancelled",
