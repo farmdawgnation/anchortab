@@ -84,37 +84,48 @@ object Subscription extends Loggable {
 
   def planSelection = {
     def changeSubscription(user: User, subscription: Option[UserSubscription], newPlanId: ObjectId)() = {
-      {
-        for {
-          plan <- Plan.find(newPlanId)
-          newPlanStripeId <- plan.stripeId
-          customerId <- user.stripeCustomerId
-          customer <- tryo(stripe.Customer.retrieve(customerId))
-          updatedStripeSubscription <- tryo(customer.updateSubscription(Map(
-            "plan" -> newPlanStripeId,
-            "trial_end" -> "now"
-          )))
-          updatedSubscription = subscription.map(_.copy(
-            status = "cancelled",
-            ends = Some(new DateTime())
-          ))
-          newSubscription = UserSubscription(newPlanId, plan.price, plan.term, status = "active")
-        } yield {
-          val allButCurrentSubscription = user.subscriptions.filter { sub =>
-            sub._id != (updatedSubscription.map(_._id) getOrElse "")
+      val changeResult: Box[JsCmd] =
+        if (user.activeCard.isDefined) {
+          for {
+            plan <- Plan.find(newPlanId)
+            newPlanStripeId <- plan.stripeId
+            customerId <- user.stripeCustomerId
+            customer <- tryo(stripe.Customer.retrieve(customerId))
+            updatedStripeSubscription <- tryo(customer.updateSubscription(Map(
+              "plan" -> newPlanStripeId,
+              "trial_end" -> "now"
+            )))
+            updatedSubscription = subscription.map(_.copy(
+              status = "cancelled",
+              ends = Some(new DateTime())
+            ))
+            newSubscription = UserSubscription(newPlanId, plan.price, plan.term, status = "active")
+          } yield {
+            val allButCurrentSubscription = user.subscriptions.filter { sub =>
+              sub._id != (updatedSubscription.map(_._id) getOrElse "")
+            }
+
+            val newSubscriptions = (updatedSubscription :: Some(newSubscription) :: Nil).flatten
+            val updatedUser = user.copy(
+              subscriptions = allButCurrentSubscription ++ newSubscriptions
+            )
+
+            updatedUser.save
+
+            Reload
           }
-
-          val newSubscriptions = (updatedSubscription :: Some(newSubscription) :: Nil).flatten
-          val updatedUser = user.copy(
-            subscriptions = allButCurrentSubscription ++ newSubscriptions
-          )
-
-          updatedUser.save
-
-          Reload
+        } else {
+          Full(Alert("An active credit card is required to change plans. Please update your billing information."))
         }
-      } getOrElse {
-        Alert("Something went wrong changing subscriptions.")
+
+      changeResult match {
+        case Full(jsCmd) =>
+          jsCmd
+        case Empty =>
+          Alert("An internal error occured")
+        case Failure(msg, _, _) =>
+          logger.error("Error updating subscription: " + msg)
+          Alert("Something went wrong while attempting to update your subscription. Please contact support.")
       }
     }
 
