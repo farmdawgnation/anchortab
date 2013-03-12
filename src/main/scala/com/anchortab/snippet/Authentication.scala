@@ -270,7 +270,7 @@ object Authentication extends Loggable {
     }
 
     def generateSubscriptionForPlan(plan:Plan) = {
-      Full(UserSubscription(plan._id, plan.price, plan.term, status="active"))
+      Full(UserSubscription(plan._id, plan.price, plan.term))
     }
 
     def processRegistration = {
