@@ -101,6 +101,7 @@ object Admin {
     var planDescription = requestPlan.map(_.description) openOr ""
     var planTerm = requestPlan.map(_.term) openOr Plan.MonthlyTerm
     var planPrice = requestPlan.map(_.price) openOr 0.0
+    var trialDays = requestPlan.map(_.trialDays) openOr 0
     var visible = requestPlan.map(_.visibleOnRegistration) openOr true
     var featureBasicAnalytics = requestPlan.map(_.hasFeature_?(Plan.Features.BasicAnalytics)) openOr false
     var featureWhitelabeledTabs = requestPlan.map(_.hasFeature_?(Plan.Features.WhitelabeledTabs)) openOr false
@@ -142,6 +143,7 @@ object Admin {
                 "currency" -> "usd",
                 "interval" -> planTerm.stripeCode,
                 "name" -> planName,
+                "trial_period_days" -> trialDays,
                 "id" -> idString
               )))
 
@@ -156,8 +158,9 @@ object Admin {
               Alert("Error from Stripe: " + fail.toString)
 
             case _ =>
-              Plan( planName, planDescription, planPrice, features, quotas,
-                visible, term = planTerm, stripeId = stripeId).save
+              Plan( planName, planDescription, planPrice, trialDays,
+                    features, quotas, visible, term = planTerm,
+                    stripeId = stripeId).save
 
               RedirectTo("/admin/plans")
           }
@@ -166,7 +169,8 @@ object Admin {
           val stripePlanIdUpdate = {
             if (requestPlan.map(_.price).map(_ != planPrice).openOr(false) ||
                 requestPlan.map(_.term).map(_ != planTerm).openOr(false) ||
-                requestPlan.map(_.name).map(_ != planName).openOr(false)) {
+                requestPlan.map(_.name).map(_ != planName).openOr(false) ||
+                requestPlan.map(_.trialDays).map(_ != trialDays).openOr(false)) {
               // Delete old plan, create new.
               requestPlan.flatMap(_.stripeId).foreach { stripeId =>
                 tryo(stripe.Plan.retrieve(stripeId)).map { plan =>
@@ -174,21 +178,18 @@ object Admin {
                 }
               }
 
-              if (planPrice > 0) {
-                val idString = "ANCHORTAB-" + UUID.randomUUID
+              val idString = "ANCHORTAB-" + UUID.randomUUID
 
-                val planResult = tryo(stripe.Plan.create(Map(
-                  "amount" -> (planPrice * 100).toInt,
-                  "currency" -> "usd",
-                  "interval" -> planTerm.stripeCode,
-                  "name" -> planName,
-                  "id" -> idString
-                )))
+              val planResult = tryo(stripe.Plan.create(Map(
+                "amount" -> (planPrice * 100).toInt,
+                "currency" -> "usd",
+                "interval" -> planTerm.stripeCode,
+                "name" -> planName,
+                "trial_period_days" -> trialDays,
+                "id" -> idString
+              )))
 
-                planResult.map(_ => idString)
-              } else {
-                Empty
-              }
+              planResult.map(_ => idString)
             } else {
               // do nothing
               requestPlan.flatMap(_.stripeId)
@@ -203,6 +204,7 @@ object Admin {
             ("quotas" -> quotas) ~
             ("visibleOnRegistration" -> visible) ~
             ("term" -> decompose(planTerm)) ~
+            ("trialDays" -> trialDays) ~
             ("stripeId" -> stripePlanIdUpdate.toOption)
           ))
 
@@ -217,6 +219,7 @@ object Admin {
       ".plan-name" #> text(planName, planName = _) &
       ".plan-description" #> text(planDescription, planDescription = _) &
       ".plan-price" #> text(planPrice.toString, (price) => planPrice = price.toDouble) &
+      ".trial-days" #> text(trialDays.toString, (days) => trialDays = days.toInt) &
       ".plan-term" #> selectObj[PlanTerm](
         Plan.terms.map(t => (t, t.description.capitalize)),
         Full(planTerm),

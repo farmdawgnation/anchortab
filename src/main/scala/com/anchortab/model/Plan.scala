@@ -18,7 +18,7 @@ case class PlanTerm(description:String, abbreveation:String, stripeCode:String)
  * Special note: the quotas are all per month values regardless of
  * the term of the plan.
 **/
-case class Plan(name:String, description:String, price:Double,
+case class Plan(name:String, description:String, price:Double, trialDays:Int,
                 features:Map[String,Boolean], quotas:Map[String, Long],
                 visibleOnRegistration:Boolean = true,
                 starts:Option[DateTime] = None, ends:Option[DateTime] = None,
@@ -70,6 +70,6 @@ object Plan extends MongoDocumentMeta[Plan] {
   // The DefaultPlan, or the plan you're on if you don't have a plan. If we decide to offer
   // a free tier at some point in the future, we should change this plan to describe the
   // free tier.
-  val DefaultPlan = Plan("Not subscribed.", "You are currently not subscribed to a plan.", 0,
+  val DefaultPlan = Plan("Not subscribed.", "You are currently not subscribed to a plan.", 0, 0,
                          Map.empty, Map(Quotas.EmailSubscriptions -> 0, Quotas.Views -> 0))
 }
