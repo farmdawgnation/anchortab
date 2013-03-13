@@ -167,6 +167,60 @@ $(document).ready ->
     modal("update-billing-modal", nodes)
     anchortabSite.event("stripe-form-ready")
 
+  $(document).on 'error-charging-card', (event) ->
+    nodes = [
+      $("<h1 />")
+        .text("Error Charging Card"),
+
+      $("<p />")
+        .text("We were unable to charge your card and complete your subscription
+              change. Please verify that you card details are correct and that your card
+              has sufficient balance."),
+
+      $("<p />")
+        .append("Shoot us an ")
+        .append($("<a />").attr("href", "mailto:hello@anchortab.com").text("email"))
+        .append(" if you think you're seeing this in error."),
+
+      $("<button />")
+        .attr("id", "modal-dismiss")
+        .text("Close")
+    ]
+
+    modal("error-charging-card-modal", nodes)
+
+  $(document).on 'no-billing-information-error', (event) ->
+    nodes = [
+      $("<h1 />")
+        .text("No Billing Information"),
+
+      $("<p />")
+        .text("Before you can change to a different plan, you gotta tell us where to send
+              the bill, Chief. Mash the Update Billing Information button on this page to
+              give us your digits (your Credit Card digits, that is)."),
+
+      $("<button />")
+        .attr("id", "modal-dismiss")
+        .text("Close")
+    ]
+
+    modal("no-billing-information-modal", nodes)
+
+  $(document).on 'general-error', (event) ->
+    nodes = [
+      $("<h1 />")
+        .text("Error"),
+
+      $("<p />")
+        .text(event.errorText),
+
+      $("<button />")
+        .attr("id", "modal-dismiss")
+        .text("Close")
+    ]
+
+    modal("general-error-modal", nodes)
+
   $(document).on 'tab-embed-code-received', (event) ->
     nodes = [
       $("<h1 />")

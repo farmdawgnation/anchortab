@@ -30,6 +30,9 @@ case class SubmitBillingInfoToStripe(submitBillingInfoFunc: (String)=>JsCmd) ext
 
 case class UpdateBillingInformation(updateStripeTokenFn: JsCmd) extends
   AnchorTabEvent("update-billing-information", ("updateStripeTokenFn" -> updateStripeTokenFn.toJsCmd))
+case object ErrorChargingCard extends SimpleAnchorTabEvent("error-charging-card")
+case object NoBillingInformationError extends SimpleAnchorTabEvent("no-billing-information-error")
+case class GeneralError(errorText: String) extends SimpleAnchorTabEvent("general-error")
 
 object Subscription extends Loggable {
   implicit val formats = DefaultFormats
@@ -78,10 +81,10 @@ object Subscription extends Loggable {
       val changeResult: Box[JsCmd] =
         if (user.activeCard.isDefined) {
           for {
-            plan <- Plan.find(newPlanId)
-            newPlanStripeId <- plan.stripeId
-            customerId <- user.stripeCustomerId
-            customer <- tryo(stripe.Customer.retrieve(customerId))
+            plan <- (Plan.find(newPlanId):Box[Plan]) ?~ "Plan not found."
+            newPlanStripeId <- (plan.stripeId:Box[String]) ?~ "Plan lacks Stripe ID."
+            customerId <- (user.stripeCustomerId:Box[String]) ?~ "User lacks Stripe ID."
+            customer <- tryo(stripe.Customer.retrieve(customerId)) ?~ "Stripe doesn't recognize user."
             updatedStripeSubscription <- tryo(customer.updateSubscription(Map(
               "plan" -> newPlanStripeId,
               "trial_end" -> "now"
@@ -106,17 +109,19 @@ object Subscription extends Loggable {
             Reload
           }
         } else {
-          Full(Alert("An active credit card is required to change plans. Please update your billing information."))
+          Full(NoBillingInformationError)
         }
 
       changeResult match {
         case Full(jsCmd) =>
           jsCmd
+
         case Empty =>
-          Alert("An internal error occured")
+          ErrorChargingCard
+
         case Failure(msg, _, _) =>
           logger.error("Error updating subscription: " + msg)
-          Alert("Something went wrong while attempting to update your subscription. Please contact support.")
+          GeneralError("Something went wrong while attempting to update your subscription. Please contact support.")
       }
     }
 
@@ -147,7 +152,7 @@ object Subscription extends Loggable {
           Reload
         }
       } getOrElse {
-        Alert("Error while canceling subscription. Please contact us.")
+        GeneralError("Error while canceling subscription. Please contact us.")
       }
     }
 
@@ -210,10 +215,10 @@ object Subscription extends Loggable {
 
       billingUpdateResult match {
         case Empty =>
-          Alert("An internal error occured. Please contact us and let us know.")
+          GeneralError("An internal error occured. Please contact us and let us know.")
 
         case Failure(msg, _, _) =>
-          Alert("An error occured while updating billing information: " + msg)
+          GeneralError("An error occured while updating billing information: " + msg)
 
         case _ =>
           Reload
