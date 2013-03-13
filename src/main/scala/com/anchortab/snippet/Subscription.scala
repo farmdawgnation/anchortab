@@ -121,7 +121,7 @@ object Subscription extends Loggable {
 
         case Failure(msg, _, _) =>
           logger.error("Error updating subscription: " + msg)
-          GeneralError("Something went wrong while attempting to update your subscription. Please contact support.")
+          GeneralError("Something went wrong while attempting to update your subscription: " + msg)
       }
     }
 
