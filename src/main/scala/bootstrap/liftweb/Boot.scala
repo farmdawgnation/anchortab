@@ -44,6 +44,9 @@ class Boot {
     // Add API to dispatch
     LiftRules.statelessDispatch.append(Api)
 
+    // Add stripe hooks to dispatch
+    LiftRules.statelessDispatch.append(StripeHook)
+
     // Authentication dispatch.
     LiftRules.dispatch.append(Authentication.dispatch)
     LiftRules.dispatch.append(OAuth.dispatch)

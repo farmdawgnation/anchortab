@@ -33,7 +33,11 @@ object StripeHook extends RestHelper with Loggable {
           requestBody <- req.body
           requestJson <- tryo(Serialization.read[JValue](new String(requestBody)))
           eventType <- (requestJson \ "type").extractOpt[String]
+          dataJson = (requestJson \ "data")
+          objectJson = (dataJson \ "object")
         } yield {
+          println(pretty(render(requestJson)))
+
           val result: Box[LiftResponse] = eventType match {
             case "invoice.payment_succeeded" =>
               // Send an email reciept.
@@ -47,9 +51,9 @@ object StripeHook extends RestHelper with Loggable {
               // Create the subscription if it doesn't already exist for that user
               // on our end.
               for {
-                stripeCustomerId <- (requestJson \ "customer").extractOpt[String]
-                planJson = (requestJson \ "plan")
-                status = (requestJson \ "status").extractOpt[String]
+                stripeCustomerId <- tryo((objectJson \ "customer").extract[String]) ?~! "No customer."
+                planJson = (objectJson \ "plan")
+                status = (objectJson \ "status").extractOpt[String]
                 stripePlanId <- (planJson \ "id").extractOpt[String]
                 user <- User.find("stripeCustomerId" -> stripeCustomerId)
                 plan <- Plan.find("stripeId" -> stripePlanId)
@@ -87,11 +91,11 @@ object StripeHook extends RestHelper with Loggable {
 
               // Update database to reflect new sub.
               for {
-                stripeCustomerId <- (requestJson \ "customer").extractOpt[String]
-                planJson = (requestJson \ "plan")
+                stripeCustomerId <- (objectJson \ "customer").extractOpt[String]
+                planJson = (objectJson \ "plan")
                 user <- User.find("stripeCustomerId" -> stripeCustomerId)
                 currentUserSubscription <- user.subscription
-                status <- (requestJson \ "status").extractOpt[String]
+                status <- (objectJson \ "status").extractOpt[String]
                 stripePlanId <- (planJson \ "id").extractOpt[String]
               } yield {
                 implicit val formats = User.formats
@@ -110,10 +114,10 @@ object StripeHook extends RestHelper with Loggable {
             case "customer.subscription.deleted" =>
               // Sorry to see you go email?
               for {
-                stripeCustomerId <- (requestJson \ "customer").extractOpt[String]
+                stripeCustomerId <- (objectJson \ "customer").extractOpt[String]
                 user <- User.find("stripeCustomerId" -> stripeCustomerId)
-                status <- (requestJson \ "status").extractOpt[String]
-                periodEnd <- (requestJson \ "current_period_end").extractOpt[Long]
+                status <- (objectJson \ "status").extractOpt[String]
+                periodEnd <- (objectJson \ "current_period_end").extractOpt[Long]
               } yield {
                 implicit val formats = User.formats
 
