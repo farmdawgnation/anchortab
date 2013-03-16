@@ -53,6 +53,9 @@ $(document).ready ->
   $(".enterprise-action-button").on 'click', (event) ->
     document.location.href = "mailto:hello@anchortab.com?subject=Enterprise Edition"
 
+  $(".register-button").on 'click', (event) ->
+    document.location.href = "/register#" + $(event.target).data("plan-id")
+
   getTwitters 'tweet-container',
     id: 'anchortab',
     template: '<p>%text%</p><p class="attribution"><a href="http://twitter.com/%user_screen_name%/statuses/%id_str%/">%time%</a> &middot; @%user_screen_name%</p>'
