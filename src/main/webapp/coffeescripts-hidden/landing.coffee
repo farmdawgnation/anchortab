@@ -16,6 +16,8 @@ scrollableElement = (els) ->
   return [];
 
 $(document).ready ->
+  $('span[rel=tipsy]').tipsy({fade: true})
+
   window.liftAjax.lift_actualAjaxCall = (data, version, onSuccess, onFailure) ->
     hostnamePrefix = ""
 
