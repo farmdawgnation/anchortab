@@ -24,4 +24,8 @@ $(document).ready ->
       stripeCallback: stripeCallback
     )
 
+  if window.location.hash != ""
+    hash = window.location.hash.replace("#", "")
+    $("option[value=" + hash + "]").attr("selected", "selected")
+
   $(".plan-selection").change()
