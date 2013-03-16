@@ -256,17 +256,11 @@ object Authentication extends Loggable {
     }
 
     def createStripeCustomer(plan: Plan) = {
-      if (plan.stripeId.isDefined) {
-        tryo(stripe.Customer.create(Map(
-          "plan" -> plan.stripeId.getOrElse(""),
-          "email" -> emailAddress,
-          "card" -> stripeToken
-        )))
-      } else {
-        tryo(stripe.Customer.create(Map(
-          "email" -> emailAddress
-        )))
-      }
+      tryo(stripe.Customer.create(Map(
+        "plan" -> plan.stripeId.getOrElse(""),
+        "email" -> emailAddress,
+        "card" -> stripeToken
+      )))
     }
 
     def generateSubscriptionForPlan(plan:Plan) = {
