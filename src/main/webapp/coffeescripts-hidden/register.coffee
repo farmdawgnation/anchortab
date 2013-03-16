@@ -8,8 +8,14 @@ stripeCallback = (status, response) ->
 $(document).ready ->
   anchortabSite.event("stripe-form-ready")
 
+  $(".plan-selection").on 'change', (event) ->
+    if $(".plan-selection").find(":selected").data("has-trial")
+      $(".billing-information").hide()
+    else
+      $(".billing-information").show()
+
   $(".stripe-form .submit").on "click", (event) ->
-    return if $(".plan-selection").find(":selected").text().match(/\(Free\)$/)
+    return if $(".plan-selection").find(":selected").data("has-trial")
 
     event.preventDefault()
     event.stopPropagation()
@@ -17,3 +23,5 @@ $(document).ready ->
     anchortabSite.event("validate-stripe-form",
       stripeCallback: stripeCallback
     )
+
+  $(".plan-selection").change()
