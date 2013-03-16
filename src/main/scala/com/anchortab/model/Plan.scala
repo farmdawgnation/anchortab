@@ -29,6 +29,7 @@ case class Plan(name:String, description:String, price:Double, trialDays:Int,
 
   val formattedPrice = "$" + ("%1.2f" format price)
   val free_? = price == 0
+  val hasTrial_? = trialDays > 0
 
   def hasFeature_?(feature:String) = {
     features.get(feature) match {
