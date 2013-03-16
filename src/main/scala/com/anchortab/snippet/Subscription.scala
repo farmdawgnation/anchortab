@@ -64,6 +64,7 @@ object Subscription extends Loggable {
         }
 
         planStatus andThen
+        ".trial-plan" #> (subscription.trial_? ? PassThru | ClearNodes) andThen
         ".plan-name *" #> plan.name &
         ".ending-date *" #> subscription.ends.map(_.toString()) &
         ".not-subscribed" #> ClearNodes
