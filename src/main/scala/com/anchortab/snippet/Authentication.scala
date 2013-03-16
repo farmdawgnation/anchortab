@@ -273,7 +273,7 @@ object Authentication extends Loggable {
     }
 
     val planSelections = plans.map { plan =>
-      (plan._id.toString, plan.registrationTitle)
+      (plan.hasTrial_?.toString, plan._id.toString, plan.registrationTitle)
     }
 
     def createStripeCustomer(plan: Plan) = {
@@ -380,7 +380,7 @@ object Authentication extends Loggable {
     }
 
     val bind =
-      ".plan-selection" #> select(planSelections, Empty, selectedPlan = _) &
+      ".plan-selection" #> selectPlans(planSelections, Empty, (plan: String) => selectedPlan = plan) &
       "#stripe-token" #> hidden(stripeToken = _, stripeToken) &
       ".email-address" #> text(emailAddress, emailAddress = _) &
       ".password" #> password(requestedPassword, requestedPassword = _) &
