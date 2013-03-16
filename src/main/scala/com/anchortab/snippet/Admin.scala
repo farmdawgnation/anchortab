@@ -98,27 +98,26 @@ object Admin {
       requestPlanId.is match {
         case Empty =>
           val stripeId: Box[String] = {
-            if (planPrice > 0) {
-              val idString = "ANCHORTAB-" + UUID.randomUUID
+            val idString = "ANCHORTAB-" + UUID.randomUUID
 
-              val planResult = tryo(stripe.Plan.create(Map(
-                "amount" -> (planPrice * 100).toInt,
-                "currency" -> "usd",
-                "interval" -> planTerm.stripeCode,
-                "name" -> planName,
-                "trial_period_days" -> trialDays,
-                "id" -> idString
-              )))
+            val planResult = tryo(stripe.Plan.create(Map(
+              "amount" -> (planPrice * 100).toInt,
+              "currency" -> "usd",
+              "interval" -> planTerm.stripeCode,
+              "name" -> planName,
+              "trial_period_days" -> trialDays,
+              "id" -> idString
+            )))
 
-              planResult.map(_ => idString)
-            } else {
-              Empty
-            }
+            planResult.map(_ => idString)
           }
 
           stripeId match {
             case fail:Failure =>
               Alert("Error from Stripe: " + fail.toString)
+
+            case Empty =>
+              Alert("Something went wrong. Please contact support.")
 
             case _ =>
               Plan( planName, planDescription, planPrice, trialDays,
