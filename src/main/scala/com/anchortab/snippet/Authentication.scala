@@ -145,6 +145,14 @@ object Authentication extends Loggable {
     case "show-if-logged-in" :: Nil => showIfLoggedIn
     case "pwn-if-not-admin" :: Nil => pwnIfNotAdmin
     case "show-if-admin" :: Nil => showIfAdmin
+
+    case "register-casual-blogger" :: Nil => registerButton("Casual Blogger")
+    case "register-influencer" :: Nil => registerButton("The Influencer")
+    case "register-industry-leader" :: Nil => registerButton("Industry Leader")
+  }
+
+  def registerButton(planName: String) = {
+    "button [data-plan-id]" #> Plan.find("name" -> planName).map(_._id.toString)
   }
 
   def redirectToDashboardIfLoggedIn(ns:NodeSeq) = {
