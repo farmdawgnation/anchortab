@@ -5,6 +5,7 @@ import scala.xml._
 import net.liftweb._
   import common._
   import http._
+    import S.SFuncHolder
     import provider._
     import js._
       import JsCmds._
@@ -36,8 +37,9 @@ object AuthenticationSHtml extends SHtml {
    * @param func -- the function to execute on form submission
    */
   def selectPlans(opts: Seq[(String, String, String)], deflt: Box[String],
-               func: S.AFuncHolder, attrs: ElemAttr*): Elem = {
-    val vals = opts.map(_._1)
+               strFunc: (String)=>Any, attrs: ElemAttr*): Elem = {
+    val func = S.SFuncHolder(strFunc)
+    val vals = opts.map(_._2)
     val testFunc = S.LFuncHolder(in => in.filter(v => vals.contains(v)) match {case Nil => false case xs => func(xs)}, func.owner)
 
     attrs.foldLeft(S.fmapFunc(testFunc)(fn => <select name={fn}>{opts.flatMap {case (hasTrial, value, text) => (<option data-has-trial={hasTrial} value={value}>{text}</option>) % selected(deflt.exists(_ == value))}}</select>))(_ % _)
@@ -285,11 +287,18 @@ object Authentication extends Loggable {
     }
 
     def createStripeCustomer(plan: Plan) = {
-      tryo(stripe.Customer.create(Map(
-        "plan" -> plan.stripeId.getOrElse(""),
-        "email" -> emailAddress,
-        "card" -> stripeToken
-      )))
+      if (stripeToken.trim.nonEmpty) {
+        tryo(stripe.Customer.create(Map(
+          "plan" -> plan.stripeId.getOrElse(""),
+          "email" -> emailAddress,
+          "card" -> stripeToken
+        )))
+      } else {
+        tryo(stripe.Customer.create(Map(
+          "plan" -> plan.stripeId.getOrElse(""),
+          "email" -> emailAddress
+        )))
+      }
     }
 
     def generateSubscriptionForPlan(plan:Plan) = {
@@ -388,7 +397,7 @@ object Authentication extends Loggable {
     }
 
     val bind =
-      ".plan-selection" #> selectPlans(planSelections, Empty, (plan: String) => selectedPlan = plan) &
+      ".plan-selection" #> selectPlans(planSelections, Empty, selectedPlan = _) &
       "#stripe-token" #> hidden(stripeToken = _, stripeToken) &
       ".email-address" #> text(emailAddress, emailAddress = _) &
       ".password" #> password(requestedPassword, requestedPassword = _) &
