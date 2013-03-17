@@ -36,6 +36,14 @@ $(document).ready ->
   $("body").on 'click', '#modal-dismiss', (event) ->
     $.modal.close()
 
+  $("body").on 'change', "#color-scheme", (event) ->
+    selectedName = $(event.target).find(":selected").text()
+
+    if (selectedName == "Custom")
+      $(event.target).closest(".tab-form").addClass("with-custom-color")
+    else
+      $(event.target).closest(".tab-form").removeClass("with-custom-color")
+
   $(document).on 'form-validation-error', (event) ->
     $target = $(event.fieldSelector)
     $targetContainer = $target.closest("div")

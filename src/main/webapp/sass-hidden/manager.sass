@@ -332,6 +332,12 @@ body
         .tab-form, .profile-form
           +pretty-form
 
+        .tab-form > .custom-color-group
+          display: none
+
+        .tab-form.with-custom-color > .custom-color-group
+          display: block
+
         .plan-selection
           +pretty-table
 
