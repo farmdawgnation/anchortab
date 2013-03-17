@@ -68,6 +68,8 @@ object Admin {
     var visible = requestPlan.map(_.visibleOnRegistration) openOr true
     var featureBasicAnalytics = requestPlan.map(_.hasFeature_?(Plan.Features.BasicAnalytics)) openOr false
     var featureWhitelabeledTabs = requestPlan.map(_.hasFeature_?(Plan.Features.WhitelabeledTabs)) openOr false
+    var featureCustomColorSchemes = requestPlan.map(_.hasFeature_?(Plan.Features.CustomColorSchemes)) openOr false
+    var featureApiAccess = requestPlan.map(_.hasFeature_?(Plan.Features.ApiAccess)) openOr false
     var quotaNumberOfTabs = requestPlan.flatMap(_.quotaFor(Plan.Quotas.NumberOfTabs).map(_.toString)) openOr ""
     var quotaEmailSubscriptions = requestPlan.flatMap(_.quotaFor(Plan.Quotas.EmailSubscriptions).map(_.toString)) openOr ""
     var quotaViews = requestPlan.flatMap(_.quotaFor(Plan.Quotas.Views).map(_.toString)) openOr ""
@@ -78,7 +80,9 @@ object Admin {
       val features = {
         Map(
           Plan.Features.BasicAnalytics -> featureBasicAnalytics,
-          Plan.Features.WhitelabeledTabs -> featureWhitelabeledTabs
+          Plan.Features.WhitelabeledTabs -> featureWhitelabeledTabs,
+          Plan.Features.CustomColorSchemes -> featureCustomColorSchemes,
+          Plan.Features.ApiAccess -> featureApiAccess
         )
       }
 
@@ -190,6 +194,8 @@ object Admin {
       ".plan-visible" #> checkbox(visible, visible = _) &
       ".feature-basic-analytics" #> checkbox(featureBasicAnalytics, featureBasicAnalytics = _) &
       ".feature-whitelabeled-tabs" #> checkbox(featureWhitelabeledTabs, featureWhitelabeledTabs = _) &
+      ".feature-custom-color-schemes" #> checkbox(featureCustomColorSchemes, featureCustomColorSchemes = _) &
+      ".feature-api-access" #> checkbox(featureApiAccess, featureApiAccess = _) &
       ".quota-number-of-tabs" #> text(quotaNumberOfTabs, quotaNumberOfTabs = _) &
       ".quota-email-subscriptions" #> text(quotaEmailSubscriptions, quotaEmailSubscriptions = _) &
       ".quota-views" #> text(quotaViews, quotaViews = _) &

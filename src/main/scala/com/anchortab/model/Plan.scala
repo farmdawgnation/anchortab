@@ -66,6 +66,8 @@ object Plan extends MongoDocumentMeta[Plan] {
   object Features {
     val BasicAnalytics = "basic-analytics"
     val WhitelabeledTabs = "whitelabeled-tabs"
+    val CustomColorSchemes = "custom-color-schemes"
+    val ApiAccess = "api-access"
   }
 
   // The DefaultPlan, or the plan you're on if you don't have a plan. If we decide to offer
