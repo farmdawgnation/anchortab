@@ -14,9 +14,9 @@ import org.joda.time._
 
 import org.bson.types.ObjectId
 
-case class TabAppearance(delay:Int, font:String, colorScheme:String, customText:String)
+case class TabAppearance(delay:Int, colorScheme:String, customText:String, whitelabel:Boolean)
 object TabAppearance {
-  val defaults = TabAppearance(30, "Arial", "red", "")
+  val defaults = TabAppearance(30, "red", "", false)
 }
 
 case class TabStats(views:Long = 0, submissions:Long = 0)
@@ -83,6 +83,5 @@ object Tab extends MongoDocumentMeta[Tab] {
   }
 
   def validAppearanceDelay(delay:String) = validParameter(AppearanceDelayOptions, delay)
-  def validFont(font:String) = validParameter(FontOptions, font)
   def validColorScheme(colorScheme:String) = validParameter(ColorSchemeOptions, colorScheme)
 }

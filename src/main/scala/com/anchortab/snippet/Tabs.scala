@@ -124,8 +124,8 @@ object Tabs {
   def tabForm = {
     var tabName = requestTab.map(_.name) openOr ""
     var appearanceDelay = requestTab.map(_.appearance.delay.toString) openOr ""
-    var font = requestTab.map(_.appearance.font) openOr ""
     var colorScheme = requestTab.map(_.appearance.colorScheme) openOr ""
+    var whitelabel = requestTab.map(_.appearance.whitelabel) openOr false
     var customText = requestTab.map(_.appearance.customText) openOr ""
 
     var mailChimpApiKey = ""
@@ -194,9 +194,9 @@ object Tabs {
                     name = tabName,
                     appearance = TabAppearance(
                       delay = appearanceDelay.toInt,
-                      font = font,
                       colorScheme = colorScheme,
-                      customText = customText
+                      customText = customText,
+                      whitelabel = whitelabel
                     ),
                     service = serviceWrapper
                   ).save
@@ -205,7 +205,7 @@ object Tabs {
 
                 case _ =>
                   val tab = Tab(tabName, session.userId,
-                      TabAppearance(appearanceDelay.toInt, font, colorScheme, customText),
+                      TabAppearance(appearanceDelay.toInt, colorScheme, customText, whitelabel),
                       serviceWrapper)
                   tab.save
 
@@ -267,6 +267,22 @@ object Tabs {
       } map(_.data.asScala.toList) openOr List()
     }
 
+    val hasWhitelabel_? = {
+      {
+        for {
+          session <- userSession.is
+          user <- User.find(session.userId)
+          subscription <- user.subscription
+          plan <- subscription.plan
+            if plan.hasFeature_?(Plan.Features.WhitelabeledTabs)
+        } yield {
+          true
+        }
+      } openOr {
+        false
+      }
+    }
+
     val validEmailServices = {
       val none = List(Tab.EmailServices.None)
       val cc = (constantContactLists.nonEmpty ? List(Tab.EmailServices.ConstantContact) | List())
@@ -282,16 +298,13 @@ object Tabs {
         tryo(Tab.AppearanceDelayOptions.withName(appearanceDelay)),
         selected => appearanceDelay = selected.toString
       ) &
-      "#font" #> selectObj[Tab.FontOptions.Value](
-        Tab.FontOptions.values.toList.map(v => (v,v.toString)),
-        tryo(Tab.FontOptions.withName(font)),
-        selected => font = selected.toString
-      ) &
       "#color-scheme" #> selectObj[Tab.ColorSchemeOptions.Value](
         Tab.ColorSchemeOptions.values.toList.map(v => (v,v.toString)),
         tryo(Tab.ColorSchemeOptions.withName(colorScheme)),
         selected => colorScheme = selected.toString
       ) &
+      ".whitelabel-group" #> (hasWhitelabel_? ? PassThru | ClearNodes) andThen
+      "#whitelabel" #> checkbox(whitelabel, whitelabel = _) &
       "#custom-text" #> text(customText, customText = _) &
       "#service" #> selectObj[Tab.EmailServices.Value](
         validEmailServices.map(v => (v,v.toString)),

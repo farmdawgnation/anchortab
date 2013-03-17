@@ -77,8 +77,8 @@ object Api extends RestHelper with Loggable {
 
           val tabJson =
             ("delay" -> tab.appearance.delay) ~
-            ("font" -> tab.appearance.font) ~
             ("colorScheme" -> tab.appearance.colorScheme) ~
+            ("whitelabel" -> tab.appearance.whitelabel) ~
             ("customText" -> tab.appearance.customText)
 
           Call(callbackFnName, tabJson)
@@ -218,7 +218,6 @@ object Api extends RestHelper with Loggable {
           delay <- req.param("delay") ?~! "Delay parameter is required." ~> 400
           validDelay <- Tab.validAppearanceDelay(delay) ?~! "The delay parameter was invalid." ~> 400
           font <- req.param("font") ?~! "The font parameter is required." ~> 400
-          validFont <- Tab.validFont(font) ?~! "The font parameter was invalid." ~> 400
           colorScheme <- req.param("colorScheme") ?~! "The colorScheme parameter is required." ~> 400
           validColorScheme <- Tab.validColorScheme(colorScheme) ?~! "The colorScheme parameter was invalid." ~> 400
           customText <- req.param("customText") ?~! "the customText parameter is required." ~> 400
@@ -226,7 +225,6 @@ object Api extends RestHelper with Loggable {
           Tab.update("_id" -> tabId, "$set" -> (
             "appearance" -> (
               ("delay" -> delay.toInt) ~
-              ("font" -> font) ~
               ("colorScheme" -> colorScheme) ~
               ("customTest" -> customText)
             )
