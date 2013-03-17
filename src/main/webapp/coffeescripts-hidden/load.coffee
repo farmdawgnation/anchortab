@@ -161,17 +161,21 @@ displayTab = (tabJson) ->
 
   $("head").append atStyleSheet
 
+  anchorTabStamp = []
+
+  if ! tabJson.whitelabel
+    anchorTabStamp =
+      $("<a />")
+        .addClass("anchortab-stamp")
+        .attr('href', "http://anchortab.com")
+        .attr('target', '_blank')
+
   # Create the tab and append to the end of the body.
   anchorTab =
     $("<div />")
       .attr("id", "anchor-tab")
       .addClass(colorScheme)
-      .append(
-        $("<a />")
-          .addClass("anchortab-stamp")
-          .attr('href', "http://anchortab.com")
-          .attr('target', '_blank')
-      )
+      .append(anchorTabStamp)
       .append(
         $("<p />")
           .addClass("custom-message")
