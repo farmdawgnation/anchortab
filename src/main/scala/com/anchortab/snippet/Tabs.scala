@@ -125,6 +125,8 @@ object Tabs {
     var tabName = requestTab.map(_.name) openOr ""
     var appearanceDelay = requestTab.map(_.appearance.delay.toString) openOr ""
     var colorScheme = requestTab.map(_.appearance.colorScheme) openOr TabColorScheme.Red
+    var customColorSchemeBase = requestTab.map(_.appearance.colorScheme.baseColor) openOr ""
+    var customColorSchemeSecondary = requestTab.map(_.appearance.colorScheme.secondaryColor) openOr ""
     var whitelabel = requestTab.map(_.appearance.whitelabel) openOr false
     var customText = requestTab.map(_.appearance.customText) openOr ""
 
@@ -188,13 +190,20 @@ object Tabs {
               Alert("Looks like your service API key or list id might be wrong.")
 
             case _ =>
+              val customizedColorScheme = {
+                if (colorScheme.name != "Custom")
+                  colorScheme
+                else
+                  TabColorScheme(customColorSchemeBase, customColorSchemeSecondary, "Custom")
+              }
+
               requestTab match {
                 case Full(tab) =>
                   tab.copy(
                     name = tabName,
                     appearance = TabAppearance(
                       delay = appearanceDelay.toInt,
-                      colorScheme = colorScheme,
+                      colorScheme = customizedColorScheme,
                       customText = customText,
                       whitelabel = whitelabel
                     ),
@@ -205,7 +214,7 @@ object Tabs {
 
                 case _ =>
                   val tab = Tab(tabName, session.userId,
-                      TabAppearance(appearanceDelay.toInt, colorScheme, customText, whitelabel),
+                      TabAppearance(appearanceDelay.toInt, customizedColorScheme, customText, whitelabel),
                       serviceWrapper)
                   tab.save
 
@@ -283,6 +292,28 @@ object Tabs {
       }
     }
 
+    val hasCustomColorSchemes_? = {
+      {
+        for {
+          session <- userSession.is
+          user <- User.find(session.userId)
+          subscription <- user.subscription
+          plan <- subscription.plan
+            if plan.hasFeature_?(Plan.Features.CustomColorSchemes)
+        } yield {
+          true
+        }
+      } openOr {
+        false
+      }
+    }
+
+    val colorSchemeList =
+      if (hasCustomColorSchemes_?)
+        TabColorScheme.advanced
+      else
+        TabColorScheme.basic
+
     val validEmailServices = {
       val none = List(Tab.EmailServices.None)
       val cc = (constantContactLists.nonEmpty ? List(Tab.EmailServices.ConstantContact) | List())
@@ -298,11 +329,27 @@ object Tabs {
         tryo(Tab.AppearanceDelayOptions.withName(appearanceDelay)),
         selected => appearanceDelay = selected.toString
       ) &
-      "#color-scheme" #> selectObj[TabColorScheme](
-        TabColorScheme.basic.map(v => (v,v.toString)),
-        Full(colorScheme),
-        colorScheme = _
+      "#color-scheme" #> select(
+        colorSchemeList.map(v => (v.toString,v.toString)),
+        Full(colorScheme.toString),
+        (selectedSchemeName: String) => {
+          selectedSchemeName match {
+            case TabColorScheme.Custom.toString if hasCustomColorSchemes_? =>
+              colorScheme = TabColorScheme.Custom
+            case TabColorScheme.Red.toString =>
+              colorScheme = TabColorScheme.Red
+            case TabColorScheme.Green.toString =>
+              colorScheme = TabColorScheme.Green
+            case TabColorScheme.Blue.toString =>
+              colorScheme = TabColorScheme.Blue
+            case _ =>
+              colorScheme = TabColorScheme.Gray
+          }
+        }
       ) &
+      ".custom-color-group" #> (hasCustomColorSchemes_? ? PassThru | ClearNodes) andThen
+      "#custom-color-scheme-base" #> text(customColorSchemeBase, customColorSchemeBase = _, ("type" -> "color")) &
+      "#custom-color-scheme-secondary" #> text(customColorSchemeSecondary, customColorSchemeSecondary = _, ("type" -> "color")) &
       ".whitelabel-group" #> (hasWhitelabel_? ? PassThru | ClearNodes) andThen
       "#whitelabel" #> checkbox(whitelabel, whitelabel = _) &
       "#custom-text" #> text(customText, customText = _) &

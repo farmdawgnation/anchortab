@@ -15,7 +15,7 @@ import org.joda.time._
 import org.bson.types.ObjectId
 
 case class TabColorScheme(baseColor: String, secondaryColor: String, name: String = "") {
-  override def toString = name
+  override val toString = name
 }
 object TabColorScheme {
   val Gray = TabColorScheme("#848484", "#5e5e5e", "Gray")
@@ -23,7 +23,10 @@ object TabColorScheme {
   val Red = TabColorScheme("#db2f2d", "#9b2220", "Red")
   val Blue = TabColorScheme("#2d8bd6", "#226aa3", "Blue")
 
+  val Custom = TabColorScheme("", "", "Custom")
+
   val basic = Red :: Green :: Blue :: Gray :: Nil
+  val advanced = basic ++ (Custom :: Nil)
 }
 
 case class TabAppearance(delay:Int, colorScheme:TabColorScheme, customText:String, whitelabel:Boolean)
