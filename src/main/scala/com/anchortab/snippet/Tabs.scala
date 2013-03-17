@@ -124,7 +124,7 @@ object Tabs {
   def tabForm = {
     var tabName = requestTab.map(_.name) openOr ""
     var appearanceDelay = requestTab.map(_.appearance.delay.toString) openOr ""
-    var colorScheme = requestTab.map(_.appearance.colorScheme) openOr ""
+    var colorScheme = requestTab.map(_.appearance.colorScheme) openOr TabColorScheme.Red
     var whitelabel = requestTab.map(_.appearance.whitelabel) openOr false
     var customText = requestTab.map(_.appearance.customText) openOr ""
 
@@ -298,10 +298,10 @@ object Tabs {
         tryo(Tab.AppearanceDelayOptions.withName(appearanceDelay)),
         selected => appearanceDelay = selected.toString
       ) &
-      "#color-scheme" #> selectObj[Tab.ColorSchemeOptions.Value](
-        Tab.ColorSchemeOptions.values.toList.map(v => (v,v.toString)),
-        tryo(Tab.ColorSchemeOptions.withName(colorScheme)),
-        selected => colorScheme = selected.toString
+      "#color-scheme" #> selectObj[TabColorScheme](
+        TabColorScheme.basic.map(v => (v,v.toString)),
+        Full(colorScheme),
+        colorScheme = _
       ) &
       ".whitelabel-group" #> (hasWhitelabel_? ? PassThru | ClearNodes) andThen
       "#whitelabel" #> checkbox(whitelabel, whitelabel = _) &

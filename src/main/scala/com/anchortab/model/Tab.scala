@@ -14,9 +14,21 @@ import org.joda.time._
 
 import org.bson.types.ObjectId
 
-case class TabAppearance(delay:Int, colorScheme:String, customText:String, whitelabel:Boolean)
+case class TabColorScheme(baseColor: String, secondaryColor: String, name: String = "") {
+  override def toString = name
+}
+object TabColorScheme {
+  val Gray = TabColorScheme("#848484", "#5e5e5e", "Gray")
+  val Green = TabColorScheme("#39bd42", "#2b8a31", "Green")
+  val Red = TabColorScheme("#db2f2d", "#9b2220", "Red")
+  val Blue = TabColorScheme("#2d8bd6", "#226aa3", "Blue")
+
+  val basic = Red :: Green :: Blue :: Gray :: Nil
+}
+
+case class TabAppearance(delay:Int, colorScheme:TabColorScheme, customText:String, whitelabel:Boolean)
 object TabAppearance {
-  val defaults = TabAppearance(30, "red", "", false)
+  val defaults = TabAppearance(30, TabColorScheme.Red, "", false)
 }
 
 case class TabStats(views:Long = 0, submissions:Long = 0)
@@ -60,13 +72,6 @@ object Tab extends MongoDocumentMeta[Tab] {
     val Delay60 = Value("60")
   }
 
-  object ColorSchemeOptions extends Enumeration {
-    val Red = Value("Red")
-    val Blue = Value("Blue")
-    val Green = Value("Green")
-    val Gray = Value("Gray")
-  }
-
   object EmailServices extends Enumeration {
     val None = Value("None")
     val MailChimp = Value("MailChimp")
@@ -83,5 +88,4 @@ object Tab extends MongoDocumentMeta[Tab] {
   }
 
   def validAppearanceDelay(delay:String) = validParameter(AppearanceDelayOptions, delay)
-  def validColorScheme(colorScheme:String) = validParameter(ColorSchemeOptions, colorScheme)
 }
