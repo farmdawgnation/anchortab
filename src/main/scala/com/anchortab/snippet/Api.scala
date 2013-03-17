@@ -41,6 +41,8 @@ object Api extends RestHelper with Loggable {
         for {
           tab <- (Tab.find(tabId):Box[Tab])
           user <- tab.user.filter(_.tabsActive_?) ?~! "This tab has been disabled." ~> 403
+          subscription <- user.subscription
+          plan <- subscription.plan
           callbackFnName <- req.param("callback") ?~! "Callback not specified." ~> 400
         } yield {
           val remoteIp = req.header("X-Forwarded-For") openOr req.remoteAddr
@@ -75,10 +77,19 @@ object Api extends RestHelper with Loggable {
           QuotasActor ! CheckQuotaCounts(user._id)
           EventActor ! TrackEvent(Event.Types.TabView, remoteIp, userAgent, user._id, tab._id, Some(cookieId))
 
+          val whitelabelTab = tab.appearance.whitelabel && plan.hasFeature_?(Plan.Features.WhitelabeledTabs)
+          val colorScheme = {
+            if (tab.appearance.colorScheme.name == TabColorScheme.Custom.name && ! plan.hasFeature_?(Plan.Features.CustomColorSchemes)) {
+              TabColorScheme.Red
+            } else {
+              tab.appearance.colorScheme
+            }
+          }
+
           val tabJson =
             ("delay" -> tab.appearance.delay) ~
-            ("colorScheme" -> decompose(tab.appearance.colorScheme)) ~
-            ("whitelabel" -> tab.appearance.whitelabel) ~
+            ("colorScheme" -> decompose(colorScheme)) ~
+            ("whitelabel" -> whitelabelTab) ~
             ("customText" -> tab.appearance.customText)
 
           Call(callbackFnName, tabJson)
