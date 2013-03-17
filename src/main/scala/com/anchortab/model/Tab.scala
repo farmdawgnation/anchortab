@@ -60,12 +60,6 @@ object Tab extends MongoDocumentMeta[Tab] {
     val Delay60 = Value("60")
   }
 
-  object FontOptions extends Enumeration {
-    val Arial = Value("Arial")
-    val TimesNewRoman = Value("Times New Roman")
-    val Helvetica = Value("Helvetica")
-  }
-
   object ColorSchemeOptions extends Enumeration {
     val Red = Value("Red")
     val Blue = Value("Blue")
