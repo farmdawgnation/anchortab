@@ -1,4 +1,7 @@
 #!/bin/bash
+echo "[deploy] Backing up database."
+sudo /opt/backupscripts/backup_mongo.sh
+
 echo "[deploy] Pulling latest code."
 git pull
 
