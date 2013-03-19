@@ -23,9 +23,6 @@ import org.bson.types.ObjectId
 import com.anchortab.model._
 import com.anchortab.actor._
 
-import me.frmr.wepay._
-  import api.Preapproval
-
 case object LoginFailed extends SimpleAnchorTabEvent("login-failed")
 case class RedirectingToWePay(preapprovalUrl: String) extends SimpleAnchorTabEvent("redirecting-to-wepay")
 case class FormValidationError(fieldSelector: String, error: String) extends
@@ -37,15 +34,6 @@ object statelessUser extends RequestVar[Box[User]](Empty)
 object passwordResetUser extends RequestVar[Box[User]](Empty)
 
 object Authentication extends Loggable {
-  implicit val authenticationToken : Option[WePayToken] = {
-    for {
-      anchortabUserId <- Props.getLong("wepay.anchorTabUserId")
-      anchortabAccessToken <- Props.get("wepay.anchorTabAccessToken")
-    } yield {
-      WePayToken(anchortabUserId, anchortabAccessToken, "BEARER", None)
-    }
-  }
-
   /**
    * Handle authentication for stateless requests (the API).
   **/
@@ -268,18 +256,7 @@ object Authentication extends Loggable {
       if (plan.free_?) {
         Full(UserSubscription(plan._id, plan.price, plan.term, status="active"))
       } else {
-        for {
-          accountId <- Props.getLong("wepay.anchorTabAccountId") ?~! "No WePay Account ID found."
-          redirectUri <- Props.get("wepay.anchorTabRedirectUri") ?~! "No redirect URI found."
-          callbackUri <- Props.get("wepay.anchorTabCallbackUri") ?~! "No callback URI found."
-          preapproval <- Preapproval(accountId, plan.price, plan.name, plan.term.description,
-                                    redirect_uri = Some(redirectUri), callback_uri = Some(callbackUri),
-                                    fee_payer = Some("payee"), auto_recur = Some(true)).save
-          preapprovalId = preapproval.preapproval_id
-          preapprovalUri <- preapproval.preapproval_uri
-        } yield {
-          UserSubscription(plan._id, plan.price, plan.term, Some(preapprovalId), Some(preapprovalUri))
-        }
+        Full(UserSubscription(plan._id, plan.price, plan.term, None, None))
       }
     }
 
