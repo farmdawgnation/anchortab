@@ -19,6 +19,9 @@ modal = (id, nodes, closeCallback) ->
   modal.modal()
 
 $(document).ready ->
+  unless Modernizr.inputtypes.color
+    $("html").addClass("legacy-color-picker")
+
   $("select").customSelect()
 
   $(document).on 'login-failed', ->

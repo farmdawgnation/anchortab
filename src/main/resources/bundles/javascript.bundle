@@ -26,6 +26,8 @@ base.js
 manager.js
 customSelect.jquery.js
 jquery.modal.js
+modernizr-colorinputs.js
+jscolor/jscolor.js
 
 dashboard
 highcharts/highcharts.js
