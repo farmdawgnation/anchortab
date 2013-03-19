@@ -4,7 +4,7 @@ $(document).ready ->
       renderTo: 'weeks-performance-graph',
       defaultSeriesType: 'spline',
       backgroundColor: '#f7f7f7',
-      width: 600,
+      width: 700,
       animation: false
     title: [
       text: 'Weekly Performance'
@@ -26,6 +26,7 @@ $(document).ready ->
       title:
         text: null
       min: 0
+      minRange: 10
 
   requestEventSummary()
 
