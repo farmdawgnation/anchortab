@@ -28,6 +28,7 @@ customSelect.jquery.js
 jquery.modal.js
 modernizr-colorinputs.js
 jscolor/jscolor.js
+pretty-meters.js
 
 dashboard
 highcharts/highcharts.js

@@ -61,6 +61,15 @@ object Plan extends MongoDocumentMeta[Plan] {
     val NumberOfTabs = "number-of-tabs"
     val EmailSubscriptions = "email-subscriptions"
     val Views = "views"
+
+    def humanNameFor(quotaName: String) = {
+      quotaName match {
+        case NumberOfTabs => "Number of Tabs"
+        case EmailSubscriptions => "Email Subscriptions"
+        case Views => "Views"
+        case _ => ""
+      }
+    }
   }
 
   object Features {

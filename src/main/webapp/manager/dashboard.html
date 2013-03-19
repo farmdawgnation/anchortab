@@ -30,18 +30,23 @@
 
       <div data-lift="Dashboard.weeksPerformanceGraph"></div>
 
-      <h3>Account Information</h3>
+      <div class="l:Dashboard.accountStats account-stats">
+        <h3>Account Information</h3>
 
-      <ul class="l:Dashboard.accountStats account-stats">
-        <li>Current Plan: <span class="plan">Plan Name</span></li>
+        <p>You are currently subscribed to <span class="plan">Plan Name</span></p>
+
         <ul class="quota-summary-list">
           <li class="quota-summary">
             <span class="quota-name">Emails</span>:
             <span class="usage">100</span> used out of
             <span class="maximum">500</span>
+
+            <div class="meter">
+              <span class="usage-meter"></span>
+            </div>
           </li>
         </ul>
-      </ul>
+      </div>
 
       <head>
         <lift:script-bundle name="dashboard"></lift:script-bundle>
