@@ -146,10 +146,10 @@ object Bundles {
     def styleTag(uri:String) = <link type="text/css" rel="stylesheet" href={uri} />
 
     Props.mode match {
-      case Props.RunModes.Development =>
-        expandedTagsFor(styleBundles, "/stylesheets", styleTag _).flatten
-      case _ =>
+      case Props.RunModes.Production =>
         bundleTagFor(styleBundles, "/stylesheets", "css", styleTag _)
+      case _ =>
+        expandedTagsFor(styleBundles, "/stylesheets", styleTag _).flatten
     }
   }
 }
