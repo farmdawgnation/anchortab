@@ -135,10 +135,10 @@ object Bundles {
     def scriptTag(uri:String) = <script type="text/javascript" src={uri}></script>
 
     Props.mode match {
-      case Props.RunModes.Development =>
-        expandedTagsFor(scriptBundles, "/javascripts", scriptTag _).flatten
-      case _ =>
+      case Props.RunModes.Production =>
         bundleTagFor(scriptBundles, "/javascripts", "js", scriptTag _)
+      case _ =>
+        expandedTagsFor(scriptBundles, "/javascripts", scriptTag _).flatten
     }
   }
 
