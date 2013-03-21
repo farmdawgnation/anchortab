@@ -34,13 +34,21 @@
       <div class="l:Dashboard.accountStats account-stats">
         <h3>Account Information</h3>
 
-        <p>You are currently subscribed to <span class="plan">Plan Name</span></p>
+        <h4>
+          Current Plan: <span class="plan">Plan Name</span>
+          <small>
+            <a href="/manager/subscription">(Change)</a>
+          </small>
+        </h4>
 
         <ul class="quota-summary-list">
           <li class="quota-summary">
-            <span class="quota-name">Emails</span>:
-            <span class="usage">100</span> used out of
-            <span class="maximum">500</span>
+            <span class="quota-name">Emails</span>
+
+            <div class="usage-summary">
+              <span class="usage">100</span> of
+              <span class="maximum">500</span>
+            </div>
 
             <div class="meter">
               <span class="usage-meter"></span>

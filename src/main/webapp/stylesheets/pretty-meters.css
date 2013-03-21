@@ -1,9 +1,9 @@
 		.meter { 
       width: 97%;
       overflow: hidden;
-			height: 20px;  /* Can be anything */
+			height: 10px;
 			position: relative;
-			margin: 20px 0 20px 0; /* Just for demo spacing */
+			margin: 0;
 			background: #555;
 			-moz-border-radius: 25px;
 			-webkit-border-radius: 25px;
