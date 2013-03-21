@@ -22,7 +22,6 @@ object Dashboard {
         cometName = "event-summary-comet-" + session.userId
       } yield {
         <lift:comet type="EventSummaryComet" name={cometName}></lift:comet>
-        <canvas width="620" height="400" id="weeks-performance-graph"></canvas>
       }
     } openOr {
       NodeSeq.Empty
