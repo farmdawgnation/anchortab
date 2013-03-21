@@ -41,10 +41,10 @@ object EmailActor extends LiftActor with Loggable {
       text: Option[String] = None)
 
     trait MandrillApiCall {
-      def uri: String
+      def uri(requestBuilder: RequestBuilder): RequestBuilder
     }
     case class SendMandrillMessage(message: MandrillMessage, async: Boolean = false) extends MandrillApiCall {
-      val uri = "/messages/send.json"
+      def uri(requestBuilder: RequestBuilder) = requestBuilder / "messages" / "send.json"
     }
 
     case class CodeResponse(code: Int)
@@ -68,7 +68,7 @@ object EmailActor extends LiftActor with Loggable {
       }
 
       val requestBody = compact(render(postJson))
-      val request = (host(endpointHost) / "api" / endpointVersion / apiCall.uri).secure <<
+      val request = (apiCall.uri(host(endpointHost) / "api" / endpointVersion)).secure <<
         requestBody
 
       val response = Http(request > AsCodeResponse).either
