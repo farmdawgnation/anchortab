@@ -2,6 +2,8 @@ package com.anchortab.actor
 
 import scala.xml.NodeSeq
 
+import java.text.SimpleDateFormat
+
 import net.liftweb._
   import common._
   import actor._
@@ -116,6 +118,9 @@ object EmailActor extends LiftActor with Loggable {
   val trialEndingEmailTemplate =
     Templates("emails-hidden" :: "trial-ending-email" :: Nil) openOr NodeSeq.Empty
 
+  val invoicePaymentFailedEmailTemplate =
+    Templates("emails-hidden" :: "invoice-payment-failed-email" :: Nil) openOr NodeSeq.Empty
+
   def messageHandler = {
     case SendWelcomeEmail(userEmail) =>
       sendEmail(welcomeEmailSubject, userEmail :: Nil, welcomeEmailTemplate)
@@ -144,12 +149,27 @@ object EmailActor extends LiftActor with Loggable {
       val subject = "Anchor Tab Trial Ending Soon"
 
       val trialEndingSoonMessage = (
-        ".plan-name" #> planName &
+        ".plan-name" #> planName andThen
         ".no-billing-info" #> (billingInfoPresent ? ClearNodes | PassThru) &
         ".billing-info" #> (billingInfoPresent ? PassThru | ClearNodes)
       ).apply(trialEndingEmailTemplate)
 
       sendEmail(subject, userEmail :: Nil, trialEndingSoonMessage)
+
+    case SendInvoicePaymentFailedEmail(userEmail, amount, nextPaymentAttempt) =>
+      val subject = "Problem Billing your Credit Card"
+      val dateFormatter = new SimpleDateFormat("MMM dd")
+
+      val invoicePaymentFailedMessage = (
+        ".will-bill-again" #> (nextPaymentAttempt.isDefined ? PassThru | ClearNodes) andThen
+        ".will-not-bill-again" #> (nextPaymentAttempt.isDefined ? ClearNodes | PassThru) andThen
+        ".bill-amount" #> ("$" + ("%1.2f" format amount)) &
+        ".next-payment-attempt" #> nextPaymentAttempt.map { paymentAttemptDate =>
+          dateFormatter.format(paymentAttemptDate.toDate)
+        }
+      ).apply(invoicePaymentFailedEmailTemplate)
+
+      sendEmail(subject, userEmail :: Nil, invoicePaymentFailedMessage)
 
     case _ =>
   }
