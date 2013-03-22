@@ -6,7 +6,8 @@ import scala.math._
 import net.liftweb._
   import common._
   import mongodb._
-  import util.Helpers._
+  import util._
+    import Helpers._
   import json._
     import ext._
     import JsonDSL._
@@ -25,6 +26,20 @@ object Dashboard {
       }
     } openOr {
       NodeSeq.Empty
+    }
+  }
+
+  def accountShutdownAlert = {
+    {
+      for {
+        session <- userSession.is
+        user <- User.find(session.userId)
+          if user.subscription.isDefined && ! user.tabsActive_?
+      } yield {
+        PassThru
+      }
+    } openOr {
+      ClearNodes
     }
   }
 

@@ -7,6 +7,13 @@
   <body class="lift:content_id=main">
     <div id="main" class="lift:surround?with=tab-manager;at=content">
       <lift:pwn-if-not-logged-in />
+
+      <p class="helpful" data-lift="Dashboard.accountShutdownAlert">
+        Your tabs have been deactivated because you have exceeded the quotas for your current
+        plan. You may either upgrade your subscription to have your tabs reactivate immediately,
+        or wait until the beginning of the next calendar month for your quotas to be reset.
+      </p>
+
       <h2>The Dashboard</h2>
 
       <div class="first-steps-container" data-lift="first-steps">
