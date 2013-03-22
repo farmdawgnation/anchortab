@@ -47,7 +47,7 @@ object Dashboard {
     val currentPlanName =
       for {
         session <- userSession.is
-        user <- session.user
+        user <- User.find(session.userId)
       } yield {
         user.plan.name
       }
