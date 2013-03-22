@@ -162,7 +162,7 @@ object Accounts {
           val emailChange = {
             for {
               stripeCustomerId <- (user.stripeCustomerId: Box[String]) ?~ "Stripe token missing."
-                if user.email != email
+                if user.email != email && email != ""
               stripeCustomer <- tryo(stripe.Customer.retrieve(stripeCustomerId))
               updateResult <- tryo(stripeCustomer.update(Map(
                 "email" -> email
@@ -208,7 +208,7 @@ object Accounts {
           ".first-name" #> text(firstName, firstName = _) &
           ".last-name" #> text(lastName, lastName = _) &
           ".organization" #> text(organization, organization = _) &
-          ".email" #> text(email, email = _) &
+          ".email" #> text(email, newEmail => email = newEmail.trim) &
           ".change-password" #> password(changePassword, changePassword = _) &
           ".confirm-password" #> password(confirmPassword, confirmPassword = _) &
           ".submit" #> ajaxSubmit("Update Profile", submit _)
