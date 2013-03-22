@@ -22,6 +22,8 @@ import com.anchortab.model.{User, UserProfile}
 import com.anchortab.constantcontact.ConstantContact
 import com.anchortab.mailchimp._
 
+import com.stripe
+
 import org.bson.types.ObjectId
 
 object Accounts {
@@ -157,17 +159,33 @@ object Accounts {
             }
           }
 
+          val emailChange = {
+            for {
+              stripeCustomerId <- (user.stripeCustomerId: Box[String]) ?~ "Stripe token missing."
+                if user.email != email
+              stripeCustomer <- tryo(stripe.Customer.retrieve(stripeCustomerId))
+              updateResult <- tryo(stripeCustomer.update(Map(
+                "email" -> email
+              )))
+            } yield {
+              true
+            }
+          }
+
           val userProfile = UserProfile(firstNameOpt, lastNameOpt, organizationOpt)
 
-          (email, passwordChange) match {
-            case ("", _) =>
+          (email, passwordChange, emailChange) match {
+            case ("", _, _) =>
               FormValidationError(".email", "Email is a required field.")
 
-            case (_, Failure(msg, _, _)) =>
+            case (_, Failure(msg, _, _), _) =>
               FormValidationError(".change-password", "") &
               FormValidationError(".confirm-password", msg)
 
-            case (_, Empty) =>
+            case (_, _, Failure(msg, _, _)) =>
+              GeneralError("Something went wrong while updating your email: " + msg)
+
+            case (_, Empty, _) =>
               User.update("_id" -> user._id, "$set" -> (
                 ("email" -> email) ~
                 ("profile" -> decompose(userProfile))
@@ -175,7 +193,7 @@ object Accounts {
 
               Reload
 
-            case (_, Full(pw)) =>
+            case (_, Full(pw), _) =>
               User.update("_id" -> user._id, "$set" -> (
                 ("email" -> email) ~
                 ("profile" -> decompose(userProfile)) ~
