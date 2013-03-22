@@ -17,6 +17,8 @@ import net.liftweb._
 import dispatch._
 import com.ning.http.client.{Request, RequestBuilder, Response}
 
+import org.joda.time._
+
 import com.anchortab.model._
 
 import org.bson.types.ObjectId
@@ -26,6 +28,9 @@ case class SendWelcomeEmail(userEmail: String) extends EmailActorMessage
 case class SendForgotPasswordEmail(userEmail: String, resetLink: String) extends EmailActorMessage
 case class SendQuotaWarningEmail(userEmail: String) extends EmailActorMessage
 case class SendQuotaErrorEmail(userEmail: String) extends EmailActorMessage
+case class SendTrialEndingEmail(userEmail: String, billingInfoPresent: Boolean, planName: String, amountInCents: Int) extends EmailActorMessage
+case class SendInvoicePaymentFailedEmail(userEmail: String, amountInCents: Int, nextPaymentAttempt: Option[DateTime]) extends EmailActorMessage
+case class InvoicePaymentSucceeded(userEmail: String, amountInCents: Int) extends EmailActorMessage
 
 object EmailActor extends LiftActor with Loggable {
   implicit val formats = DefaultFormats
