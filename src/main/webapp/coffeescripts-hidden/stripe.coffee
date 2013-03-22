@@ -1,6 +1,20 @@
 $(document).ready ->
   Stripe?.setPublishableKey? 'pk_test_UQLI1joAA4aIZcXjESwa4awL'
 
+  $("body").on 'click', '.stripe-form .submit', (event) ->
+    $(event.target).addClass("disabled").after(
+      $("<img />")
+        .addClass("stripe-ajax-loader")
+        .attr("src", "/images/ajax-loader.gif"))
+
+    setTimeout ->
+      $(event.target).attr("disabled", "disabled")
+
+  $(document).on 'form-validation-error', (event) ->
+    setTimeout ->
+      $(".stripe-ajax-loader").remove()
+      $(".submit").removeClass("disabled").removeAttr("disabled")
+
 $(document).on 'stripe-form-ready', (event) ->
   $('#card-number').payment('formatCardNumber')
   $('#card-expiry').payment('formatCardExpiry')

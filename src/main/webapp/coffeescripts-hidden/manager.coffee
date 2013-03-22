@@ -166,11 +166,11 @@ $(document).ready ->
           .attr("value", "Update")
           .click((event) ->
             event.preventDefault()
-            event.stopPropagation()
 
-            anchortabSite.event("validate-stripe-form",
-              stripeCallback: stripeCallback
-            )
+            setTimeout ->
+              anchortabSite.event("validate-stripe-form",
+                stripeCallback: stripeCallback
+              )
           )
       )
     ]

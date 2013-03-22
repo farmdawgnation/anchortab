@@ -14,11 +14,10 @@ $(document).ready ->
     else
       $(".billing-information").show()
 
-  $(".stripe-form .submit").on "click", (event) ->
+  $("body").on "click", '.stripe-form .submit', (event) ->
     return if $(".plan-selection").find(":selected").data("has-trial")
 
     event.preventDefault()
-    event.stopPropagation()
 
     anchortabSite.event("validate-stripe-form",
       stripeCallback: stripeCallback
