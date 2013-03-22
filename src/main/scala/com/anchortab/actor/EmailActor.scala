@@ -121,6 +121,9 @@ object EmailActor extends LiftActor with Loggable {
   val invoicePaymentFailedEmailTemplate =
     Templates("emails-hidden" :: "invoice-payment-failed-email" :: Nil) openOr NodeSeq.Empty
 
+  val invoicePaymentSucceededEmailTemplate =
+    Templates("emails-hidden" :: "invoice-payment-succeeded-email" :: Nil) openOr NodeSeq.Empty
+
   def messageHandler = {
     case SendWelcomeEmail(userEmail) =>
       sendEmail(welcomeEmailSubject, userEmail :: Nil, welcomeEmailTemplate)
@@ -170,6 +173,15 @@ object EmailActor extends LiftActor with Loggable {
       ).apply(invoicePaymentFailedEmailTemplate)
 
       sendEmail(subject, userEmail :: Nil, invoicePaymentFailedMessage)
+
+    case SendInvoicePaymentSucceededEmail(userEmail, amount) =>
+      val subject = "Anchor Tab Invoice"
+
+      val invoicePaymentSucceededMessage = (
+        ".bill-amount" #> ("%1.2f" format amount)
+      ).apply(invoicePaymentSucceededEmailTemplate)
+
+      sendEmail(subject, userEmail :: Nil, invoicePaymentSucceededMessage)
 
     case _ =>
   }
