@@ -29,16 +29,12 @@ jquery.modal.js
 modernizr-colorinputs.js
 jscolor/jscolor.js
 pretty-meters.js
+jquery.payment.js
+stripe.js
 
 dashboard
 Chart.js
 weeks-performance-graph.js
 
 register
-jquery.payment.js
-stripe.js
 register.js
-
-subscription
-jquery.payment.js
-stripe.js
