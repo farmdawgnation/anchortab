@@ -41,11 +41,34 @@ object StripeHook extends RestHelper with Loggable {
           val result: Box[LiftResponse] = eventType match {
             case "invoice.payment_succeeded" =>
               // Send an email reciept.
-              Full(OkResponse())
+              for {
+                stripeCustomerId <- tryo((objectJson \ "customer").extract[String]) ?~! "No customer."
+                user <- User.find("stripeCustomerId" -> stripeCustomerId)
+                totalAmountInCents <- tryo((objectJson \ "total").extract[Long]) ?~! "No total."
+              } yield {
+                val amount = totalAmountInCents / 100d
+
+                EmailActor ! SendInvoicePaymentSucceededEmail(user.email, amount)
+                OkResponse()
+              }
 
             case "invoice.payment_failed" =>
-              // Send a charge failure alert.
-              Full(OkResponse())
+              for {
+                stripeCustomerId <- tryo((objectJson \ "customer").extract[String]) ?~! "No customer."
+                user <- User.find("stripeCustomerId" -> stripeCustomerId)
+                totalAmountInCents <- tryo((objectJson \ "total").extract[Long]) ?~! "No total."
+              } yield {
+                val nextPaymentAttemptSecs: Option[Long] =
+                  tryo((objectJson \ "next_payment_attempt").extract[Option[Long]]).flatten.headOption
+
+                val nextPaymentAttempt = nextPaymentAttemptSecs.map { nextPaymentAttemptInSecs =>
+                  new DateTime(nextPaymentAttemptInSecs * 1000)
+                }
+                val amount = totalAmountInCents / 100d
+
+                EmailActor ! SendInvoicePaymentFailedEmail(user.email, amount, nextPaymentAttempt)
+                OkResponse()
+              }
 
             case "customer.subscription.created" =>
               // Create the subscription if it doesn't already exist for that user
@@ -155,8 +178,15 @@ object StripeHook extends RestHelper with Loggable {
               }
 
             case "customer.subscription.trial_will_end" =>
-              // Alert email for trial ending.
-              Full(OkResponse())
+              for {
+                stripeCustomerId <- tryo((objectJson \ "customer").extract[String]) ?~! "No customer."
+                user <- User.find("stripeCustomerId" -> stripeCustomerId)
+                subscription <- user.subscription
+                plan <- subscription.plan
+              } yield {
+                EmailActor ! SendTrialEndingEmail(user.email, user.activeCard.isDefined, plan.name)
+                OkResponse()
+              }
 
             case _ =>
               Full(OkResponse())
