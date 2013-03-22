@@ -1,22 +1,22 @@
 modal = (id, nodes, closeCallback) ->
   closeCallback = closeCallback || (event) ->
-    $(event.target).remove()
+    $(".modal").remove()
 
   $("#" + id).remove()
 
-  modal =
+  newModal =
     $("<div />")
       .addClass("modal")
       .attr("id", id)
 
   $.each(nodes, (i, node) ->
-    modal.append(node)
+    newModal.append(node)
   )
 
-  modal.on $.modal.CLOSE, closeCallback
+  newModal.on $.modal.CLOSE, closeCallback
 
-  $("body").append(modal)
-  modal.modal()
+  $("body").append(newModal)
+  newModal.modal()
 
 $(document).ready ->
   unless Modernizr.inputtypes.color
