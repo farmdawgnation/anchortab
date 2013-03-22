@@ -113,6 +113,9 @@ object EmailActor extends LiftActor with Loggable {
   val quotaErrorEmailTemplate =
     Templates("emails-hidden" :: "quota-error-email" :: Nil) openOr NodeSeq.Empty
 
+  val trialEndingEmailTemplate =
+    Templates("emails-hidden" :: "trial-ending-email" :: Nil) openOr NodeSeq.Empty
+
   def messageHandler = {
     case SendWelcomeEmail(userEmail) =>
       sendEmail(welcomeEmailSubject, userEmail :: Nil, welcomeEmailTemplate)
@@ -136,6 +139,17 @@ object EmailActor extends LiftActor with Loggable {
       val subject = "Anchor Tab Quota Error"
 
       sendEmail(subject, userEmail :: Nil, quotaErrorEmailTemplate)
+
+    case SendTrialEndingEmail(userEmail, billingInfoPresent, planName) =>
+      val subject = "Anchor Tab Trial Ending Soon"
+
+      val trialEndingSoonMessage = (
+        ".plan-name" #> planName &
+        ".no-billing-info" #> (billingInfoPresent ? ClearNodes | PassThru) &
+        ".billing-info" #> (billingInfoPresent ? PassThru | ClearNodes)
+      ).apply(trialEndingEmailTemplate)
+
+      sendEmail(subject, userEmail :: Nil, trialEndingSoonMessage)
 
     case _ =>
   }
