@@ -177,7 +177,10 @@ object Subscription extends Loggable {
           () => Noop
         }
 
-        val plans = Plan.findAll(("visibleOnRegistration" -> true))
+        val plans = Plan.findAll("$or" -> JArray(List(
+          ("visibleOnRegistration" -> true),
+          ("_id" -> currentPlan._id)
+        )))
         val currentSubscriptionCanceling = subscription.map(_.cancelled_?).getOrElse(false)
 
         ClearClearable andThen
