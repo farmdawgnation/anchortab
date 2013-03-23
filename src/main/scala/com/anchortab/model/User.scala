@@ -109,6 +109,7 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
   lazy val validSubscription_? = subscription.isDefined
 
   lazy val plan = subscription.flatMap(_.plan) getOrElse Plan.DefaultPlan
+  lazy val onSpecialPlan_? = plan.isSpecial
 
   lazy val admin_? = role == Some(User.Roles.Admin)
 

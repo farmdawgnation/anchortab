@@ -52,7 +52,7 @@ object Subscription extends Loggable {
         plan <- Plan.find(subscription.planId)
       } yield {
         val planStatus = {
-          if (plan.visibleOnRegistration && ! subscription.cancelled_?)
+          if (! plan.isSpecial && ! subscription.cancelled_?)
             ".special-plan-assignment" #> ClearNodes andThen
             ".cancelled-subscription" #> ClearNodes
           else if (subscription.cancelled_?)
@@ -161,6 +161,7 @@ object Subscription extends Loggable {
       for {
         session <- userSession.is
         user <- User.find(session.userId)
+          if ! user.onSpecialPlan_?
       } yield {
         val subscription = user.subscription
         val currentPlan = user.subscription.flatMap { sub =>
