@@ -66,6 +66,7 @@ object Admin {
     var planPrice = requestPlan.map(_.price) openOr 0.0
     var trialDays = requestPlan.map(_.trialDays) openOr 0
     var visible = requestPlan.map(_.visibleOnRegistration) openOr true
+    var special = requestPlan.map(_.isSpecial) openOr false
     var featureBasicAnalytics = requestPlan.map(_.hasFeature_?(Plan.Features.BasicAnalytics)) openOr false
     var featureWhitelabeledTabs = requestPlan.map(_.hasFeature_?(Plan.Features.WhitelabeledTabs)) openOr false
     var featureCustomColorSchemes = requestPlan.map(_.hasFeature_?(Plan.Features.CustomColorSchemes)) openOr false
@@ -125,7 +126,7 @@ object Admin {
 
             case _ =>
               Plan( planName, planDescription, planPrice, trialDays,
-                    features, quotas, visible, term = planTerm,
+                    features, quotas, special, visible, term = planTerm,
                     stripeId = stripeId).save
 
               RedirectTo("/admin/plans")
@@ -168,6 +169,7 @@ object Admin {
             ("price" -> planPrice) ~
             ("features" -> features) ~
             ("quotas" -> quotas) ~
+            ("isSpecial" -> special) ~
             ("visibleOnRegistration" -> visible) ~
             ("term" -> decompose(planTerm)) ~
             ("trialDays" -> trialDays) ~
@@ -192,6 +194,7 @@ object Admin {
         planTerm = _
       ) &
       ".plan-visible" #> checkbox(visible, visible = _) &
+      ".plan-special" #> checkbox(special, special = _) &
       ".feature-basic-analytics" #> checkbox(featureBasicAnalytics, featureBasicAnalytics = _) &
       ".feature-whitelabeled-tabs" #> checkbox(featureWhitelabeledTabs, featureWhitelabeledTabs = _) &
       ".feature-custom-color-schemes" #> checkbox(featureCustomColorSchemes, featureCustomColorSchemes = _) &
