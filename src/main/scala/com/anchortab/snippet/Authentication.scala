@@ -60,6 +60,16 @@ object Authentication extends Loggable {
   import AuthenticationSHtml._
 
   /**
+   * This method sets various sticky notices when a user logs in if their
+   * account is in such a state that it requires those notices.
+  **/
+  def authenticationStickyNotices(user: User) = {
+    // Set sticky notice for quota error if needed.
+    if (user.subscription.isDefined && ! user.tabsActive_?)
+      Notices.warning("Your tabs are inactive. You may upgrade your plan to reactivate your tabs.", Some("tab-shutdown-error"))
+  }
+
+  /**
    * Handle authentication for stateless requests (the API).
   **/
   def earlyInStateless(req:Box[Req]) = {
@@ -89,7 +99,12 @@ object Authentication extends Loggable {
           cookieValue <- cookie.value
           sessionId <- tryo(new ObjectId(cookieValue))
           dbSession <- UserSession.find(sessionId)
+          user <- dbSession.user
         } {
+          // Set any sticky notices that are needed.
+          authenticationStickyNotices(user)
+
+          // Record session.
           val remoteIp = S.containerRequest.map(_.remoteAddress).openOr("localhost")
           val userAgent = S.containerRequest.flatMap(_.userAgent).openOr("unknown")
 
@@ -111,6 +126,7 @@ object Authentication extends Loggable {
           Full(RedirectResponse("/admin/users"))
         } else {
           userSession(Empty)
+          S.session.foreach(_.destroySession)
           Full(RedirectResponse("/", HTTPCookie("session", "deleted").setPath("/").setMaxAge(-100)))
         }
       }
@@ -235,6 +251,8 @@ object Authentication extends Loggable {
         val session = UserSession(user._id, remoteIp, userAgent)
         session.save
         userSession(Full(session))
+
+        authenticationStickyNotices(user)
 
         RedirectTo("/session/login")
 

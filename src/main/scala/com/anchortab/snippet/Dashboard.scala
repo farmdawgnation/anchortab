@@ -29,20 +29,6 @@ object Dashboard {
     }
   }
 
-  def accountShutdownAlert = {
-    {
-      for {
-        session <- userSession.is
-        user <- User.find(session.userId)
-          if user.subscription.isDefined && ! user.tabsActive_?
-      } yield {
-        PassThru
-      }
-    } openOr {
-      ClearNodes
-    }
-  }
-
   def accountStats = {
     val currentPlanName =
       for {
