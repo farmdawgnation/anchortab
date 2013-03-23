@@ -64,6 +64,8 @@ object Authentication extends Loggable {
    * account is in such a state that it requires those notices.
   **/
   def authenticationStickyNotices(user: User) = {
+    Notices.removeAllStickyNotices
+
     // Set sticky notice for quota error if needed.
     if (user.subscription.isDefined && ! user.tabsActive_?)
       Notices.warning("Your tabs are inactive. You may upgrade your plan to reactivate your tabs.", Some("tab-shutdown-error"))

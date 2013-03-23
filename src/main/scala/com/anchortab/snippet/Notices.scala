@@ -55,6 +55,11 @@ object Notices {
     stickyNotices(stickyNotices.is.filterNot(_.name == stickyName))
   }
 
+  def removeAllStickyNotices {
+    stickyNotices(Nil)
+    currentNotices(Nil)
+  }
+
   def render = {
     val notices: Map[String, List[Notice]] = currentNotices.is.groupBy(_.noticeType)
     currentNotices(stickyNotices)
