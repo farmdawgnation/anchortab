@@ -218,6 +218,10 @@ displayTab = (tabJson) ->
       )
 
   if $.browser.msie
+    # Bail if IE < 9.
+    if $.browser.version.split(".")[0]? < 9
+      return
+
     _gaq.push ["at._trackEvent", "Bootstrap", "MSIE", navigator.userAgent]
     anchorTab.addClass "msie"
 
