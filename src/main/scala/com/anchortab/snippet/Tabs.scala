@@ -104,6 +104,7 @@ object Tabs {
     def delete(tabId:ObjectId)() = {
       Tab.delete("_id" -> tabId)
 
+      Notices.notice("Tab deleted.")
       Reload
     }
 
@@ -187,7 +188,7 @@ object Tabs {
         } yield {
           serviceWrapper.map(_.credentialsValid_?) match {
             case Some(false) =>
-              Alert("Looks like your service API key or list id might be wrong.")
+              GeneralError("Looks like something is wrong with the external service you're connecting to.")
 
             case _ =>
               val customizedColorScheme = {
@@ -210,6 +211,7 @@ object Tabs {
                     service = serviceWrapper
                   ).save
 
+                  Notices.notice("Tab saved. Go have some juice.")
                   RedirectTo("/manager/tabs")
 
                 case _ =>
@@ -222,12 +224,13 @@ object Tabs {
                     ("firstSteps." + UserFirstStep.Keys.CreateATab) -> true)
                   )
 
+                  Notices.notice("Tab created. Ssssssssmokin'!")
                   NewTabCreated(tab.embedCode)
               }
           }
         }
       } openOr {
-        Alert("Something went wrong.")
+        GeneralError("Something went wrong. Please contact support by emailing hello@anchortab.com.")
       }
     }
 
@@ -401,7 +404,7 @@ object Tabs {
         def deleteSubscriber(email:String)() = {
           Tab.update("_id" -> tabId, "$pull" -> ("subscribers" -> ("email" -> email)))
 
-          Alert("Subscriber deleted.") &
+          Notices.notice("Subscriber deleted.")
           Reload
         }
 
