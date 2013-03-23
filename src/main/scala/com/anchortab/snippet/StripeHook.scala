@@ -26,6 +26,33 @@ import org.joda.time._
 import com.stripe
 
 object StripeHook extends RestHelper with Loggable {
+  private def newPlanFromStripe(user: User, plan: Plan, status: String) = {
+    implicit val formats = User.formats
+
+    val newPlanStatus = {
+      if (status == "trialing")
+        "trial"
+      else
+        "active"
+    }
+    val newSub = UserSubscription(plan._id, plan.price, plan.term, status = newPlanStatus)
+
+    user.subscription match {
+      case Some(sub) =>
+        User.update(
+          ("_id" -> user._id) ~
+          ("subscriptions._id" -> sub._id),
+          "$set" -> (
+            ("subscriptions.$.status" -> "cancelled")
+          )
+        )
+
+      case _ =>
+    }
+
+    User.update("_id" -> user._id, "$addToSet" -> ("subscriptions" -> decompose(newSub)))
+  }
+
   serve {
     case req @ Req("stripe-hook" :: Nil, _, PostRequest) =>
       {
@@ -76,35 +103,12 @@ object StripeHook extends RestHelper with Loggable {
               for {
                 stripeCustomerId <- tryo((objectJson \ "customer").extract[String]) ?~! "No customer."
                 planJson = (objectJson \ "plan")
-                status = (objectJson \ "status").extractOpt[String]
+                status <- (objectJson \ "status").extractOpt[String]
                 stripePlanId <- (planJson \ "id").extractOpt[String]
                 user <- User.find("stripeCustomerId" -> stripeCustomerId)
                 plan <- Plan.find("stripeId" -> stripePlanId)
               } yield {
-                implicit val formats = User.formats
-
-                val newPlanStatus = {
-                  if (status == "trialing")
-                    "trial"
-                  else
-                    "active"
-                }
-                val newSub = UserSubscription(plan._id, plan.price, plan.term, status = newPlanStatus)
-
-                user.subscription match {
-                  case Some(sub) =>
-                    User.update(
-                      ("_id" -> user._id) ~
-                      ("subscriptions._id" -> sub._id),
-                      "$set" -> (
-                        ("subscriptions.$.status" -> "cancelled")
-                      )
-                    )
-
-                  case _ =>
-                }
-
-                User.update("_id" -> user._id, "$addToSet" -> ("subscriptions" -> decompose(newSub)))
+                newPlanFromStripe(user, plan, status)
 
                 OkResponse()
               }
@@ -120,15 +124,23 @@ object StripeHook extends RestHelper with Loggable {
                 currentUserSubscription <- user.subscription
                 status <- (objectJson \ "status").extractOpt[String]
                 stripePlanId <- (planJson \ "id").extractOpt[String]
+                plan <- Plan.find("stripeId" -> stripePlanId)
               } yield {
                 implicit val formats = User.formats
 
-                if (currentUserSubscription.status == "trial" && status == "active") {
+                if (plan._id == user.plan._id && currentUserSubscription.status != status) {
+                  val newStatus = status match {
+                    case "trialing" => "trial"
+                    case _ => "active"
+                  }
+
                   User.update(
                     ("_id" -> user._id) ~
                     ("subscriptions._id" -> currentUserSubscription._id),
-                    "$set" -> ("subscriptions.$.status" -> "active")
+                    "$set" -> ("subscriptions.$.status" -> newStatus)
                   )
+                } else if (plan._id != user.plan._id) {
+                  newPlanFromStripe(user, plan, status)
                 }
 
                 OkResponse()
