@@ -18,11 +18,18 @@ case class PlanTerm(description:String, abbreveation:String, stripeCode:String)
  * Special note: the quotas are all per month values regardless of
  * the term of the plan.
 **/
-case class Plan(name:String, description:String, price:Double, trialDays:Int,
-                features:Map[String,Boolean], quotas:Map[String, Long],
+case class Plan(name:String,
+                description:String,
+                price:Double,
+                trialDays:Int,
+                features:Map[String,Boolean],
+                quotas:Map[String, Long],
+                isSpecial:Boolean = false,
                 visibleOnRegistration:Boolean = true,
-                starts:Option[DateTime] = None, ends:Option[DateTime] = None,
-                term:PlanTerm = Plan.MonthlyTerm, stripeId: Option[String] = None,
+                starts:Option[DateTime] = None,
+                ends:Option[DateTime] = None,
+                term:PlanTerm = Plan.MonthlyTerm,
+                stripeId: Option[String] = None,
                 _id:ObjectId = ObjectId.get
     ) extends MongoDocument[Plan] {
   val meta = Plan
