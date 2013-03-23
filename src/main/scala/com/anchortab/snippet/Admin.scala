@@ -133,11 +133,13 @@ object Admin {
           }
 
         case Full(requestPlanId) =>
+          val priceChanged = requestPlan.map(_.price).map(_ != planPrice).openOr(false)
+          val termChanged = requestPlan.map(_.term).map(_ != planTerm).openOr(false)
+          val trialDaysChanged = requestPlan.map(_.trialDays).map(_ != trialDays).openOr(false)
+          val nameChanged = requestPlan.map(_.name).map(_ != planName).openOr(false)
+
           val stripePlanIdUpdate = {
-            if (requestPlan.map(_.price).map(_ != planPrice).openOr(false) ||
-                requestPlan.map(_.term).map(_ != planTerm).openOr(false) ||
-                requestPlan.map(_.name).map(_ != planName).openOr(false) ||
-                requestPlan.map(_.trialDays).map(_ != trialDays).openOr(false)) {
+            if (priceChanged || termChanged || trialDaysChanged) {
               // Delete old plan, create new.
               requestPlan.flatMap(_.stripeId).foreach { stripeId =>
                 tryo(stripe.Plan.retrieve(stripeId)).map { plan =>
@@ -157,6 +159,15 @@ object Admin {
               )))
 
               planResult.map(_ => idString)
+            } else if (nameChanged) {
+              // Update plan
+              requestPlan.flatMap(_.stripeId).map { stripeId =>
+                tryo(stripe.Plan.retrieve(stripeId)).map { plan =>
+                  plan.update(Map("name" -> planName))
+                }
+
+                stripeId
+              }
             } else {
               // do nothing
               requestPlan.flatMap(_.stripeId)
