@@ -253,6 +253,40 @@ body
 
         padding: 19px
 
+        > ul:first-child > li
+          padding: 5px
+          margin-bottom: 5px
+          +border-radius(5px)
+
+          &:last-child
+            margin-bottom: 25px
+
+          &:before
+            display: inline
+            font-family: SSStandard
+            font-size: 1.2em
+            vertical-align: middle
+            margin-left: 5px
+            margin-right: 5px
+
+          &.notice
+            background-color: #62EAAF
+
+            &:before
+              content: '✓'
+
+          &.error
+            background-color: #EA6262
+
+            &:before
+              content: '⛔'
+
+          &.warning
+            background-color: #E1ED5E
+
+            &:before
+              content: '⚠'
+
         p
           margin-bottom: 14px
 
