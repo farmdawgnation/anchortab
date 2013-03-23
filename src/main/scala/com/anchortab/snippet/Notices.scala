@@ -21,29 +21,43 @@ object Notices {
     val warning = "warning"
     val error = "error"
   }
-  private case class Notice(noticeType: String, message: String)
+  private trait Notice {
+    def noticeType: String
+    def message: String
+  }
+  private case class TransientNotice(noticeType: String, message: String) extends Notice
+  private case class StickyNotice(name: String, noticeType: String, message: String) extends Notice
 
-  private object currentNotices extends SessionVar[Stack[Notice]](Stack.empty)
+  private object currentNotices extends SessionVar[List[Notice]](Nil)
+  private object stickyNotices extends SessionVar[List[StickyNotice]](Nil)
 
-  private def pushNotice(noticeType: String, message: String) {
-    currentNotices(currentNotices.is.push(Notice(noticeType, message)))
+  private def pushNotice(noticeType: String, message: String, stickyName: Option[String]) {
+    currentNotices(currentNotices.is :+ TransientNotice(noticeType, message))
+
+    stickyName.foreach { stickyNoticeName =>
+      stickyNotices(stickyNotices.is :+ StickyNotice(stickyNoticeName, noticeType, message))
+    }
   }
 
-  def notice(message: String) {
-    pushNotice(NoticeTypes.notice, message)
+  def notice(message: String, stickyName: Option[String] = None) {
+    pushNotice(NoticeTypes.notice, message, stickyName)
   }
 
-  def warning(message: String) {
-    pushNotice(NoticeTypes.warning, message)
+  def warning(message: String, stickyName: Option[String] = None) {
+    pushNotice(NoticeTypes.warning, message, stickyName)
   }
 
-  def error(message: String) {
-    pushNotice(NoticeTypes.error, message)
+  def error(message: String, stickyName: Option[String] = None) {
+    pushNotice(NoticeTypes.error, message, stickyName)
+  }
+
+  def removeStickyNotice(stickyName: String) {
+    stickyNotices(stickyNotices.is.filterNot(_.name == stickyName))
   }
 
   def render = {
-    val notices: Map[String, List[Notice]] = currentNotices.is.toList.groupBy(_.noticeType)
-    currentNotices(Stack.empty)
+    val notices: Map[String, List[Notice]] = currentNotices.is.groupBy(_.noticeType)
+    currentNotices(stickyNotices)
 
     val noticeStructure =
       <ul>
