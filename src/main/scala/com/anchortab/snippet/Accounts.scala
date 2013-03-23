@@ -47,10 +47,11 @@ object Accounts {
           session <- userSession.is
         } yield {
           User.update("_id" -> session.userId, "$pull" -> ("serviceCredentials" -> ("serviceName" -> "Mailchimp")))
+          Notices.notice("Your MailChimp account has been disconnected.")
           Reload
         }
       } openOr {
-        Alert("Something went wrong.")
+        GeneralError("Something went wrong.")
       }
     }
 
@@ -85,10 +86,11 @@ object Accounts {
           session <- userSession.is
         } yield {
           User.update("_id" -> session.userId, "$pull" -> ("serviceCredentials" -> ("serviceName" -> "Constant Contact")))
+          Notices.notice("Your Constant Contact account has been disconnected.")
           Reload
         }
       } openOr {
-        Alert("Something went wrong.")
+        GeneralError("Something went wrong.")
       }
     }
 
@@ -191,6 +193,7 @@ object Accounts {
                 ("profile" -> decompose(userProfile))
               ))
 
+              Notices.notice("Your profile was updated successfully. Jolly good fun.")
               Reload
 
             case (_, Full(pw), _) =>
@@ -200,6 +203,7 @@ object Accounts {
                 pw
               ))
 
+              Notices.notice("Your profile and password were updated. A password change a day keeps the hacker away.")
               Reload
           }
         }
