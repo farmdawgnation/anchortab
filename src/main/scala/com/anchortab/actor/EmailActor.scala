@@ -30,7 +30,7 @@ case class SendWelcomeEmail(userEmail: String) extends EmailActorMessage
 case class SendForgotPasswordEmail(userEmail: String, resetLink: String) extends EmailActorMessage
 case class SendQuotaWarningEmail(userEmail: String) extends EmailActorMessage
 case class SendQuotaErrorEmail(userEmail: String) extends EmailActorMessage
-case class SendTrialEndingEmail(userEmail: String, billingInfoPresent: Boolean, planName: String) extends EmailActorMessage
+case class SendTrialEndingEmail(userEmail: String, billingInfoPresent: Boolean, planName: String, trialEnd: DateTime) extends EmailActorMessage
 case class SendInvoicePaymentFailedEmail(userEmail: String, amount: Double, nextPaymentAttempt: Option[DateTime]) extends EmailActorMessage
 case class SendInvoicePaymentSucceededEmail(userEmail: String, amount: Double) extends EmailActorMessage
 
@@ -148,10 +148,11 @@ object EmailActor extends LiftActor with Loggable {
 
       sendEmail(subject, userEmail :: Nil, quotaErrorEmailTemplate)
 
-    case SendTrialEndingEmail(userEmail, billingInfoPresent, planName) =>
+    case SendTrialEndingEmail(userEmail, billingInfoPresent, planName, trialEnd) =>
       val subject = "Anchor Tab Trial Ending Soon"
 
       val trialEndingSoonMessage = (
+        ".trial-end-date" #> trialEnd.toString("dd MMM yyyy") &
         ".plan-name" #> planName andThen
         ".no-billing-info" #> (billingInfoPresent ? ClearNodes | PassThru) &
         ".billing-info" #> (billingInfoPresent ? PassThru | ClearNodes)
