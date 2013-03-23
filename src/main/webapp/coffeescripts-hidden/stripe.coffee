@@ -1,14 +1,24 @@
 $(document).ready ->
   Stripe?.setPublishableKey? 'pk_test_UQLI1joAA4aIZcXjESwa4awL'
 
-  $("body").on 'click', '.stripe-form .submit', (event) ->
-    $(event.target).addClass("disabled").after(
+  $("body").on 'click', '.stripe-form .submit, .stripe-button', (event) ->
+    $target = $(event.target)
+
+    if $target.is '.stripe-button'
+      $target.hide()
+    else
+      $target.addClass("disabled")
+
+    $target.after(
       $("<img />")
         .addClass("stripe-ajax-loader")
         .attr("src", "/images/ajax-loader.gif"))
 
     setTimeout ->
-      $(event.target).attr("disabled", "disabled")
+      $target.attr("disabled", "disabled")
+
+      if $target.is '.stripe-button'
+        $(".stripe-button").attr("disabled", "disabled").addClass("disabled")
 
   $(document).on 'form-validation-error', (event) ->
     setTimeout ->
