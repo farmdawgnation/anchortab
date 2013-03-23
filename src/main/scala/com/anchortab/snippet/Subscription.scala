@@ -2,6 +2,8 @@ package com.anchortab.snippet
 
 import scala.xml.NodeSeq
 
+import java.text.SimpleDateFormat
+
 import net.liftweb._
   import common._
   import http._
@@ -36,6 +38,7 @@ case class GeneralError(errorText: String) extends SimpleAnchorTabEvent("general
 
 object Subscription extends Loggable {
   implicit val formats = DefaultFormats
+  val dateFormatter = new SimpleDateFormat("dd MMM yyyy")
 
   def snippetHandlers : SnippetPF = {
     case "subscription-summary" :: Nil => subscriptionSummary
@@ -66,7 +69,9 @@ object Subscription extends Loggable {
         planStatus andThen
         ".trial-plan" #> (subscription.trial_? ? PassThru | ClearNodes) andThen
         ".plan-name *" #> plan.name &
-        ".ending-date *" #> subscription.ends.map(_.toString()) &
+        ".ending-date *" #> subscription.ends.map { subscriptionEndingDate =>
+          dateFormatter format subscriptionEndingDate.toDate
+        } &
         ".not-subscribed" #> ClearNodes
       }
     } openOr {
