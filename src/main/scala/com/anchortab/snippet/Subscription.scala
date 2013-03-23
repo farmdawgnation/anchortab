@@ -107,6 +107,7 @@ object Subscription extends Loggable {
 
             updatedUser.save
 
+            Notices.notice("Your subscription has been successfully changed.")
             Reload
           }
         } else {
@@ -150,6 +151,7 @@ object Subscription extends Loggable {
 
           updatedUser.save
 
+          Notices.notice("Your subscription has been cancelled. You will not be billed again.")
           Reload
         }
       } getOrElse {
@@ -226,6 +228,7 @@ object Subscription extends Loggable {
           GeneralError("An error occured while updating billing information: " + msg)
 
         case _ =>
+          Notices.notice("Your billing information has been successfully updated.")
           Reload
       }
     }
