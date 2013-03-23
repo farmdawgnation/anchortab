@@ -107,6 +107,8 @@ object Subscription extends Loggable {
 
             updatedUser.save
 
+            Authentication.authenticationStickyNotices(updatedUser)
+
             Notices.notice("Your subscription has been successfully changed.")
             Reload
           }
