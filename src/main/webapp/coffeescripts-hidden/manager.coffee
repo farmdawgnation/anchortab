@@ -202,7 +202,7 @@ $(document).ready ->
         .text("Close")
     ]
 
-    modal("error-charging-card-modal", nodes)
+    modal("error-charging-card-modal", nodes, -> document.location.reload())
 
   $(document).on 'no-billing-information-error', (event) ->
     nodes = [
@@ -219,7 +219,7 @@ $(document).ready ->
         .text("Close")
     ]
 
-    modal("no-billing-information-modal", nodes)
+    modal("no-billing-information-modal", nodes, -> document.location.reload())
 
   $(document).on 'general-error', (event) ->
     nodes = [
