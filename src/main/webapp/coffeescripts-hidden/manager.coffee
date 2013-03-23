@@ -36,6 +36,10 @@ $(document).ready ->
   $('button.new-plan').on 'click', ->
     document.location = "/admin/plans/new"
 
+  $(".submenu-container li, .dashboard").on "click", (event) ->
+    if event.currentTarget == event.target
+      document.location = $(event.target).find("a").attr("href")
+
   $("body").on 'click', '#modal-dismiss', (event) ->
     $.modal.close()
 
