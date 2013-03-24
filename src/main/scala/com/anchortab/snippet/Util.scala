@@ -67,7 +67,7 @@ object Util extends Loggable {
 
   def newrelicBrowserTimingFooter = {
     if (Props.productionMode) {
-      "script *" #> NewRelic.getBrowserTimingHeader()
+      "script" #> Unparsed(NewRelic.getBrowserTimingFooter())
     } else {
       ClearNodes
     }
@@ -75,7 +75,7 @@ object Util extends Loggable {
 
   def newrelicBrowserTimingHeader = {
     if (Props.productionMode) {
-      "script *" #> NewRelic.getBrowserTimingFooter()
+      "script" #> Unparsed(NewRelic.getBrowserTimingHeader())
     } else {
       ClearNodes
     }
