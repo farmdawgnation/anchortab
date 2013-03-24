@@ -24,3 +24,6 @@ anchortab.analyticsid=UA-35269224-1
 
 # Production jQuery
 jquery.url=//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js
+
+# Stripe
+stripe.apiKey=sk_live_Cog63oXsc2JWNwTnQjAHHO9E

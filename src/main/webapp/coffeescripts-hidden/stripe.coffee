@@ -1,5 +1,5 @@
 $(document).ready ->
-  Stripe?.setPublishableKey? 'pk_test_UQLI1joAA4aIZcXjESwa4awL'
+  Stripe?.setPublishableKey? 'pk_live_fJ4ubfL69lbYqhJWX8IFk95V'
 
   $("body").on 'click', '.stripe-form .submit, .stripe-button', (event) ->
     $target = $(event.target)
