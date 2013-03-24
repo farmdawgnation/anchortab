@@ -7,6 +7,7 @@
   <body class="lift:content_id=main">
     <div id="main" class="lift:surround?with=tab-manager;at=content">
       <lift:pwn-if-not-logged-in />
+
       <h2>The Dashboard</h2>
 
       <div class="first-steps-container" data-lift="first-steps">
@@ -28,20 +29,42 @@
 
       <h3>This Week's Performance</h3>
 
-      <div data-lift="Dashboard.weeksPerformanceGraph"></div>
+      <span data-lift="Dashboard.weeksPerformanceGraph"></span>
+      <canvas width="700" height="400" id="weeks-performance-graph"></canvas>
 
-      <h3>Account Information</h3>
+      <dl class="weeks-performance-graph-legend">
+        <dt class="subscribes"></dt>
+        <dd>Subscribes</dd>
 
-      <ul class="l:Dashboard.accountStats account-stats">
-        <li>Current Plan: <span class="plan">Plan Name</span></li>
+        <dt class="views"></dt>
+        <dd>Views</dd>
+      </dl>
+
+      <div class="l:Dashboard.accountStats account-stats">
+        <h3>Account Information</h3>
+
+        <h4>
+          Current Plan: <span class="plan">Plan Name</span>
+          <small>
+            <a href="/manager/subscription">(Change)</a>
+          </small>
+        </h4>
+
         <ul class="quota-summary-list">
           <li class="quota-summary">
-            <span class="quota-name">Emails</span>:
-            <span class="usage">100</span> used out of
-            <span class="maximum">500</span>
+            <span class="quota-name">Emails</span>
+
+            <div class="usage-summary">
+              <span class="usage">100</span> of
+              <span class="maximum">500</span>
+            </div>
+
+            <div class="meter">
+              <span class="usage-meter"></span>
+            </div>
           </li>
         </ul>
-      </ul>
+      </div>
 
       <head>
         <lift:script-bundle name="dashboard"></lift:script-bundle>

@@ -4,7 +4,7 @@ assemblySettings
 
 name := "Anchor Tab"
 
-version := "0.1.0"
+version := "1.0.0-RC2"
 
 organization := "com.anchortab"
 
@@ -28,7 +28,7 @@ seq(resourceManagementSettings :_*)
 scalacOptions ++= Seq("-deprecation", "-unchecked")
 
 libraryDependencies ++= {
-  val liftVersion = "2.5-RC1"
+  val liftVersion = "2.5-RC2"
   Seq(
     "net.liftweb"       %% "lift-webkit"        % liftVersion        % "compile",
     "net.liftweb"       %% "lift-mongodb"       % liftVersion        % "compile",

@@ -3,6 +3,7 @@ package com.anchortab.snippet
 import scala.xml.NodeSeq
 
 import java.text.SimpleDateFormat
+import java.util.UUID
 
 import net.liftweb._
   import http._
@@ -20,6 +21,8 @@ import net.liftweb._
   import mongodb.BsonDSL._
 
 import com.anchortab.model._
+
+import com.stripe
 
 import org.bson.types.ObjectId
 
@@ -52,43 +55,6 @@ object Admin {
 
     case "admin-plans-list" :: Nil => adminPlansList _
     case "edit-plan-form" :: Nil => editPlanForm
-
-    case "grant-miracle-form" :: Nil => grantMiracleForm
-  }
-
-  def grantMiracleForm = {
-    var userEmail = ""
-    var plan = Plan.DefaultPlan
-
-    def submitMiracle() = {
-      implicit val formats = User.formats
-
-      {
-        for {
-          session <- userSession.is
-          user <- User.findAll(("email" -> userEmail)).headOption
-        } yield {
-          val subscription = UserSubscription(plan._id, 0.0, plan.term, status = "active", miracleFrom = Some(session.userId))
-          User.update("_id" -> user._id, "$push" -> ("subscriptions" -> decompose(subscription)))
-          Alert("Miracle granted.")
-        }
-      } getOrElse {
-        Alert("Something went wrong. Please ensure you entered the correct email.")
-      }
-    }
-
-    val bind =
-      ".user-email" #> text(userEmail, userEmail = _) &
-      ".plan" #> selectObj[Plan](
-        Plan.findAll.map(p => (p, p.name)),
-        Empty,
-        plan = _
-      ) &
-      ".submit" #> ajaxSubmit("Grant Miracle", submitMiracle _)
-
-    "form" #> { ns:NodeSeq =>
-      ajaxForm(bind(ns))
-    }
   }
 
   def editPlanForm = {
@@ -98,9 +64,13 @@ object Admin {
     var planDescription = requestPlan.map(_.description) openOr ""
     var planTerm = requestPlan.map(_.term) openOr Plan.MonthlyTerm
     var planPrice = requestPlan.map(_.price) openOr 0.0
+    var trialDays = requestPlan.map(_.trialDays) openOr 0
     var visible = requestPlan.map(_.visibleOnRegistration) openOr true
+    var special = requestPlan.map(_.isSpecial) openOr false
     var featureBasicAnalytics = requestPlan.map(_.hasFeature_?(Plan.Features.BasicAnalytics)) openOr false
     var featureWhitelabeledTabs = requestPlan.map(_.hasFeature_?(Plan.Features.WhitelabeledTabs)) openOr false
+    var featureCustomColorSchemes = requestPlan.map(_.hasFeature_?(Plan.Features.CustomColorSchemes)) openOr false
+    var featureApiAccess = requestPlan.map(_.hasFeature_?(Plan.Features.ApiAccess)) openOr false
     var quotaNumberOfTabs = requestPlan.flatMap(_.quotaFor(Plan.Quotas.NumberOfTabs).map(_.toString)) openOr ""
     var quotaEmailSubscriptions = requestPlan.flatMap(_.quotaFor(Plan.Quotas.EmailSubscriptions).map(_.toString)) openOr ""
     var quotaViews = requestPlan.flatMap(_.quotaFor(Plan.Quotas.Views).map(_.toString)) openOr ""
@@ -111,7 +81,9 @@ object Admin {
       val features = {
         Map(
           Plan.Features.BasicAnalytics -> featureBasicAnalytics,
-          Plan.Features.WhitelabeledTabs -> featureWhitelabeledTabs
+          Plan.Features.WhitelabeledTabs -> featureWhitelabeledTabs,
+          Plan.Features.CustomColorSchemes -> featureCustomColorSchemes,
+          Plan.Features.ApiAccess -> featureApiAccess
         )
       }
 
@@ -130,20 +102,89 @@ object Admin {
 
       requestPlanId.is match {
         case Empty =>
-          Plan( planName, planDescription, planPrice, features, quotas, visible,
-                term = planTerm).save
+          val stripeId: Box[String] = {
+            val idString = "ANCHORTAB-" + UUID.randomUUID
 
-          RedirectTo("/admin/plans")
+            val planResult = tryo(stripe.Plan.create(Map(
+              "amount" -> (planPrice * 100).toInt,
+              "currency" -> "usd",
+              "interval" -> planTerm.stripeCode,
+              "name" -> planName,
+              "trial_period_days" -> trialDays,
+              "id" -> idString
+            )))
+
+            planResult.map(_ => idString)
+          }
+
+          stripeId match {
+            case fail:Failure =>
+              Alert("Error from Stripe: " + fail.toString)
+
+            case Empty =>
+              Alert("Something went wrong. Please contact support.")
+
+            case _ =>
+              Plan( planName, planDescription, planPrice, trialDays,
+                    features, quotas, special, visible, term = planTerm,
+                    stripeId = stripeId).save
+
+              RedirectTo("/admin/plans")
+          }
 
         case Full(requestPlanId) =>
+          val priceChanged = requestPlan.map(_.price).map(_ != planPrice).openOr(false)
+          val termChanged = requestPlan.map(_.term).map(_ != planTerm).openOr(false)
+          val trialDaysChanged = requestPlan.map(_.trialDays).map(_ != trialDays).openOr(false)
+          val nameChanged = requestPlan.map(_.name).map(_ != planName).openOr(false)
+
+          val stripePlanIdUpdate = {
+            if (priceChanged || termChanged || trialDaysChanged) {
+              // Delete old plan, create new.
+              requestPlan.flatMap(_.stripeId).foreach { stripeId =>
+                tryo(stripe.Plan.retrieve(stripeId)).map { plan =>
+                  plan.delete()
+                }
+              }
+
+              val idString = "ANCHORTAB-" + UUID.randomUUID
+
+              val planResult = tryo(stripe.Plan.create(Map(
+                "amount" -> (planPrice * 100).toInt,
+                "currency" -> "usd",
+                "interval" -> planTerm.stripeCode,
+                "name" -> planName,
+                "trial_period_days" -> trialDays,
+                "id" -> idString
+              )))
+
+              planResult.map(_ => idString)
+            } else if (nameChanged) {
+              // Update plan
+              requestPlan.flatMap(_.stripeId).map { stripeId =>
+                tryo(stripe.Plan.retrieve(stripeId)).map { plan =>
+                  plan.update(Map("name" -> planName))
+                }
+
+                stripeId
+              }
+            } else {
+              // do nothing
+              requestPlan.flatMap(_.stripeId)
+            }
+          }
+
           Plan.update("_id" -> new ObjectId(requestPlanId), "$set" -> (
             ("name" -> planName) ~
             ("description" -> planDescription) ~
             ("price" -> planPrice) ~
             ("features" -> features) ~
             ("quotas" -> quotas) ~
+            ("isSpecial" -> special) ~
             ("visibleOnRegistration" -> visible) ~
-            ("term" -> decompose(planTerm))
+            ("term" -> decompose(planTerm)) ~
+            ("trialDays" -> trialDays) ~
+            ("stripeId" -> stripePlanIdUpdate.toOption)
           ))
 
           RedirectTo("/admin/plans")
@@ -157,14 +198,18 @@ object Admin {
       ".plan-name" #> text(planName, planName = _) &
       ".plan-description" #> text(planDescription, planDescription = _) &
       ".plan-price" #> text(planPrice.toString, (price) => planPrice = price.toDouble) &
+      ".trial-days" #> text(trialDays.toString, (days) => trialDays = days.toInt) &
       ".plan-term" #> selectObj[PlanTerm](
         Plan.terms.map(t => (t, t.description.capitalize)),
         Full(planTerm),
         planTerm = _
       ) &
       ".plan-visible" #> checkbox(visible, visible = _) &
+      ".plan-special" #> checkbox(special, special = _) &
       ".feature-basic-analytics" #> checkbox(featureBasicAnalytics, featureBasicAnalytics = _) &
       ".feature-whitelabeled-tabs" #> checkbox(featureWhitelabeledTabs, featureWhitelabeledTabs = _) &
+      ".feature-custom-color-schemes" #> checkbox(featureCustomColorSchemes, featureCustomColorSchemes = _) &
+      ".feature-api-access" #> checkbox(featureApiAccess, featureApiAccess = _) &
       ".quota-number-of-tabs" #> text(quotaNumberOfTabs, quotaNumberOfTabs = _) &
       ".quota-email-subscriptions" #> text(quotaEmailSubscriptions, quotaEmailSubscriptions = _) &
       ".quota-views" #> text(quotaViews, quotaViews = _) &

@@ -298,7 +298,7 @@
             text-decoration: underline
 
     h1
-      +replace-text('logo-beta.png')
+      +replace-text('logo.png')
 
       display: inline-block
       width: 397px
@@ -572,6 +572,7 @@
           // This guy has to change depending on the length of the table.
           // Which sucks, but whatever.
           box-shadow: 0px 39px 0px #323232
+          width: 143px
 
         button
           +stylish-button
@@ -597,6 +598,9 @@
 
         &:nth-child(odd)
           background: #ebebeb
+
+          &:first-child
+            background: transparent
 
           td.influencer
             background-color: #323232
@@ -648,6 +652,8 @@
           padding: 12px 12px
           text-align: center
 
+          min-height: 48px
+
           .firefox-sucks
             position: relative
 
@@ -676,17 +682,8 @@
             background: #363636
             color: white
 
-    > .free-plan
-      margin-bottom: 20px
-
-      a
-        color: #187bda
-
-        &:link, &:visited
-          text-decoration: none
-
-        &:hover
-          text-decoration: underline
+    > .free-trial
+      padding-bottom: 20px
 
     > h4
       color: #187bda

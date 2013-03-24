@@ -9,7 +9,7 @@
       <lift:pwn-if-not-admin />
       <h2>Editing Plan</h2>
 
-      <form class="l:edit-plan-form plan-form">
+      <form class="l:edit-plan-form plan-form stripe-form">
         <div>
           <label>Plan Name</label>
           <input type="text" class="plan-name">
@@ -26,6 +26,11 @@
         </div>
 
         <div>
+          <label>Trial Days</label>
+          <input type="text" class="trial-days">
+        </div>
+
+        <div>
           <label>Term</label>
           <select class="plan-term">
             <option>Monthly</option>
@@ -38,6 +43,11 @@
           <input type="checkbox" class="plan-visible">
         </div>
 
+        <div>
+          <label>Special?</label>
+          <input type="checkbox" class="plan-special">
+        </div>
+
         <h3>Features</h3>
 
         <div>
@@ -48,6 +58,16 @@
         <div>
           <label>Whitelabeled Tabs</label>
           <input type="checkbox" class="feature-whitelabeled-tabs">
+        </div>
+
+        <div>
+          <label>Custom Color Schemes</label>
+          <input type="checkbox" class="feature-custom-color-schemes">
+        </div>
+
+        <div>
+          <label>API Access</label>
+          <input type="checkbox" class="feature-api-access">
         </div>
 
         <h3>Quotas</h3>

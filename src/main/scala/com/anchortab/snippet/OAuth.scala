@@ -41,6 +41,7 @@ object OAuth extends Loggable {
             ))
           )
 
+          Notices.notice("Your Constant Contact account has been successfully connected.")
           RedirectResponse("/manager/services")
         }
       }
@@ -72,6 +73,7 @@ object OAuth extends Loggable {
             ))
           )
 
+          Notices.notice("Your MailChimp account has been successfully connected.")
           RedirectResponse("/manager/services")
         }
       }

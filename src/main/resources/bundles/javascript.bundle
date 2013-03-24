@@ -26,7 +26,15 @@ base.js
 manager.js
 customSelect.jquery.js
 jquery.modal.js
+modernizr-colorinputs.js
+jscolor/jscolor.js
+pretty-meters.js
+jquery.payment.js
+stripe.js
 
 dashboard
-highcharts/highcharts.js
+Chart.js
 weeks-performance-graph.js
+
+register
+register.js

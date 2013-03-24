@@ -15,6 +15,8 @@ import com.anchortab.actor._
 
 import net.liftmodules.JQueryModule
 
+import com.stripe
+
 
 /**
  * A class that's instantiated early and run.  It allows the application
@@ -42,6 +44,9 @@ class Boot {
     // Add API to dispatch
     LiftRules.statelessDispatch.append(Api)
 
+    // Add stripe hooks to dispatch
+    LiftRules.statelessDispatch.append(StripeHook)
+
     // Authentication dispatch.
     LiftRules.dispatch.append(Authentication.dispatch)
     LiftRules.dispatch.append(OAuth.dispatch)
@@ -61,6 +66,7 @@ class Boot {
     LiftRules.snippets.append(Admin.snippetHandlers)
     LiftRules.snippets.append(Invites.snippetHandlers)
     LiftRules.snippets.append(Tabs.snippetHandlers)
+    LiftRules.snippets.append(Subscription.snippetHandlers)
 
     //Init the jQuery module, see http://liftweb.net/jquery for more information.
     LiftRules.jsArtifacts = JQueryArtifacts
@@ -123,5 +129,8 @@ class Boot {
 
     // Schedule quota reset
     QuotasActor ! ScheduleQuotaReset
+
+    // Set Stripe API key
+    stripe.apiKey = Props.get("stripe.apiKey") openOr "sk_test_eIk3iZ4csTxHtFmmh86M0E1n"
   }
 }

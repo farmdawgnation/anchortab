@@ -16,6 +16,8 @@ scrollableElement = (els) ->
   return [];
 
 $(document).ready ->
+  $('span[rel=tipsy]').tipsy({fade: true})
+
   window.liftAjax.lift_actualAjaxCall = (data, version, onSuccess, onFailure) ->
     hostnamePrefix = ""
 
@@ -47,6 +49,12 @@ $(document).ready ->
 
   $(document).on 'login-failed', ->
     $(".login input").addClass("error")
+
+  $(".enterprise-action-button").on 'click', (event) ->
+    document.location.href = "mailto:hello@anchortab.com?subject=Enterprise Edition"
+
+  $(".register-button").on 'click', (event) ->
+    document.location.href = "/register#" + $(event.target).data("plan-id")
 
   getTwitters 'tweet-container',
     id: 'anchortab',
