@@ -2,6 +2,8 @@ package com.anchortab.actor
 
 import scala.xml.NodeSeq
 
+import java.text.SimpleDateFormat
+
 import net.liftweb._
   import common._
   import actor._
@@ -17,6 +19,8 @@ import net.liftweb._
 import dispatch._
 import com.ning.http.client.{Request, RequestBuilder, Response}
 
+import org.joda.time._
+
 import com.anchortab.model._
 
 import org.bson.types.ObjectId
@@ -26,6 +30,9 @@ case class SendWelcomeEmail(userEmail: String) extends EmailActorMessage
 case class SendForgotPasswordEmail(userEmail: String, resetLink: String) extends EmailActorMessage
 case class SendQuotaWarningEmail(userEmail: String) extends EmailActorMessage
 case class SendQuotaErrorEmail(userEmail: String) extends EmailActorMessage
+case class SendTrialEndingEmail(userEmail: String, billingInfoPresent: Boolean, planName: String, trialEnd: DateTime) extends EmailActorMessage
+case class SendInvoicePaymentFailedEmail(userEmail: String, amount: Double, nextPaymentAttempt: Option[DateTime]) extends EmailActorMessage
+case class SendInvoicePaymentSucceededEmail(userEmail: String, amount: Double) extends EmailActorMessage
 
 object EmailActor extends LiftActor with Loggable {
   implicit val formats = DefaultFormats
@@ -41,10 +48,10 @@ object EmailActor extends LiftActor with Loggable {
       text: Option[String] = None)
 
     trait MandrillApiCall {
-      def uri: String
+      def uri(requestBuilder: RequestBuilder): RequestBuilder
     }
     case class SendMandrillMessage(message: MandrillMessage, async: Boolean = false) extends MandrillApiCall {
-      val uri = "/messages/send.json"
+      def uri(requestBuilder: RequestBuilder) = requestBuilder / "messages" / "send.json"
     }
 
     case class CodeResponse(code: Int)
@@ -68,7 +75,7 @@ object EmailActor extends LiftActor with Loggable {
       }
 
       val requestBody = compact(render(postJson))
-      val request = (host(endpointHost) / "api" / endpointVersion / apiCall.uri).secure <<
+      val request = (apiCall.uri(host(endpointHost) / "api" / endpointVersion)).secure <<
         requestBody
 
       val response = Http(request > AsCodeResponse).either
@@ -108,6 +115,15 @@ object EmailActor extends LiftActor with Loggable {
   val quotaErrorEmailTemplate =
     Templates("emails-hidden" :: "quota-error-email" :: Nil) openOr NodeSeq.Empty
 
+  val trialEndingEmailTemplate =
+    Templates("emails-hidden" :: "trial-ending-email" :: Nil) openOr NodeSeq.Empty
+
+  val invoicePaymentFailedEmailTemplate =
+    Templates("emails-hidden" :: "invoice-payment-failed-email" :: Nil) openOr NodeSeq.Empty
+
+  val invoicePaymentSucceededEmailTemplate =
+    Templates("emails-hidden" :: "invoice-payment-succeeded-email" :: Nil) openOr NodeSeq.Empty
+
   def messageHandler = {
     case SendWelcomeEmail(userEmail) =>
       sendEmail(welcomeEmailSubject, userEmail :: Nil, welcomeEmailTemplate)
@@ -131,6 +147,33 @@ object EmailActor extends LiftActor with Loggable {
       val subject = "Anchor Tab Quota Error"
 
       sendEmail(subject, userEmail :: Nil, quotaErrorEmailTemplate)
+
+    case SendTrialEndingEmail(userEmail, billingInfoPresent, planName, trialEnd) =>
+      val subject = "Anchor Tab Trial Ending Soon"
+
+      val trialEndingSoonMessage = (
+        ".trial-end-date" #> trialEnd.toString("dd MMM yyyy") &
+        ".plan-name" #> planName andThen
+        ".no-billing-info" #> (billingInfoPresent ? ClearNodes | PassThru) &
+        ".billing-info" #> (billingInfoPresent ? PassThru | ClearNodes)
+      ).apply(trialEndingEmailTemplate)
+
+      sendEmail(subject, userEmail :: Nil, trialEndingSoonMessage)
+
+    case SendInvoicePaymentFailedEmail(userEmail, amount, nextPaymentAttempt) =>
+      val subject = "Problem Billing your Credit Card"
+      val dateFormatter = new SimpleDateFormat("MMM dd")
+
+      val invoicePaymentFailedMessage = (
+        ".will-bill-again" #> (nextPaymentAttempt.isDefined ? PassThru | ClearNodes) andThen
+        ".will-not-bill-again" #> (nextPaymentAttempt.isDefined ? ClearNodes | PassThru) andThen
+        ".bill-amount" #> ("$" + ("%1.2f" format amount)) &
+        ".next-payment-attempt" #> nextPaymentAttempt.map { paymentAttemptDate =>
+          dateFormatter.format(paymentAttemptDate.toDate)
+        }
+      ).apply(invoicePaymentFailedEmailTemplate)
+
+      sendEmail(subject, userEmail :: Nil, invoicePaymentFailedMessage)
 
     case _ =>
   }

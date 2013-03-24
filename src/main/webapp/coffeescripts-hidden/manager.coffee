@@ -1,24 +1,27 @@
 modal = (id, nodes, closeCallback) ->
   closeCallback = closeCallback || (event) ->
-    $(event.target).remove()
+    $(".modal").remove()
 
   $("#" + id).remove()
 
-  modal =
+  newModal =
     $("<div />")
       .addClass("modal")
       .attr("id", id)
 
   $.each(nodes, (i, node) ->
-    modal.append(node)
+    newModal.append(node)
   )
 
-  modal.on $.modal.CLOSE, closeCallback
+  newModal.on $.modal.CLOSE, closeCallback
 
-  $("body").append(modal)
-  modal.modal()
+  $("body").append(newModal)
+  newModal.modal()
 
 $(document).ready ->
+  unless Modernizr.inputtypes.color
+    $("html").addClass("legacy-color-picker")
+
   $("select").customSelect()
 
   $(document).on 'login-failed', ->
@@ -33,8 +36,20 @@ $(document).ready ->
   $('button.new-plan').on 'click', ->
     document.location = "/admin/plans/new"
 
+  $(".submenu-container li, .dashboard").on "click", (event) ->
+    if event.currentTarget == event.target
+      document.location = $(event.target).find("a").attr("href")
+
   $("body").on 'click', '#modal-dismiss', (event) ->
     $.modal.close()
+
+  $("body").on 'change', "#color-scheme", (event) ->
+    selectedName = $(event.target).find(":selected").text()
+
+    if (selectedName == "Custom")
+      $(event.target).closest(".tab-form").addClass("with-custom-color")
+    else
+      $(event.target).closest(".tab-form").removeClass("with-custom-color")
 
   $(document).on 'form-validation-error', (event) ->
     $target = $(event.fieldSelector)
@@ -67,6 +82,159 @@ $(document).ready ->
     modal("wepay-redirect-modal", nodes, (_) ->
       document.location = event.preapprovalUrl
     )
+
+  $(document).on 'update-billing-information', (event) ->
+    stripeCallback = (status, response) ->
+      if response.error
+        anchortabSite.validationError("#card-number", response.error.message)
+      else
+        updateStripeTokenFn = eval("(" + event.updateStripeTokenFn + ")")
+        updateStripeTokenFn(response.id)
+
+    nodes = [
+      $("<h1 />")
+        .text("Update Billing Information"),
+
+      $("<p />")
+        .text("Please enter your new billing information below."),
+
+      $("<form />")
+      .addClass("billing-information-form")
+      .addClass("stripe-form")
+      .append(
+        $("<input />")
+          .attr("type", "hidden")
+          .attr("id", "stripe-token")
+      )
+      .append(
+        $("<div />")
+        .append(
+          $("<label />")
+            .attr("for", "card-number")
+            .text("Card number:")
+        )
+        .append(
+          $("<input />")
+            .attr("type", "text")
+            .attr("id", "card-number")
+            .attr("placeholder", "0000 0000 0000 0000")
+        )
+      )
+      .append(
+        $("<div />")
+        .append(
+          $("<label />")
+            .attr("for", "card-cvc")
+            .text("CVC:")
+        )
+        .append(
+          $("<input />")
+            .attr("type", "text")
+            .attr("id", "card-cvc")
+            .attr("placeholder", "000")
+            .attr("autocomplete", "off")
+        )
+      )
+      .append(
+        $("<div />")
+        .append(
+          $("<label />")
+            .attr("for", "card-expiry")
+            .text("Expires:")
+        )
+        .append(
+          $("<input />")
+            .attr("type", "text")
+            .attr("id", "card-expiry")
+            .attr("placeholder", "MM / YY")
+        )
+      )
+      .append(
+        $("<div />")
+        .append(
+          $("<label />")
+            .attr("for", "card-billing-zip")
+            .text("Billing ZIP:")
+        )
+        .append(
+          $("<input />")
+            .attr("type", "text")
+            .attr("id", "card-billing-zip")
+            .attr("placeholder", "00000")
+        )
+      )
+      .append(
+        $("<input />")
+          .attr("type", "submit")
+          .attr("class", "submit")
+          .attr("value", "Update")
+          .click((event) ->
+            event.preventDefault()
+
+            setTimeout ->
+              anchortabSite.event("validate-stripe-form",
+                stripeCallback: stripeCallback
+              )
+          )
+      )
+    ]
+
+    modal("update-billing-modal", nodes)
+    anchortabSite.event("stripe-form-ready")
+
+  $(document).on 'error-charging-card', (event) ->
+    nodes = [
+      $("<h1 />")
+        .text("Error Charging Card"),
+
+      $("<p />")
+        .text("We were unable to charge your card and complete your subscription
+              change. Please verify that you card details are correct and that your card
+              has sufficient balance."),
+
+      $("<p />")
+        .append("Shoot us an ")
+        .append($("<a />").attr("href", "mailto:hello@anchortab.com").text("email"))
+        .append(" if you think you're seeing this in error."),
+
+      $("<button />")
+        .attr("id", "modal-dismiss")
+        .text("Close")
+    ]
+
+    modal("error-charging-card-modal", nodes, -> document.location.reload())
+
+  $(document).on 'no-billing-information-error', (event) ->
+    nodes = [
+      $("<h1 />")
+        .text("No Billing Information"),
+
+      $("<p />")
+        .text("Before you can change to a different plan, you gotta tell us where to send
+              the bill, Chief. Mash the Update Billing Information button on this page to
+              give us your digits (your Credit Card digits, that is)."),
+
+      $("<button />")
+        .attr("id", "modal-dismiss")
+        .text("Close")
+    ]
+
+    modal("no-billing-information-modal", nodes, -> document.location.reload())
+
+  $(document).on 'general-error', (event) ->
+    nodes = [
+      $("<h1 />")
+        .text("Error"),
+
+      $("<p />")
+        .text(event.errorText),
+
+      $("<button />")
+        .attr("id", "modal-dismiss")
+        .text("Close")
+    ]
+
+    modal("general-error-modal", nodes)
 
   $(document).on 'tab-embed-code-received', (event) ->
     nodes = [

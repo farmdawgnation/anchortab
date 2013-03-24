@@ -145,7 +145,7 @@ displayTab = (tabJson) ->
   # Pull out the various descriptors into useful information.
   font = tabJson.font
   displayDelay = tabJson.delay * 1000
-  colorScheme = tabJson.colorScheme.toLowerCase()
+  colorScheme = tabJson.colorScheme
   customMessage = tabJson.customText
 
   # Load the Anchor Tab stylesheet.
@@ -161,17 +161,29 @@ displayTab = (tabJson) ->
 
   $("head").append atStyleSheet
 
+  anchorTabStamp = []
+
+  if ! tabJson.whitelabel
+    anchorTabStamp =
+      $("<a />")
+        .addClass("anchortab-stamp")
+        .attr('href', "http://anchortab.com")
+        .attr('target', '_blank')
+
+  # Build the color scheme CSS. :/
+  colorSchemeStyle = "background: #{colorScheme.baseColor}; "
+  colorSchemeStyle += "background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #{colorScheme.baseColor}), color-stop(100%, #{colorScheme.secondaryColor}));"
+  colorSchemeStyle += "background: -webkit-linear-gradient(#{colorScheme.baseColor}, #{colorScheme.secondaryColor}); "
+  colorSchemeStyle += "background: -moz-linear-gradient(#{colorScheme.baseColor}, #{colorScheme.secondaryColor});"
+  colorSchemeStyle += "background: -o-linear-gradient(#{colorScheme.baseColor}, #{colorScheme.secondaryColor});"
+  colorSchemeStyle += "background: linear-gradient(#{colorScheme.baseColor}, #{colorScheme.secondaryColor});"
+
   # Create the tab and append to the end of the body.
   anchorTab =
     $("<div />")
       .attr("id", "anchor-tab")
-      .addClass(colorScheme)
-      .append(
-        $("<a />")
-          .addClass("anchortab-stamp")
-          .attr('href', "http://anchortab.com")
-          .attr('target', '_blank')
-      )
+      .attr("style", colorSchemeStyle)
+      .append(anchorTabStamp)
       .append(
         $("<p />")
           .addClass("custom-message")
@@ -206,6 +218,10 @@ displayTab = (tabJson) ->
       )
 
   if $.browser.msie
+    # Bail if IE < 9.
+    if $.browser.version.split(".")[0]? < 9
+      return
+
     _gaq.push ["at._trackEvent", "Bootstrap", "MSIE", navigator.userAgent]
     anchorTab.addClass "msie"
 

@@ -1,36 +1,43 @@
 $(document).ready ->
-  chart = new Highcharts.Chart
-    chart:
-      renderTo: 'weeks-performance-graph',
-      defaultSeriesType: 'spline',
-      backgroundColor: '#f7f7f7',
-      width: 600,
-      animation: false
-    title: [
-      text: 'Weekly Performance'
-    ],
-    series: [
-      {
-        name: 'views',
-      },
-      {
-        name: 'submits',
-      }
-    ],
-    legend:
-      enabled: false
-    xAxis:
-      labels:
-        enabled: false
-    yAxis:
-      title:
-        text: null
-      min: 0
+  ctx = $("#weeks-performance-graph").get(0).getContext('2d')
+  viewData = []
+  submitData = []
+
+  options = {
+    scaleOverride: true,
+    scaleSteps: 10,
+    scaleStepWidth: 5,
+    scaleStartValue: 0
+  }
 
   requestEventSummary()
 
   $(document).on 'event-summary-updated', (event) ->
     if event.eventSummary.name == "tab-view"
-      chart.series[0].setData(event.eventSummary.data)
+      viewData = event.eventSummary.data
     else if event.eventSummary.name == "tab-submit"
-      chart.series[1].setData(event.eventSummary.data)
+      submitData = event.eventSummary.data
+
+    labels = $.map(viewData, (elem) -> elem.name)
+    viewDataset = $.map(viewData, (elem) -> elem.y)
+    submitDataset = $.map(submitData, (elem) -> elem.y)
+
+    chartData = {
+        labels: labels,
+        datasets: [
+            {
+                data: viewDataset,
+                fillColor: "rgba(0, 0, 0, 0)",
+                strokeColor: "#3f3f3e",
+                pointColor: "#3f3f3e"
+            },
+            {
+                data: submitDataset,
+                fillColor: "rgba(0, 0, 0, 0)",
+                strokeColor: "#1d93d6",
+                pointColor: "#1d93d6"
+            }
+        ]
+    }
+
+    new Chart(ctx).Line(chartData, options)

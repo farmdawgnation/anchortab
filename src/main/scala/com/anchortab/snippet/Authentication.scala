@@ -1,14 +1,14 @@
 package com.anchortab.snippet
 
-import scala.xml.NodeSeq
+import scala.xml._
 
 import net.liftweb._
   import common._
   import http._
+    import S.SFuncHolder
     import provider._
     import js._
       import JsCmds._
-    import SHtml._
     import LiftRules._
   import util._
     import Helpers._
@@ -23,6 +23,29 @@ import org.bson.types.ObjectId
 import com.anchortab.model._
 import com.anchortab.actor._
 
+import com.stripe
+
+object AuthenticationSHtml extends SHtml {
+  private def selected(in: Boolean) = if (in) new UnprefixedAttribute("selected", "selected", Null) else Null
+
+  /**
+   * Create a select box based on the list with a default value and the function to be executed on
+   * form submission
+   *
+   * @param opts -- the options.  A list of value and text pairs
+   * @param deflt -- the default value (or Empty if no default value)
+   * @param func -- the function to execute on form submission
+   */
+  def selectPlans(opts: Seq[(String, String, String)], deflt: Box[String],
+               strFunc: (String)=>Any, attrs: ElemAttr*): Elem = {
+    val func = S.SFuncHolder(strFunc)
+    val vals = opts.map(_._2)
+    val testFunc = S.LFuncHolder(in => in.filter(v => vals.contains(v)) match {case Nil => false case xs => func(xs)}, func.owner)
+
+    attrs.foldLeft(S.fmapFunc(testFunc)(fn => <select name={fn}>{opts.flatMap {case (hasTrial, value, text) => (<option data-has-trial={hasTrial} value={value}>{text}</option>) % selected(deflt.exists(_ == value))}}</select>))(_ % _)
+  }
+}
+
 case object LoginFailed extends SimpleAnchorTabEvent("login-failed")
 case class RedirectingToWePay(preapprovalUrl: String) extends SimpleAnchorTabEvent("redirecting-to-wepay")
 case class FormValidationError(fieldSelector: String, error: String) extends
@@ -34,6 +57,20 @@ object statelessUser extends RequestVar[Box[User]](Empty)
 object passwordResetUser extends RequestVar[Box[User]](Empty)
 
 object Authentication extends Loggable {
+  import AuthenticationSHtml._
+
+  /**
+   * This method sets various sticky notices when a user logs in if their
+   * account is in such a state that it requires those notices.
+  **/
+  def authenticationStickyNotices(user: User) = {
+    Notices.removeAllStickyNotices
+
+    // Set sticky notice for quota error if needed.
+    if (user.subscription.isDefined && ! user.tabsActive_?)
+      Notices.warning("Your tabs are inactive. You may upgrade your plan to reactivate your tabs.", Some("tab-shutdown-error"))
+  }
+
   /**
    * Handle authentication for stateless requests (the API).
   **/
@@ -64,7 +101,12 @@ object Authentication extends Loggable {
           cookieValue <- cookie.value
           sessionId <- tryo(new ObjectId(cookieValue))
           dbSession <- UserSession.find(sessionId)
+          user <- dbSession.user
         } {
+          // Set any sticky notices that are needed.
+          authenticationStickyNotices(user)
+
+          // Record session.
           val remoteIp = S.containerRequest.map(_.remoteAddress).openOr("localhost")
           val userAgent = S.containerRequest.flatMap(_.userAgent).openOr("unknown")
 
@@ -86,6 +128,7 @@ object Authentication extends Loggable {
           Full(RedirectResponse("/admin/users"))
         } else {
           userSession(Empty)
+          S.session.foreach(_.destroySession)
           Full(RedirectResponse("/", HTTPCookie("session", "deleted").setPath("/").setMaxAge(-100)))
         }
       }
@@ -122,6 +165,14 @@ object Authentication extends Loggable {
     case "show-if-logged-in" :: Nil => showIfLoggedIn
     case "pwn-if-not-admin" :: Nil => pwnIfNotAdmin
     case "show-if-admin" :: Nil => showIfAdmin
+
+    case "register-casual-blogger" :: Nil => registerButton("Casual Blogger")
+    case "register-influencer" :: Nil => registerButton("The Influencer")
+    case "register-industry-leader" :: Nil => registerButton("Industry Leader")
+  }
+
+  def registerButton(planName: String) = {
+    "button [data-plan-id]" #> Plan.find("name" -> planName).map(_._id.toString)
   }
 
   def redirectToDashboardIfLoggedIn(ns:NodeSeq) = {
@@ -203,6 +254,8 @@ object Authentication extends Loggable {
         session.save
         userSession(Full(session))
 
+        authenticationStickyNotices(user)
+
         RedirectTo("/session/login")
 
       case _ =>
@@ -234,6 +287,7 @@ object Authentication extends Loggable {
     if (Props.mode == Props.RunModes.Production && ! inviteCode.is.isDefined)
       S.redirectTo("/")
 
+    var stripeToken = ""
     var emailAddress = ""
     var requestedPassword = ""
     var requestedPasswordConfirmation = ""
@@ -249,15 +303,26 @@ object Authentication extends Loggable {
     }
 
     val planSelections = plans.map { plan =>
-      (plan._id.toString, plan.registrationTitle)
+      (plan.hasTrial_?.toString, plan._id.toString, plan.registrationTitle)
+    }
+
+    def createStripeCustomer(plan: Plan) = {
+      if (stripeToken.trim.nonEmpty) {
+        tryo(stripe.Customer.create(Map(
+          "plan" -> plan.stripeId.getOrElse(""),
+          "email" -> emailAddress,
+          "card" -> stripeToken
+        )))
+      } else {
+        tryo(stripe.Customer.create(Map(
+          "plan" -> plan.stripeId.getOrElse(""),
+          "email" -> emailAddress
+        )))
+      }
     }
 
     def generateSubscriptionForPlan(plan:Plan) = {
-      if (plan.free_?) {
-        Full(UserSubscription(plan._id, plan.price, plan.term, status="active"))
-      } else {
-        Full(UserSubscription(plan._id, plan.price, plan.term, None, None))
-      }
+      Full(UserSubscription(plan._id, plan.price, plan.term))
     }
 
     def processRegistration = {
@@ -304,6 +369,7 @@ object Authentication extends Loggable {
             for {
               plan <- (Plan.find(selectedPlan):Box[Plan]) ?~! "Plan could not be located."
               subscription <- generateSubscriptionForPlan(plan)
+              customer <- createStripeCustomer(plan)
             } yield {
               val firstSteps = Map(
                 UserFirstStep.Keys.ConnectAnExternalService -> UserFirstStep.Steps.ConnectAnExternalService,
@@ -311,9 +377,15 @@ object Authentication extends Loggable {
                 UserFirstStep.Keys.EmbedYourTab -> UserFirstStep.Steps.EmbedYourTab
               )
 
+              val userActiveCard = customer.activeCard.map { card =>
+                UserActiveCard(card.last4, card.`type`, card.expMonth, card.expYear)
+              }
+
               User(emailAddress, User.hashPassword(requestedPassword),
                    Some(UserProfile(Some(firstName), Some(lastName), Some(organization))),
-                   subscriptions = List(subscription), firstSteps = firstSteps)
+                   subscriptions = List(subscription), firstSteps = firstSteps,
+                   stripeCustomerId = Some(customer.id),
+                   activeCard = userActiveCard)
             }
 
           user.foreach(_.save)
@@ -332,16 +404,7 @@ object Authentication extends Loggable {
               // Send welcome email
               EmailActor ! SendWelcomeEmail(user.email)
 
-              if (plans.filter(_._id.toString == selectedPlan).headOption.map(_.free_?) getOrElse true) {
-                loginResult
-              } else {
-                val wepayUri =
-                  user.subscriptions.headOption.flatMap(_.preapprovalUri) getOrElse "#"
-
-                // Alert the user they're about to be redirected to WePay for payment, and
-                // then do the redirection.
-                RedirectingToWePay(wepayUri)
-              }
+              loginResult
 
             case m =>
               logger.error("While registering account got: " + m)
@@ -354,7 +417,8 @@ object Authentication extends Loggable {
     }
 
     val bind =
-      ".plan-selection" #> select(planSelections, Empty, selectedPlan = _) &
+      ".plan-selection" #> selectPlans(planSelections, Empty, selectedPlan = _) &
+      "#stripe-token" #> hidden(stripeToken = _, stripeToken) &
       ".email-address" #> text(emailAddress, emailAddress = _) &
       ".password" #> password(requestedPassword, requestedPassword = _) &
       ".password-confirmation" #> password(requestedPasswordConfirmation, requestedPasswordConfirmation = _) &

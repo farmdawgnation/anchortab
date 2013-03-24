@@ -7,71 +7,99 @@
   <body class="lift:content_id=main">
     <div id="main" class="lift:surround?with=tab-manager;at=content">
       <lift:pwn-if-not-logged-in />
+
+      <head>
+        <script src="https://js.stripe.com/v1/"></script>
+      </head>
+
       <h2>Subscription</h2>
 
-      <p>
-        You are currently a part of the beta preview release of Anchor Tab. As such, changing your subscription
-        from your control panel isn't possible yet. Please <a href="mailto:hello@anchortab.com">holler at us</a>
-        if you experience problems with your quotas and we can most likely bump you.
-      </p>
+      <div data-lift="subscription-summary">
+        <p class="helpful trial-plan">
+          You are currently on a trial plan. Please note that selecting a new plan will end your trial and bill
+          you immediately.
+        </p>
 
-      <!--
-      <h2>Change Subscription</h2>
+        <p class="special-plan-assignment">
+          You are currently subscribed to the <span class="plan-name">Special Plan</span>. This plan was assigned
+          to your account by an Anchor Tab Administrator, so you must <a href="mailto:hello@anchortab.com">contact us</a>
+          to have it changed.
+        </p>
 
-      <p>
-        You are currently subscribed to the Freeloader plan. You may change you plan by selecting a different
-        plan below.
-      </p>
+        <p class="subscribed">
+          You are currently subscribed to the <span class="plan-name">Freeloader Plan</span>. You may change you plan by
+          selecting a different plan below.
+        </p>
 
-      <table class="plan-selection">
+        <p class="cancelled-subscription">
+          You are currently subscribed to the <span class="plan-name">Freeloader Plan</span>. You have canceled your
+          plan and it will end <span class="ending-date">Feb 23, 2013</span>. You may not start a new subscription
+          until the current one has ended. Please <a href="mailto:hello@anchortab.com">email us</a> if you have any
+          questions.
+        </p>
+
+        <p class="not-subscribed">
+          You do not have an active subscription on your account. You may select one below.
+        </p>
+      </div>
+
+      <table class="plan-selection" data-lift="plan-selection">
         <tr class="header">
           <th>Plan</th>
           <th>&nbsp;</th>
         </tr>
-        <tr>
-          <td>Freeloader</td>
+        <tr class="plan">
+          <td>
+            <span class="plan-name">Freeloader (Free)</span>
+            <span class="plan-details">1 Tab, 5 submissions/month</span>
+          </td>
+          <td>
+            <button class="select-plan stripe-button">Select</button>
+            <button class="cancel-plan stripe-button">Cancel Subscription</button>
+          </td>
+        </tr>
+        <tr class="clearable">
+          <td>
+            Amateur ($5/mo)
+            <span class="plan-details">Unlimited Tabs, 25 submissions/month</span>
+          </td>
           <td><button class="select-plan">Select</button></td>
         </tr>
-        <tr>
-          <td>Amateur</td>
-          <td>Current Plan</td>
-        </tr>
-        <tr>
-          <td>Professional</td>
+        <tr class="clearable">
+          <td>
+            Professional
+            <span class="plan-details">Unlimited Tabs, 70 submissions/month</span>
+          </td>
           <td><button class="select-plan">Select</button></td>
         </tr>
       </table>
 
-      <h2>Billing Information</h2>
+      <div class="billing-information" data-lift="billing-summary">
+        <h2>Billing Information</h2>
 
-      <p>
-        Your billing information is one file and you were last billed on October 20th, 2012.
-        <a href="#">Update your billing information.</a>
-      </p>
+        <div class="billing-information-on-file">
+          <p>
+            We have the following billing information on file:
+          </p>
 
-      <table class="billing-summary">
-        <tr class="header">
-          <th>Date</th>
-          <th>Summary</th>
-          <th>Amount</th>
-        </tr>
-        <tr>
-          <td>10/20/2012</td>
-          <td>Amateur Plan</td>
-          <td>$20.00</td>
-        </tr>
-        <tr>
-          <td>09/20/2012</td>
-          <td>Amateur Plan</td>
-          <td>$20.00</td>
-        </tr>
-        <tr>
-          <td>08/20/2012</td>
-          <td>Amateur Plan</td>
-          <td>$20.00</td>
-        </tr>
-      </table>
-      -->
+          <p class="billing-card-details">
+            <span class="card-type">MasterCard</span>
+            (**** **** **** <span class="last4">1234</span>)
+            expiring
+            <span class="expMonth">4</span>
+            /
+            <span class="expYear">14</span>
+          </p>
+        </div>
+
+        <div class="no-billing-information">
+          <p>We have no billing information for your account.</p>
+        </div>
+
+        <p>
+          <button class="update-billing-information">Update Billing Information</button>
+        </p>
+      </div>
     </div>
   </body>
 </html>

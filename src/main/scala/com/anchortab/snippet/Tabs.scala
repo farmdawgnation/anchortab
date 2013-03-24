@@ -104,6 +104,7 @@ object Tabs {
     def delete(tabId:ObjectId)() = {
       Tab.delete("_id" -> tabId)
 
+      Notices.notice("Tab deleted.")
       Reload
     }
 
@@ -124,8 +125,10 @@ object Tabs {
   def tabForm = {
     var tabName = requestTab.map(_.name) openOr ""
     var appearanceDelay = requestTab.map(_.appearance.delay.toString) openOr ""
-    var font = requestTab.map(_.appearance.font) openOr ""
-    var colorScheme = requestTab.map(_.appearance.colorScheme) openOr ""
+    var colorScheme = requestTab.map(_.appearance.colorScheme) openOr TabColorScheme.Red
+    var customColorSchemeBase = requestTab.map(_.appearance.colorScheme.baseColor) openOr ""
+    var customColorSchemeSecondary = requestTab.map(_.appearance.colorScheme.secondaryColor) openOr ""
+    var whitelabel = requestTab.map(_.appearance.whitelabel) openOr false
     var customText = requestTab.map(_.appearance.customText) openOr ""
 
     var mailChimpApiKey = ""
@@ -185,27 +188,35 @@ object Tabs {
         } yield {
           serviceWrapper.map(_.credentialsValid_?) match {
             case Some(false) =>
-              Alert("Looks like your service API key or list id might be wrong.")
+              GeneralError("Looks like something is wrong with the external service you're connecting to.")
 
             case _ =>
+              val customizedColorScheme = {
+                if (colorScheme.name != "Custom")
+                  colorScheme
+                else
+                  TabColorScheme(customColorSchemeBase, customColorSchemeSecondary, "Custom")
+              }
+
               requestTab match {
                 case Full(tab) =>
                   tab.copy(
                     name = tabName,
                     appearance = TabAppearance(
                       delay = appearanceDelay.toInt,
-                      font = font,
-                      colorScheme = colorScheme,
-                      customText = customText
+                      colorScheme = customizedColorScheme,
+                      customText = customText,
+                      whitelabel = whitelabel
                     ),
                     service = serviceWrapper
                   ).save
 
+                  Notices.notice("Tab saved. Go have some juice.")
                   RedirectTo("/manager/tabs")
 
                 case _ =>
                   val tab = Tab(tabName, session.userId,
-                      TabAppearance(appearanceDelay.toInt, font, colorScheme, customText),
+                      TabAppearance(appearanceDelay.toInt, customizedColorScheme, customText, whitelabel),
                       serviceWrapper)
                   tab.save
 
@@ -213,12 +224,13 @@ object Tabs {
                     ("firstSteps." + UserFirstStep.Keys.CreateATab) -> true)
                   )
 
+                  Notices.notice("Tab created. Ssssssssmokin'!")
                   NewTabCreated(tab.embedCode)
               }
           }
         }
       } openOr {
-        Alert("Something went wrong.")
+        GeneralError("Something went wrong. Please contact support by emailing hello@anchortab.com.")
       }
     }
 
@@ -267,6 +279,44 @@ object Tabs {
       } map(_.data.asScala.toList) openOr List()
     }
 
+    val hasWhitelabel_? = {
+      {
+        for {
+          session <- userSession.is
+          user <- User.find(session.userId)
+          subscription <- user.subscription
+          plan <- subscription.plan
+            if plan.hasFeature_?(Plan.Features.WhitelabeledTabs)
+        } yield {
+          true
+        }
+      } openOr {
+        false
+      }
+    }
+
+    val hasCustomColorSchemes_? = {
+      {
+        for {
+          session <- userSession.is
+          user <- User.find(session.userId)
+          subscription <- user.subscription
+          plan <- subscription.plan
+            if plan.hasFeature_?(Plan.Features.CustomColorSchemes)
+        } yield {
+          true
+        }
+      } openOr {
+        false
+      }
+    }
+
+    val colorSchemeList =
+      if (hasCustomColorSchemes_?)
+        TabColorScheme.advanced
+      else
+        TabColorScheme.basic
+
     val validEmailServices = {
       val none = List(Tab.EmailServices.None)
       val cc = (constantContactLists.nonEmpty ? List(Tab.EmailServices.ConstantContact) | List())
@@ -282,16 +332,29 @@ object Tabs {
         tryo(Tab.AppearanceDelayOptions.withName(appearanceDelay)),
         selected => appearanceDelay = selected.toString
       ) &
-      "#font" #> selectObj[Tab.FontOptions.Value](
-        Tab.FontOptions.values.toList.map(v => (v,v.toString)),
-        tryo(Tab.FontOptions.withName(font)),
-        selected => font = selected.toString
+      "#color-scheme" #> select(
+        colorSchemeList.map(v => (v.toString,v.toString)),
+        Full(colorScheme.toString),
+        (selectedSchemeName: String) => {
+          selectedSchemeName match {
+            case TabColorScheme.Custom.toString if hasCustomColorSchemes_? =>
+              colorScheme = TabColorScheme.Custom
+            case TabColorScheme.Red.toString =>
+              colorScheme = TabColorScheme.Red
+            case TabColorScheme.Green.toString =>
+              colorScheme = TabColorScheme.Green
+            case TabColorScheme.Blue.toString =>
+              colorScheme = TabColorScheme.Blue
+            case _ =>
+              colorScheme = TabColorScheme.Gray
+          }
+        }
       ) &
-      "#color-scheme" #> selectObj[Tab.ColorSchemeOptions.Value](
-        Tab.ColorSchemeOptions.values.toList.map(v => (v,v.toString)),
-        tryo(Tab.ColorSchemeOptions.withName(colorScheme)),
-        selected => colorScheme = selected.toString
-      ) &
+      ".custom-color-group" #> (hasCustomColorSchemes_? ? PassThru | ClearNodes) andThen
+      "#custom-color-scheme-base" #> text(customColorSchemeBase, customColorSchemeBase = _, ("type" -> "color")) &
+      "#custom-color-scheme-secondary" #> text(customColorSchemeSecondary, customColorSchemeSecondary = _, ("type" -> "color")) &
+      ".whitelabel-group" #> (hasWhitelabel_? ? PassThru | ClearNodes) andThen
+      "#whitelabel" #> checkbox(whitelabel, whitelabel = _) &
       "#custom-text" #> text(customText, customText = _) &
       "#service" #> selectObj[Tab.EmailServices.Value](
         validEmailServices.map(v => (v,v.toString)),
@@ -341,7 +404,7 @@ object Tabs {
         def deleteSubscriber(email:String)() = {
           Tab.update("_id" -> tabId, "$pull" -> ("subscribers" -> ("email" -> email)))
 
-          Alert("Subscriber deleted.") &
+          Notices.notice("Subscriber deleted.")
           Reload
         }
 

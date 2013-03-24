@@ -73,7 +73,7 @@ object EventActor extends LiftActor with Loggable {
               ("$lt" -> rangeEnd.toString())
             )
           )
-          EventSummaryEntry(rangeStart.toString("MMM dd yyyy"), eventTypeCount)
+          EventSummaryEntry(rangeStart.toString("MMM dd"), eventTypeCount)
         }
       }.reverse
 

@@ -22,7 +22,6 @@ import org.bson.types.ObjectId
 
 import com.anchortab.model._
 import com.anchortab.actor._
-import com.anchortab.actor.{EventActor, TrackEvent}
 
 object Api extends RestHelper with Loggable {
   def statelessRewrite : RewritePF = {
@@ -42,6 +41,8 @@ object Api extends RestHelper with Loggable {
         for {
           tab <- (Tab.find(tabId):Box[Tab])
           user <- tab.user.filter(_.tabsActive_?) ?~! "This tab has been disabled." ~> 403
+          subscription <- user.subscription
+          plan <- subscription.plan
           callbackFnName <- req.param("callback") ?~! "Callback not specified." ~> 400
         } yield {
           val remoteIp = req.header("X-Forwarded-For") openOr req.remoteAddr
@@ -76,10 +77,19 @@ object Api extends RestHelper with Loggable {
           QuotasActor ! CheckQuotaCounts(user._id)
           EventActor ! TrackEvent(Event.Types.TabView, remoteIp, userAgent, user._id, tab._id, Some(cookieId))
 
+          val whitelabelTab = tab.appearance.whitelabel && plan.hasFeature_?(Plan.Features.WhitelabeledTabs)
+          val colorScheme = {
+            if (tab.appearance.colorScheme.name == TabColorScheme.Custom.name && ! plan.hasFeature_?(Plan.Features.CustomColorSchemes)) {
+              TabColorScheme.Red
+            } else {
+              tab.appearance.colorScheme
+            }
+          }
+
           val tabJson =
             ("delay" -> tab.appearance.delay) ~
-            ("font" -> tab.appearance.font) ~
-            ("colorScheme" -> tab.appearance.colorScheme) ~
+            ("colorScheme" -> decompose(colorScheme)) ~
+            ("whitelabel" -> whitelabelTab) ~
             ("customText" -> tab.appearance.customText)
 
           Call(callbackFnName, tabJson)
@@ -219,16 +229,12 @@ object Api extends RestHelper with Loggable {
           delay <- req.param("delay") ?~! "Delay parameter is required." ~> 400
           validDelay <- Tab.validAppearanceDelay(delay) ?~! "The delay parameter was invalid." ~> 400
           font <- req.param("font") ?~! "The font parameter is required." ~> 400
-          validFont <- Tab.validFont(font) ?~! "The font parameter was invalid." ~> 400
           colorScheme <- req.param("colorScheme") ?~! "The colorScheme parameter is required." ~> 400
-          validColorScheme <- Tab.validColorScheme(colorScheme) ?~! "The colorScheme parameter was invalid." ~> 400
           customText <- req.param("customText") ?~! "the customText parameter is required." ~> 400
         } yield {
           Tab.update("_id" -> tabId, "$set" -> (
             "appearance" -> (
               ("delay" -> delay.toInt) ~
-              ("font" -> font) ~
-              ("colorScheme" -> colorScheme) ~
               ("customTest" -> customText)
             )
           ))

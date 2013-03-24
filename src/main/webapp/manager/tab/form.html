@@ -33,6 +33,21 @@
             </select>
           </div>
 
+          <div class="custom-color-group">
+            <label for="color-scheme-custom-base">Base Color:</label>
+            <input type="color" id="custom-color-scheme-base">
+          </div>
+
+          <div class="custom-color-group">
+            <label for="color-scheme-custom-secondary">Secondary Color:</label>
+            <input type="color" id="custom-color-scheme-secondary">
+          </div>
+
+          <div class="whitelabel-group">
+            <label for="whitelabel">Whitelabel:</label>
+            <input type="checkbox" id="whitelabel" />
+          </div>
+
           <div>
             <label for="custom-text">Custom Text:</label>
             <input type="text" id="custom-text" />
@@ -65,6 +80,8 @@
 
         <script type="text/javascript">
           $("select").customSelect();
+
+          $("html.legacy-color-picker input[type=color]").addClass("color {hash: true}")
         </script>
       </lift:lazy-load>
     </div>

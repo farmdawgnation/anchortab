@@ -21,6 +21,9 @@
   +border-radius(5px)
   padding: 5px
 
+  &.disabled
+    background-color: #D5D5D5
+
 =pretty-table
   width: 100%
 
@@ -99,6 +102,9 @@
   input[type=checkbox]
     margin-top: 2.4em
 
+  .stripe-ajax-loader
+    vertical-align: middle
+
 body#manager-narrow
   #manager-container
     width: 450px
@@ -133,6 +139,9 @@ body
   font-family: 'Open Sans', Arial, sans-serif
   font-size: 12px
   line-height: 1.5em
+
+  #update-billing-modal > form
+    +pretty-form
 
   #manager-container
     width: 946px
@@ -218,6 +227,9 @@ body
             vertical-align: middle
             margin-right: 5px
 
+          &.dashboard
+            cursor: pointer
+
           &.selected
             background-color: #1d93d6
 
@@ -230,6 +242,7 @@ body
               border-top: 0
               border-bottom: 0
               font-weight: 400
+              cursor: pointer
 
         .top-nav
           background-color: #343433
@@ -242,7 +255,41 @@ body
         width: 700px
         background-color: #f7f7f7
 
-        padding: 26px
+        padding: 19px
+
+        > ul:first-child > li
+          padding: 5px
+          margin-bottom: 5px
+          +border-radius(5px)
+
+          &:last-child
+            margin-bottom: 25px
+
+          &:before
+            display: inline
+            font-family: SSStandard
+            font-size: 1.2em
+            vertical-align: middle
+            margin-left: 5px
+            margin-right: 5px
+
+          &.notice
+            background-color: #62EAAF
+
+            &:before
+              content: '✓'
+
+          &.error
+            background-color: #EA6262
+
+            &:before
+              content: '⛔'
+
+          &.warning
+            background-color: #E1ED5E
+
+            &:before
+              content: '⚠'
 
         p
           margin-bottom: 14px
@@ -276,6 +323,10 @@ body
 
           background: #3f3f3e
           +background(linear-gradient(#5b5b5b, #3f3f3e))
+
+        h4
+          font-size: 20px
+          font-size: 1.25rem
 
         .new-tab-button
           +pretty-button
@@ -320,6 +371,44 @@ body
         #weeks-performance-graph
           width: 590px
 
+        .weeks-performance-graph-legend
+          text-align: right
+          font-size: 14px
+          margin-bottom: 20px
+
+          dt, dd
+            display: inline-block
+            vertical-align: middle
+
+          dt
+            width: 15px
+            height: 1em
+
+            &.subscribes
+              background-color: #1d93d6
+
+            &.views
+              background-color: #3f3f3e
+
+          dd
+            margin-right: 10px
+
+        .account-stats > h4 > small
+          font-size: 14px
+
+        .quota-summary-list > .quota-summary
+          margin-top: 20px
+
+          > .quota-name
+            font-size: 16px
+            font-weight: 600
+            margin-left: 10px
+
+          > .usage-summary
+            float: right
+            font-size: 16px
+            margin-right: 10px
+
         .helpful
           background-color: #d5d5d5
           padding: 5px
@@ -328,6 +417,12 @@ body
 
         .tab-form, .profile-form
           +pretty-form
+
+        .tab-form > .custom-color-group
+          display: none
+
+        .tab-form.with-custom-color > .custom-color-group
+          display: block
 
         .plan-selection
           +pretty-table
@@ -338,11 +433,18 @@ body
             &:last-child
               text-align: right
 
-          .select-plan
+            > .plan-details
+              font-weight: normal
+              display: block
+
+          .select-plan, .cancel-plan
             +pretty-button
 
-        .billing-summary
-          +pretty-table
+        .billing-information
+          margin-top: 35px
+
+        .update-billing-information, .setup-billing
+          +pretty-button
 
         .subscriber-list
           +pretty-table
