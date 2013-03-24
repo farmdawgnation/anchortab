@@ -20,6 +20,8 @@ import net.liftweb._
   import mongodb._
     import BsonDSL._
 
+import com.newrelic.api.agent._
+
 import com.anchortab.model.User
 
 class SimpleAnchorTabEvent(eventName:String) extends JsCmd {
@@ -59,6 +61,24 @@ object Util extends Loggable {
     case "google-analytics" :: Nil => googleAnalytics _
     case "uservoice" :: Nil => uservoice _
     case "first-steps" :: Nil => firstSteps
+    case "newrelic-browser-timing-header" :: Nil => newrelicBrowserTimingHeader
+    case "newrelic-browser-timing-footer" :: Nil => newrelicBrowserTimingFooter
+  }
+
+  def newrelicBrowserTimingFooter = {
+    if (Props.productionMode) {
+      "script *" #> NewRelic.getBrowserTimingHeader()
+    } else {
+      ClearNodes
+    }
+  }
+
+  def newrelicBrowserTimingHeader = {
+    if (Props.productionMode) {
+      "script *" #> NewRelic.getBrowserTimingFooter()
+    } else {
+      ClearNodes
+    }
   }
 
   def firstSteps = {
