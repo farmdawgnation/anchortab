@@ -45,7 +45,8 @@ libraryDependencies ++= {
     "com.stripe"        %% "stripe-scala"       % "1.1.2",
     "com.ecwid"         % "ecwid-mailchimp"     % "1.3.0.5",
     "org.scalatest"     %% "scalatest"          % "2.0.M5b" % "test->default",
-    "org.seleniumhq.selenium" % "selenium-java" % "2.29.1"  % "test->default"
+    "org.seleniumhq.selenium" % "selenium-java" % "2.29.1"  % "test->default",
+    "com.newrelic.agent.java" % "newrelic-api"  % "2.15.1"
   )
 }
 
