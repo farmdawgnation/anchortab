@@ -283,10 +283,6 @@ object Authentication extends Loggable {
   }
 
   def registrationForm = {
-    // We only allow registration with invite code for the time being.
-    if (Props.mode == Props.RunModes.Production && ! inviteCode.is.isDefined)
-      S.redirectTo("/")
-
     var stripeToken = ""
     var emailAddress = ""
     var requestedPassword = ""
