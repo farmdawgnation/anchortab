@@ -121,7 +121,8 @@ object RequestHandling {
 
     val menus: List[ConvertableToMenu] =
       landingMenus ++
-      Authentication.menus
+      Authentication.menus ++
+      Dashboard.menus
 
     LiftRules.setSiteMap(SiteMap(menus: _*))
   }
