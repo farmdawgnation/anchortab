@@ -4,6 +4,8 @@ import scala.xml._
 
 import net.liftweb._
   import common._
+  import sitemap._
+    import Loc._
   import http._
     import S.SFuncHolder
     import provider._
@@ -58,6 +60,42 @@ object passwordResetUser extends RequestVar[Box[User]](Empty)
 
 object Authentication extends Loggable {
   import AuthenticationSHtml._
+
+  /**
+   * Sitemap menus.
+  **/
+  val managerMenu = Menu.i("Manager") / "manager"
+  val registrationMenu = Menu.i("Register") / "register"
+  val forgotPasswordMenu = Menu.i("Forgot Password") / "amnesia"
+  val forgotPasswordCompleteMenu = Menu.i("Reset Email Sent") / "amnesia-complete"
+  val resetPasswordMenu =
+    Menu.param[User]("Reset Password", Text("Reset Password"), userForReset(_), resetForUser(_)) /
+    "lost-sticky-note" / * >>
+    TemplateBox(() => Templates("lost-sticky-note" :: Nil))
+
+  val menus =
+    managerMenu ::
+    registrationMenu ::
+    forgotPasswordMenu ::
+    forgotPasswordCompleteMenu ::
+    resetPasswordMenu ::
+    Nil
+
+  /**
+   * Sitemap menu helpers.
+  **/
+  protected def userForReset(passwordResetKey: String): Box[User] = {
+    for {
+      user <- User.findAll("passwordResetKey.key" -> passwordResetKey).headOption
+        if user.passwordResetKey.map(_.expires isAfterNow).getOrElse(false)
+    } yield {
+      user
+    }
+  }
+
+  protected def resetForUser(user: User) = {
+    user.passwordResetKey.filter(_.expires isAfterNow).map(_.key) getOrElse ""
+  }
 
   /**
    * This method sets various sticky notices when a user logs in if their
@@ -143,18 +181,6 @@ object Authentication extends Loggable {
       }
   }
 
-  def statelessRewrite : RewritePF = {
-    case RewriteRequest(ParsePath("lost-sticky-note" :: passwordResetKey :: Nil, _, _, _), _, _) =>
-      for {
-        user <- User.findAll("passwordResetKey.key" -> passwordResetKey).headOption
-          if user.passwordResetKey.map(_.expires isAfterNow).getOrElse(false)
-      } yield {
-        passwordResetUser(Full(user))
-      }
-
-      RewriteResponse("lost-sticky-note" :: Nil)
-  }
-
   def snippetHandlers : SnippetPF = {
     case "login-form" :: Nil => loginForm
     case "registration-form" :: Nil => registrationForm
@@ -184,7 +210,7 @@ object Authentication extends Loggable {
 
   def pwnIfNotLoggedIn(ns:NodeSeq) = {
     if (! userSession.isDefined)
-      S.redirectTo("/manager")
+      S.redirectTo(managerMenu.loc.calcDefaultHref)
 
     ns
   }
@@ -445,7 +471,7 @@ object Authentication extends Loggable {
 
           EmailActor ! SendForgotPasswordEmail(userWithReset.email, resetLink)
 
-          RedirectTo("/amnesia-complete")
+          RedirectTo(forgotPasswordCompleteMenu.loc.calcDefaultHref)
         }
       } getOrElse {
         FormValidationError(".email-address", "We don't have an account with that email.")
@@ -478,13 +504,13 @@ object Authentication extends Loggable {
           passwordResetKey = None
         ).save
 
-        RedirectTo("/manager")
+        RedirectTo(managerMenu.loc.calcDefaultHref)
       }
     }
 
     {
       for {
-        user <- passwordResetUser
+        user <- resetPasswordMenu.currentValue
       } yield {
         val bind =
           ".password" #> password(newPassword, newPassword = _) &
@@ -496,7 +522,7 @@ object Authentication extends Loggable {
         }
       }
     } openOr {
-      S.redirectTo("/amnesia")
+      S.redirectTo(forgotPasswordMenu.loc.calcDefaultHref)
     }
   }
 }
