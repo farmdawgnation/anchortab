@@ -319,7 +319,7 @@ object Authentication extends Loggable {
     var selectedPlan = ""
 
     val plans = {
-      inviteCode.is.flatMap(_.forPlan).map(List(_))
+      Invites.acceptInviteMenu.currentValue.flatMap(_.forPlan).map(List(_))
     } openOr {
       Plan.findAll("visibleOnRegistration" -> true)
     }
@@ -418,7 +418,7 @@ object Authentication extends Loggable {
 
               // Bump the invite code count
               for {
-                invite <- inviteCode.is
+                invite <- Invites.acceptInviteMenu.currentValue
               } {
                 InviteCode.update("_id" -> invite._id, "$inc" -> ("numberOfUses" -> 1))
               }

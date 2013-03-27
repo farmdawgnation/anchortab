@@ -95,7 +95,6 @@ object RequestHandling {
 
   def setupRewrites = {
     LiftRules.statelessRewrite.append(Api.statelessRewrite)
-    LiftRules.statelessRewrite.append(Invites.statelessRewrite)
     LiftRules.statelessRewrite.append(Admin.statelessRewrite)
   }
 
@@ -124,7 +123,8 @@ object RequestHandling {
       Dashboard.menus ++
       Tabs.menus ++
       Accounts.menus ++
-      Subscription.menus
+      Subscription.menus ++
+      Invites.menus
 
     LiftRules.setSiteMap(SiteMap(menus: _*))
   }
