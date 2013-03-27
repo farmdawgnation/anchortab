@@ -122,7 +122,9 @@ object RequestHandling {
       landingMenus ++
       Authentication.menus ++
       Dashboard.menus ++
-      Tabs.menus
+      Tabs.menus ++
+      Accounts.menus ++
+      Subscription.menus
 
     LiftRules.setSiteMap(SiteMap(menus: _*))
   }

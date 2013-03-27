@@ -5,6 +5,7 @@ import scala.xml.NodeSeq
 import java.text.SimpleDateFormat
 
 import net.liftweb._
+  import sitemap._
   import common._
   import http._
     import SHtml._
@@ -37,6 +38,12 @@ case object NoBillingInformationError extends SimpleAnchorTabEvent("no-billing-i
 case class GeneralError(errorText: String) extends SimpleAnchorTabEvent("general-error")
 
 object Subscription extends Loggable {
+  val subscriptionMenu = Menu.i("Subscription") / "manager" / "subscription"
+
+  val menus =
+    subscriptionMenu ::
+    Nil
+
   implicit val formats = DefaultFormats
   val dateFormatter = new SimpleDateFormat("dd MMM yyyy")
 
