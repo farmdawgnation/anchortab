@@ -5,6 +5,7 @@ import scala.xml.NodeSeq
 import java.text.SimpleDateFormat
 
 import net.liftweb._
+  import sitemap._
   import http._
     import js._
       import JsCmds._
@@ -27,6 +28,14 @@ import com.stripe
 import org.bson.types.ObjectId
 
 object Accounts {
+  val profileMenu = Menu.i("Profile") / "manager" / "account"
+  val servicesMenu = Menu.i("Connected Services") / "manager" / "services"
+
+  val menus =
+    profileMenu ::
+    servicesMenu ::
+    Nil
+
   val shortDateFormatter = new SimpleDateFormat("MM/dd/yyyy")
   val longDateFormatter = new SimpleDateFormat("MMMM dd, yyyy")
 

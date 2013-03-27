@@ -5,6 +5,7 @@ import scala.math._
 
 import net.liftweb._
   import common._
+  import sitemap._
   import mongodb._
   import util._
     import Helpers._
@@ -16,6 +17,12 @@ import net.liftweb._
 import com.anchortab.model._
 
 object Dashboard {
+  val dashboardMenu = Menu.i("Dashboard") / "manager" / "dashboard"
+
+  val menus =
+    dashboardMenu ::
+    Nil
+
   def weeksPerformanceGraph = {
     {
       for {

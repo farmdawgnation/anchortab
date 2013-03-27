@@ -1,8 +1,10 @@
 package com.anchortab.snippet
 
-import scala.xml.NodeSeq
+import scala.xml._
 
 import net.liftweb._
+  import sitemap._
+    import Loc._
   import common._
   import http._
     import provider._
@@ -21,36 +23,33 @@ import com.anchortab.model.{InviteCode, Plan}
 
 import org.bson.types.ObjectId
 
-object inviteCode extends RequestVar[Box[InviteCode]](Empty)
-object requestInviteId extends RequestVar[Box[ObjectId]](Empty)
-
 object Invites extends Loggable {
-  def statelessRewrite: RewritePF = {
-    case RewriteRequest(ParsePath("accept-invite" :: userInviteCode :: Nil, _, _, _), _, _) =>
-      for {
-        invite <- InviteCode.findAll("code" -> userInviteCode)
-          if invite.numberOfUsesAvailable.map(_ > invite.numberOfUses) getOrElse true
-      } {
-        inviteCode(Full(invite))
-      }
+  val acceptInviteMenu =
+    Menu.param[InviteCode]("Accept Invite", Text("Accept Invite"), inviteForCode(_), _.code) /
+    "accept-invite" / * >>
+    TemplateBox(() => Templates("register" :: Nil))
+  val invitesListMenu = Menu.i("Invites") / "admin" / "invites"
+  val invitesNewMenu = Menu.i("New Invite") / "admin" / "invites" / "new" >>
+    TemplateBox(() => Templates("admin" :: "invite" :: "form" :: Nil))
+  val inviteEditMenu =
+    Menu.param[InviteCode]("Edit Invite", Text("Edit Invite"), InviteCode.find(_), _._id.toString) /
+    "admin" / "invite" / * >>
+    TemplateBox(() => Templates("admin" :: "invite" :: "form" :: Nil))
 
-      RewriteResponse("register" :: Nil)
+  val menus =
+    acceptInviteMenu ::
+    invitesListMenu ::
+    invitesNewMenu ::
+    inviteEditMenu ::
+    Nil
 
-    case RewriteRequest(ParsePath("admin" :: "invites" :: "new" :: Nil, _, _, _), _, _) =>
-      RewriteResponse("admin" :: "invite" :: "form" :: Nil)
-
-    case RewriteRequest(ParsePath("admin" :: "invite" :: inviteId :: "edit" :: Nil, _, _, _), _, _) =>
-      {
-        for {
-          inviteObjectId <- tryo(new ObjectId(inviteId))
-        } yield {
-          requestInviteId(Full(inviteObjectId))
-
-          RewriteResponse("admin" :: "invite" :: "form" :: Nil)
-        }
-      } openOr {
-        S.redirectTo("/admin/invites")
-      }
+  def inviteForCode(userInviteCode: String) = {
+    for {
+      invite <- InviteCode.findAll("code" -> userInviteCode).headOption
+        if invite.numberOfUsesAvailable.map(_ > invite.numberOfUses) getOrElse true
+    } yield {
+      invite
+    }
   }
 
   def snippetHandlers: SnippetPF = {
@@ -60,7 +59,7 @@ object Invites extends Loggable {
   }
 
   def inviteForm = {
-    val requestInviteCode = requestInviteId.is.flatMap(InviteCode.find(_)) openOr InviteCode()
+    val requestInviteCode = inviteEditMenu.currentValue openOr InviteCode()
 
     var theCode = requestInviteCode.code
     var maxUses = requestInviteCode.numberOfUsesAvailable.map(_.toString) getOrElse ""
@@ -115,7 +114,7 @@ object Invites extends Loggable {
     }
 
     def editInviteCode(inviteCode: InviteCode)(s: String) = {
-      RedirectTo("/admin/invite/" + inviteCode._id.toString + "/edit")
+      RedirectTo("/admin/invite/" + inviteCode._id.toString)
     }
 
     def deleteInviteCode(inviteCode: InviteCode)(s: String) = {
