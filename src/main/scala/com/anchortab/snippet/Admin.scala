@@ -1,11 +1,13 @@
 package com.anchortab.snippet
 
-import scala.xml.NodeSeq
+import scala.xml._
 
 import java.text.SimpleDateFormat
 import java.util.UUID
 
 import net.liftweb._
+  import sitemap._
+    import Loc._
   import http._
     import js._
       import JsCmds._
@@ -26,28 +28,33 @@ import com.stripe
 
 import org.bson.types.ObjectId
 
-object requestUserId extends RequestVar[Box[String]](Empty)
-object requestPlanId extends RequestVar[Box[String]](Empty)
-
 object Admin {
+  val usersListMenu = Menu.i("Users") / "admin" / "users"
+  val usersNewMenu = Menu.i("New User") / "admin" / "users" / "new" >>
+    TemplateBox(() => Templates("admin" :: "user" :: "form" :: Nil))
+  val usersEditMenu =
+    Menu.param[User]("Edit User", Text("Edit User"), User.find(_), _._id.toString) /
+    "admin" / "user" / * >>
+    TemplateBox(() => Templates("admin" :: "user" :: "form" :: Nil))
+  val plansListMenu = Menu.i("Plans") / "admin" / "plans"
+  val plansNewMenu = Menu.i("New Plan") / "admin" / "plans" / "new" >>
+    TemplateBox(() => Templates("admin" :: "plan" :: "form" :: Nil))
+  val plansEditMenu =
+    Menu.param[Plan]("Edit Plan", Text("Edit Plan"), Plan.find(_), _._id.toString) /
+    "admin" / "plan" / * >>
+    TemplateBox(() => Templates("admin" :: "plan" :: "form" :: Nil))
+
+  val menus =
+    usersListMenu ::
+    usersNewMenu ::
+    usersEditMenu ::
+    plansListMenu ::
+    plansNewMenu ::
+    plansEditMenu ::
+    Nil
+
   val shortDateFormatter = new SimpleDateFormat("MM/dd/yyyy")
   val longDateFormatter = new SimpleDateFormat("MMMM dd, yyyy")
-
-  def statelessRewrite : RewritePF = {
-    case RewriteRequest(ParsePath("admin" :: "user" :: userId :: "edit" :: Nil, _, _, _), _, _) =>
-      requestUserId(Full(userId))
-      RewriteResponse("admin" :: "user" :: "form" :: Nil)
-
-    case RewriteRequest(ParsePath("admin" :: "users" :: "new" :: Nil, _, _, _), _, _) =>
-      RewriteResponse("admin" :: "user" :: "form" :: Nil)
-
-    case RewriteRequest(ParsePath("admin" :: "plan" :: planId :: "edit" :: Nil, _, _, _), _, _) =>
-      requestPlanId(Full(planId))
-      RewriteResponse("admin" :: "plan" :: "form" :: Nil)
-
-    case RewriteRequest(ParsePath("admin" :: "plans" :: "new" :: Nil, _, _, _), _, _) =>
-      RewriteResponse("admin" :: "plan" :: "form" :: Nil)
-  }
 
   def snippetHandlers : SnippetPF = {
     case "admin-user-list" :: Nil => adminUserList _
@@ -58,7 +65,7 @@ object Admin {
   }
 
   def editPlanForm = {
-    val requestPlan = requestPlanId.is.flatMap(Plan.find(_))
+    val requestPlan = plansEditMenu.currentValue
 
     var planName = requestPlan.map(_.name) openOr ""
     var planDescription = requestPlan.map(_.description) openOr ""
@@ -100,7 +107,7 @@ object Admin {
         quotaList.foldLeft(Map[String, Long]())(_ ++ _)
       }
 
-      requestPlanId.is match {
+      plansEditMenu.currentValue match {
         case Empty =>
           val stripeId: Box[String] = {
             val idString = "ANCHORTAB-" + UUID.randomUUID
@@ -132,16 +139,16 @@ object Admin {
               RedirectTo("/admin/plans")
           }
 
-        case Full(requestPlanId) =>
-          val priceChanged = requestPlan.map(_.price).map(_ != planPrice).openOr(false)
-          val termChanged = requestPlan.map(_.term).map(_ != planTerm).openOr(false)
-          val trialDaysChanged = requestPlan.map(_.trialDays).map(_ != trialDays).openOr(false)
-          val nameChanged = requestPlan.map(_.name).map(_ != planName).openOr(false)
+        case Full(requestPlan) =>
+          val priceChanged = requestPlan.price != planPrice
+          val termChanged = requestPlan.term != planTerm
+          val trialDaysChanged = requestPlan.trialDays != trialDays
+          val nameChanged = requestPlan.name != planName
 
-          val stripePlanIdUpdate = {
+          val stripePlanIdUpdate: Option[String] = {
             if (priceChanged || termChanged || trialDaysChanged) {
               // Delete old plan, create new.
-              requestPlan.flatMap(_.stripeId).foreach { stripeId =>
+              requestPlan.stripeId.foreach { stripeId =>
                 tryo(stripe.Plan.retrieve(stripeId)).map { plan =>
                   plan.delete()
                 }
@@ -161,7 +168,7 @@ object Admin {
               planResult.map(_ => idString)
             } else if (nameChanged) {
               // Update plan
-              requestPlan.flatMap(_.stripeId).map { stripeId =>
+              requestPlan.stripeId.map { stripeId =>
                 tryo(stripe.Plan.retrieve(stripeId)).map { plan =>
                   plan.update(Map("name" -> planName))
                 }
@@ -170,11 +177,11 @@ object Admin {
               }
             } else {
               // do nothing
-              requestPlan.flatMap(_.stripeId)
+              requestPlan.stripeId
             }
           }
 
-          Plan.update("_id" -> new ObjectId(requestPlanId), "$set" -> (
+          Plan.update("_id" -> requestPlan._id, "$set" -> (
             ("name" -> planName) ~
             ("description" -> planDescription) ~
             ("price" -> planPrice) ~
@@ -184,7 +191,7 @@ object Admin {
             ("visibleOnRegistration" -> visible) ~
             ("term" -> decompose(planTerm)) ~
             ("trialDays" -> trialDays) ~
-            ("stripeId" -> stripePlanIdUpdate.toOption)
+            ("stripeId" -> stripePlanIdUpdate)
           ))
 
           RedirectTo("/admin/plans")
@@ -224,7 +231,7 @@ object Admin {
     val plans = Plan.findAll
 
     def editPlan(planId:ObjectId)(s:String) = {
-      RedirectTo("/admin/plan/" + planId.toString + "/edit")
+      RedirectTo("/admin/plan/" + planId.toString)
     }
 
     val planTransform =
@@ -243,7 +250,7 @@ object Admin {
       for {
         session <- userSession.is
         currentUser <- User.find(session.userId) if currentUser.admin_?
-        user <- requestUserId.is.flatMap(User.find(_)) or Full(User("", ""))
+        user <- usersEditMenu.currentValue or Full(User("", ""))
       } yield {
         var firstName = user.profile.flatMap(_.firstName) getOrElse ""
         var lastName = user.profile.flatMap(_.lastName) getOrElse ""
@@ -289,7 +296,7 @@ object Admin {
 
           val userProfile = UserProfile(firstNameOpt, lastNameOpt, organizationOpt)
 
-          (requestUserId.is, email, passwordChange) match {
+          (usersEditMenu.currentValue, email, passwordChange) match {
             case (_, "", _) =>
               Alert("Email is a required field. It must have a value.")
 
@@ -319,12 +326,6 @@ object Admin {
           }
         }
 
-        val adminCheckboxAttrs =
-          if (currentUser._id.toString == user._id.toString)
-            ("disabled" -> "disabled")
-          else
-            ("class" -> "admin-checkbox")
-
         val bind =
           ".first-name" #> text(firstName, firstName = _) &
           ".last-name" #> text(lastName, lastName = _) &
@@ -332,7 +333,7 @@ object Admin {
           ".email" #> text(email, email = _) &
           ".change-password" #> password(changePassword, changePassword = _) &
           ".confirm-password" #> password(confirmPassword, confirmPassword = _) &
-          ".admin-checkbox" #> checkbox(user.admin_?, isAdmin = _, adminCheckboxAttrs) &
+          ".admin-checkbox" #> checkbox(user.admin_?, isAdmin = _) &
           ".submit" #> ajaxSubmit("Update Profile", submit _)
 
         "form" #> { ns:NodeSeq =>
@@ -346,7 +347,7 @@ object Admin {
 
   def adminUserList(xhtml:NodeSeq) = {
     def editUser(userId:ObjectId)(s:String) = {
-      RedirectTo("/admin/user/" + userId.toString + "/edit")
+      RedirectTo("/admin/user/" + userId.toString)
     }
 
     def impersonateUser(userId: ObjectId)(s: String) = {
