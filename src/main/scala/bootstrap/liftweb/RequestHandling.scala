@@ -96,7 +96,6 @@ object RequestHandling {
   def setupRewrites = {
     LiftRules.statelessRewrite.append(Api.statelessRewrite)
     LiftRules.statelessRewrite.append(Invites.statelessRewrite)
-    LiftRules.statelessRewrite.append(Tabs.statelessRewrite)
     LiftRules.statelessRewrite.append(Admin.statelessRewrite)
   }
 
@@ -122,7 +121,8 @@ object RequestHandling {
     val menus: List[ConvertableToMenu] =
       landingMenus ++
       Authentication.menus ++
-      Dashboard.menus
+      Dashboard.menus ++
+      Tabs.menus
 
     LiftRules.setSiteMap(SiteMap(menus: _*))
   }

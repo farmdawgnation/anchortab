@@ -1,12 +1,14 @@
 package com.anchortab.snippet
 
-import scala.xml.NodeSeq
+import scala.xml._
 import scala.collection.JavaConverters._
 
 import java.text.SimpleDateFormat
 import java.util.Date
 
 import net.liftweb._
+  import sitemap._
+    import Loc._
   import http._
     import js._
       import JsCmds._
@@ -24,33 +26,31 @@ import com.anchortab.constantcontact.model.ContactLists._
 
 import org.bson.types.ObjectId
 
-object requestTabId extends RequestVar[Box[String]](Empty)
-
 case class TabEmbedCodeReceived(embedCode: String) extends SimpleAnchorTabEvent("tab-embed-code-received")
 case class NewTabCreated(embedCode: String) extends SimpleAnchorTabEvent("new-tab-created")
 
 object Tabs {
+  val tabListMenu = Menu.i("Tabs") / "manager" / "tabs"
+  val tabNewMenu = Menu.i("New Tab") / "manager" / "tabs" / "new" >>
+    TemplateBox(() => Templates("manager" :: "tab" :: "form" :: Nil))
+  val tabEditMenu =
+    Menu.param[Tab]("Edit Tab", Text("Edit Tab"), Tab.find(_), _._id.toString) /
+    "manager" / "tab" / * >>
+    TemplateBox(() => Templates("manager" :: "tab" :: "form" :: Nil))
+  val tabSubscribersMenu =
+    Menu.param[Tab]("Tab Subscribers", Text("Tab Subscribers"), Tab.find(_), _._id.toString) /
+    "manager" / "tab" / * / "subscribers" >>
+    TemplateBox(() => Templates("manager" :: "tab" :: "subscribers" :: Nil))
+
+  val menus =
+    tabListMenu ::
+    tabNewMenu ::
+    tabEditMenu ::
+    tabSubscribersMenu ::
+    Nil
+
   val dateAndTimeFormatter = new SimpleDateFormat("MM/dd/yyyy hh:mm aa")
   val dateFormatter = new SimpleDateFormat("MM/dd/yyyy")
-
-  def requestTab = requestTabId.is.flatMap(id => Tab.find(new ObjectId(id)))
-
-  def statelessRewrite : RewritePF = {
-    case RewriteRequest(ParsePath("manager" :: "tabs" :: "new" :: Nil, _, _, _), _, _) =>
-      RewriteResponse("manager" :: "tab" :: "form" :: Nil)
-
-    case RewriteRequest(ParsePath("manager" :: "tab" :: tabId :: "edit" :: Nil, _, _, _), _, _) =>
-      requestTabId(Full(tabId))
-      RewriteResponse("manager" :: "tab" :: "form" :: Nil)
-
-    case RewriteRequest(ParsePath("manager" :: "tab" :: tabId :: "subscribers" :: Nil, _, _, _), _, _) =>
-      requestTabId(Full(tabId))
-      RewriteResponse("manager" :: "tab" :: "subscribers" :: Nil)
-
-    case RewriteRequest(ParsePath("manager" :: "tab" :: tabId :: "subscribers" :: "export" :: Nil, _, _, _), _, _) =>
-      requestTabId(Full(tabId))
-      RewriteResponse("manager" :: "tab" :: "subscribers" :: "export" :: Nil)
-  }
 
   def snippetHandlers : SnippetPF = {
     case "no-tab-views-help" :: Nil => noTabViewsHelp
@@ -74,7 +74,7 @@ object Tabs {
   }
 
   def tabName =
-    "span *" #> requestTab.map(_.name)
+    "span *" #> (tabEditMenu.currentValue or tabSubscribersMenu.currentValue).map(_.name)
 
   def newTabButton = {
     "button [onclick]" #> onEvent(_ => RedirectTo("/manager/tabs/new"))
@@ -99,7 +99,7 @@ object Tabs {
       RedirectTo("/manager/tab/" + tabId.toString + "/subscribers")
 
     def edit(tabId:ObjectId)() =
-      RedirectTo("/manager/tab/" + tabId.toString + "/edit")
+      RedirectTo("/manager/tab/" + tabId.toString)
 
     def delete(tabId:ObjectId)() = {
       Tab.delete("_id" -> tabId)
@@ -123,6 +123,8 @@ object Tabs {
   }
 
   def tabForm = {
+    val requestTab = tabEditMenu.currentValue
+
     var tabName = requestTab.map(_.name) openOr ""
     var appearanceDelay = requestTab.map(_.appearance.delay.toString) openOr ""
     var colorScheme = requestTab.map(_.appearance.colorScheme) openOr TabColorScheme.Red
@@ -384,7 +386,8 @@ object Tabs {
     val transform =
       {
         for {
-          tabId <- requestTabId.is
+          tab <- tabSubscribersMenu.currentValue
+          tabId = tab._id
         } yield {
           "a [href]" #> ("/manager/tab/" + tabId.toString + "/subscribers/export")
         }
@@ -398,11 +401,10 @@ object Tabs {
   def subscriberTable = {
     {
       for {
-        tabId <- requestTabId.is
-        requestTab <- Tab.find(tabId)
+        requestTab <- tabSubscribersMenu.currentValue
       } yield {
         def deleteSubscriber(email:String)() = {
-          Tab.update("_id" -> tabId, "$pull" -> ("subscribers" -> ("email" -> email)))
+          Tab.update("_id" -> requestTab._id, "$pull" -> ("subscribers" -> ("email" -> email)))
 
           Notices.notice("Subscriber deleted.")
           Reload
