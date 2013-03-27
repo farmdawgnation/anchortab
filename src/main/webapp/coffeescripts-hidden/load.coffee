@@ -79,7 +79,7 @@ loadGAIfNeeded = ->
 withJQueryLoaded = (callback) ->
   if ! jQuery?
     loadScript("//ajax.googleapis.com/ajax/libs/jquery/" + jqVersion + "/jquery.min.js", callback)
-  else if ! /^1.[678]/.test(jQuery.fn.jquery)
+  else if ! /^1.[6789]/.test(jQuery.fn.jquery)
     console?.error("AnchorTab is disabled because you are using an unsupported version of jQuery.")
 
     # Track this on GA so we can see if we need to adjust this value over time.
