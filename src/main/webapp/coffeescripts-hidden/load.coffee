@@ -76,10 +76,20 @@ loadGAIfNeeded = ->
     # _gaq to the _gaq loaded by Google Analytics.
     loadScript analyticsSrc
 
+isAcceptableJQuery = ->
+  jQueryVersionPieces = jQuery.fn.jquery.split(".")
+
+  console.log(jQueryVersionPieces[1] == 4)
+
+  if (jQueryVersionPieces[1] >= 5) || (Number(jQueryVersionPieces[1]) == 4 && jQueryVersionPieces[2] >= 3)
+    true
+  else
+    false
+
 withJQueryLoaded = (callback) ->
   if ! jQuery?
     loadScript("//ajax.googleapis.com/ajax/libs/jquery/" + jqVersion + "/jquery.min.js", callback)
-  else if ! /^1.[6789]/.test(jQuery.fn.jquery)
+  else if ! isAcceptableJQuery()
     console?.error("AnchorTab is disabled because you are using an unsupported version of jQuery.")
 
     # Track this on GA so we can see if we need to adjust this value over time.
