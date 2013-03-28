@@ -109,6 +109,14 @@ object RequestHandling {
   }
 
   def setupSiteMap = {
+    val developmentMenus = {
+      if (Props.devMode)
+        (Menu.i("Tab Test") / "tabtest") ::
+        Nil
+      else
+        Nil
+    }
+
     val landingMenus: List[ConvertableToMenu] =
       (Menu.i("Home") / "index") ::
       (Menu.i("About Us") / "about-us") ::
@@ -117,6 +125,7 @@ object RequestHandling {
       Nil
 
     val menus: List[ConvertableToMenu] =
+      developmentMenus ++
       landingMenus ++
       Authentication.menus ++
       Dashboard.menus ++

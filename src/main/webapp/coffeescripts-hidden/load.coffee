@@ -14,7 +14,7 @@ apiDomain = anchortab?.apiDomain || "local.anchortab.com"
 secureApiDomain = anchortab?.secureApiDomain || "local.anchortab.com"
 resourcesDomain = anchortab?.resourcesDomain || "local.anchortab.com"
 secureResourcesDomain = anchortab?.secureResourcesDomain || "local.anchortab.com"
-jqVersion = "1.8.2"
+jqVersion = "1.9.1"
 
 ##
 ## LIB FUNCTIONS
@@ -76,10 +76,18 @@ loadGAIfNeeded = ->
     # _gaq to the _gaq loaded by Google Analytics.
     loadScript analyticsSrc
 
+isAcceptableJQuery = ->
+  jQueryVersionPieces = jQuery.fn.jquery.split(".")
+
+  if (jQueryVersionPieces[1] >= 5) || (Number(jQueryVersionPieces[1]) == 4 && jQueryVersionPieces[2] >= 3)
+    true
+  else
+    false
+
 withJQueryLoaded = (callback) ->
   if ! jQuery?
     loadScript("//ajax.googleapis.com/ajax/libs/jquery/" + jqVersion + "/jquery.min.js", callback)
-  else if ! /^1.[6789]/.test(jQuery.fn.jquery)
+  else if ! isAcceptableJQuery()
     console?.error("AnchorTab is disabled because you are using an unsupported version of jQuery.")
 
     # Track this on GA so we can see if we need to adjust this value over time.
@@ -87,6 +95,20 @@ withJQueryLoaded = (callback) ->
 
   else
     callback()
+
+isBrowserIe = ->
+  div = document.createElement("div")
+  div.innerHTML = "<!--[if IE]><i></i><![endif]-->"
+  isIe = (div.getElementsByTagName("i").length == 1)
+
+  return isIe
+
+isBrowserIe8OrLess = ->
+  div = document.createElement("div")
+  div.innerHTML = "<!--[if lt IE 9]><i></i><![endif]-->"
+  isIeLessThan9 = (div.getElementsByTagName("i").length == 1)
+
+  return isIeLessThan9
 
 ##
 ## ANCHOR TAB LOADING AND DISPLAY
@@ -205,11 +227,25 @@ displayTab = (tabJson) ->
         $("<button />")
           .addClass('minimize')
           .text("Minimize Anchor Tab")
+          .click(->
+              $("#anchor-tab").removeClass("visible").addClass("minimized")
+              setStateCookie 'minimized'
+
+              gaqInfo = "Domain: " + document.domain
+              _gaq.push ["at._trackEvent", "Tab Visibility", "Minimize Tab", gaqInfo]
+            )
       )
       .append(
         $("<button />")
           .addClass("maximize")
           .text("Maximize Anchor Tab")
+          .click(->
+              $("#anchor-tab").removeClass("minimized").addClass("visible")
+              setStateCookie 'visible'
+
+              gaqInfo = "Domain: " + document.domain
+              _gaq.push ["at._trackEvent", "Tab Visibility", "Maximize Tab", gaqInfo]
+            )
       )
       .append(
         $("<p />")
@@ -217,10 +253,9 @@ displayTab = (tabJson) ->
           .text("Success!")
       )
 
-  if $.browser.msie
-    # Bail if IE < 9.
-    if $.browser.version.split(".")[0]? < 9
-      return
+  if isBrowserIe()
+    if isBrowserIe8OrLess()
+      return # Bail, we don't work in IE <= 8.
 
     _gaq.push ["at._trackEvent", "Bootstrap", "MSIE", navigator.userAgent]
     anchorTab.addClass "msie"
@@ -233,22 +268,6 @@ displayTab = (tabJson) ->
     else
       anchorTab.addClass "visible"
   , displayDelay
-
-  $("#anchor-tab")
-    .on('click', '.minimize', ->
-      $("#anchor-tab").removeClass("visible").addClass("minimized")
-      setStateCookie 'minimized'
-
-      gaqInfo = "Domain: " + document.domain
-      _gaq.push ["at._trackEvent", "Tab Visibility", "Minimize Tab", gaqInfo]
-    )
-    .on('click', '.maximize', ->
-      $("#anchor-tab").removeClass("minimized").addClass("visible")
-      setStateCookie 'visible'
-
-      gaqInfo = "Domain: " + document.domain
-      _gaq.push ["at._trackEvent", "Tab Visibility", "Maximize Tab", gaqInfo]
-    )
 
 loadAnchorTab = ->
   # Load the anchor tab. At this point we can assume that jQuery exists and that we're able to use it
