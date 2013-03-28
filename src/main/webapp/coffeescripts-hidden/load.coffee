@@ -14,7 +14,7 @@ apiDomain = anchortab?.apiDomain || "local.anchortab.com"
 secureApiDomain = anchortab?.secureApiDomain || "local.anchortab.com"
 resourcesDomain = anchortab?.resourcesDomain || "local.anchortab.com"
 secureResourcesDomain = anchortab?.secureResourcesDomain || "local.anchortab.com"
-jqVersion = "1.8.2"
+jqVersion = "1.9.1"
 
 ##
 ## LIB FUNCTIONS
