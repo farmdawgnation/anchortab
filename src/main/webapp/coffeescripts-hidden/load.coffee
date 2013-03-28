@@ -205,11 +205,25 @@ displayTab = (tabJson) ->
         $("<button />")
           .addClass('minimize')
           .text("Minimize Anchor Tab")
+          .click(->
+              $("#anchor-tab").removeClass("visible").addClass("minimized")
+              setStateCookie 'minimized'
+
+              gaqInfo = "Domain: " + document.domain
+              _gaq.push ["at._trackEvent", "Tab Visibility", "Minimize Tab", gaqInfo]
+            )
       )
       .append(
         $("<button />")
           .addClass("maximize")
           .text("Maximize Anchor Tab")
+          .click(->
+              $("#anchor-tab").removeClass("minimized").addClass("visible")
+              setStateCookie 'visible'
+
+              gaqInfo = "Domain: " + document.domain
+              _gaq.push ["at._trackEvent", "Tab Visibility", "Maximize Tab", gaqInfo]
+            )
       )
       .append(
         $("<p />")
@@ -233,22 +247,6 @@ displayTab = (tabJson) ->
     else
       anchorTab.addClass "visible"
   , displayDelay
-
-  $("#anchor-tab")
-    .on('click', '.minimize', ->
-      $("#anchor-tab").removeClass("visible").addClass("minimized")
-      setStateCookie 'minimized'
-
-      gaqInfo = "Domain: " + document.domain
-      _gaq.push ["at._trackEvent", "Tab Visibility", "Minimize Tab", gaqInfo]
-    )
-    .on('click', '.maximize', ->
-      $("#anchor-tab").removeClass("minimized").addClass("visible")
-      setStateCookie 'visible'
-
-      gaqInfo = "Domain: " + document.domain
-      _gaq.push ["at._trackEvent", "Tab Visibility", "Maximize Tab", gaqInfo]
-    )
 
 loadAnchorTab = ->
   # Load the anchor tab. At this point we can assume that jQuery exists and that we're able to use it
