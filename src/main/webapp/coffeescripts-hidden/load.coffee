@@ -96,6 +96,20 @@ withJQueryLoaded = (callback) ->
   else
     callback()
 
+isBrowserIe = ->
+  div = document.createElement("div")
+  div.innerHTML = "<!--[if IE]><i></i><![endif]-->"
+  isIe = (div.getElementsByTagName("i").length == 1)
+
+  return isIe
+
+isBrowserIe8OrLess = ->
+  div = document.createElement("div")
+  div.innerHTML = "<!--[if lt IE 9]><i></i><![endif]-->"
+  isIeLessThan9 = (div.getElementsByTagName("i").length == 1)
+
+  return isIeLessThan9
+
 ##
 ## ANCHOR TAB LOADING AND DISPLAY
 ##
@@ -239,10 +253,9 @@ displayTab = (tabJson) ->
           .text("Success!")
       )
 
-  if $.browser.msie
-    # Bail if IE < 9.
-    if $.browser.version.split(".")[0]? < 9
-      return
+  if isBrowserIe()
+    if isBrowserIe8OrLess()
+      return # Bail, we don't work in IE <= 8.
 
     _gaq.push ["at._trackEvent", "Bootstrap", "MSIE", navigator.userAgent]
     anchorTab.addClass "msie"
