@@ -1,3 +1,12 @@
+/*!
+ * Chart.js
+ * http://chartjs.org/
+ *
+ * Copyright 2013 Nick Downie
+ * Released under the MIT license
+ * https://github.com/nnnick/Chart.js/blob/master/LICENSE.md
+ */
+
 //Define the global Chart Variable as a class.
 var Chart = function(context){
 
@@ -525,7 +534,7 @@ var Chart = function(context){
 			ctx.save();
 			//translate to the centre of the canvas.
 			ctx.translate(width/2,height/2);
-			ctx.rotate(rotationDegree);				
+			
 			//We accept multiple data sets for radar charts, so show loop through each set
 			for (var i=0; i<data.datasets.length; i++){
 				ctx.beginPath();
@@ -559,6 +568,7 @@ var Chart = function(context){
 					}					
 					
 				}
+				ctx.rotate(rotationDegree);
 				
 			}
 			ctx.restore();
@@ -917,21 +927,22 @@ var Chart = function(context){
 			ctx.textAlign = "right";
 			ctx.textBaseline = "middle";
 			for (var j=0; j<calculatedScale.steps; j++){
+				var yPos = xAxisPosY - j * scaleHop;
 				ctx.beginPath();
-				ctx.moveTo(yAxisPosX-3,xAxisPosY - ((j+1) * scaleHop));
+				ctx.moveTo(yAxisPosX-3,yPos);
 				if (config.scaleShowGridLines){
 					ctx.lineWidth = config.scaleGridLineWidth;
 					ctx.strokeStyle = config.scaleGridLineColor;
-					ctx.lineTo(yAxisPosX + xAxisLength + 5,xAxisPosY - ((j+1) * scaleHop));					
+					ctx.lineTo(yAxisPosX + xAxisLength + 5,yPos);					
 				}
 				else{
-					ctx.lineTo(yAxisPosX-0.5,xAxisPosY - ((j+1) * scaleHop));
+					ctx.lineTo(yAxisPosX-0.5,yPos);
 				}
 				
 				ctx.stroke();
 				
 				if (config.scaleShowLabels){
-					ctx.fillText(calculatedScale.labels[j],yAxisPosX-8,xAxisPosY - ((j+1) * scaleHop));
+					ctx.fillText(calculatedScale.labels[j],yAxisPosX-8,yPos);
 				}
 			}
 			
