@@ -86,10 +86,14 @@ object StripeHook extends RestHelper with Loggable {
                 totalAmountInCents <- tryo((objectJson \ "total").extract[Long]) ?~! "No total."
               } yield {
                 val nextPaymentAttemptSecs: Option[Long] =
-                  tryo((objectJson \ "next_payment_attempt").extract[Option[Long]]).flatten.headOption
+                  tryo((objectJson \ "next_payment_attempt").extract[Option[Long]])
+                  .flatten
+                  .headOption
 
                 val nextPaymentAttempt = nextPaymentAttemptSecs.map { nextPaymentAttemptInSecs =>
                   new DateTime(nextPaymentAttemptInSecs * 1000)
+                } filter {
+                  _ isAfterNow
                 }
                 val amount = totalAmountInCents / 100d
 
