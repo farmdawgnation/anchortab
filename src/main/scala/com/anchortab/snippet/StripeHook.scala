@@ -128,20 +128,38 @@ object StripeHook extends RestHelper with Loggable {
                 currentUserSubscription <- user.subscription
                 status <- (objectJson \ "status").extractOpt[String]
                 stripePlanId <- (planJson \ "id").extractOpt[String]
+                cancelAtPeriodEnd <- (objectJson \ "cancel_at_period_end").extractOpt[Boolean]
                 plan <- Plan.find("stripeId" -> stripePlanId)
               } yield {
                 implicit val formats = User.formats
 
                 if (plan._id == user.plan._id && currentUserSubscription.status != status) {
+                  val planEnding = {
+                    if (cancelAtPeriodEnd) {
+                      val currentPeriodEnd = (objectJson \ "current_period_end").extractOpt[Long]
+                      currentPeriodEnd.map(_ * 1000).map(new DateTime(_))
+                    } else if (status == "canceled") {
+                      val endedAt = (objectJson \ "ended_at").extractOpt[Long]
+                      endedAt.map(_ * 1000).map(new DateTime(_))
+                    } else {
+                      None
+                    }
+                  }
+
                   val newStatus = status match {
                     case "trialing" => "trial"
+                    case "canceled" => "cancelled"
+                    case _ if cancelAtPeriodEnd => "cancelled"
                     case _ => "active"
                   }
 
                   User.update(
                     ("_id" -> user._id) ~
                     ("subscriptions._id" -> currentUserSubscription._id),
-                    "$set" -> ("subscriptions.$.status" -> newStatus)
+                    "$set" -> (
+                      ("subscriptions.$.status" -> newStatus) ~
+                      ("subscriptions.$.ends" -> decompose(planEnding))
+                    )
                   )
                 } else if (plan._id != user.plan._id) {
                   newPlanFromStripe(user, plan, status)
