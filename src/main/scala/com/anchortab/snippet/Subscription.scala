@@ -221,9 +221,9 @@ object Subscription extends Loggable {
         for {
           session <- userSession.is
           user <- User.find(session.userId)
-          customerId <- user.stripeCustomerId
-          customer <- tryo(stripe.Customer.retrieve(customerId))
-          updatedCustomer <- tryo(customer.update(Map("card" -> token)))
+          customerId <- (user.stripeCustomerId: Box[String]) ?~! "We couldn't find your Stripe ID."
+          customer <- tryo(stripe.Customer.retrieve(customerId)) ?~! "We couldn't retrieve your customer data."
+          updatedCustomer <- tryo(customer.update(Map("card" -> token))) ?~! "Error updating your Credit Card."
           card <- updatedCustomer.activeCard
         } yield {
           User.update("_id" -> user._id, "$set" -> (
@@ -238,7 +238,8 @@ object Subscription extends Loggable {
         case Empty =>
           GeneralError("An internal error occured. Please contact us and let us know.")
 
-        case Failure(msg, _, _) =>
+        case fail @ Failure(msg, _, _) =>
+          logger.error(fail)
           GeneralError("An error occured while updating billing information: " + msg)
 
         case _ =>
