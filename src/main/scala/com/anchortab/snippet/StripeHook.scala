@@ -121,15 +121,19 @@ object StripeHook extends RestHelper with Loggable {
       implicit val formats = User.formats
 
       if (plan._id == user.plan._id && currentUserSubscription.status != status) {
-        val planEnding = {
+        val (setPlanEnding: JObject, unsetPlanEnding: JObject) = {
           if (cancelAtPeriodEnd) {
             val currentPeriodEnd = (objectJson \ "current_period_end").extractOpt[Long]
-            currentPeriodEnd.map(_ * 1000).map(new DateTime(_))
+            val planEndingDate = currentPeriodEnd.map(_ * 1000).map(new DateTime(_))
+
+            (("subscriptions.$.ends" -> decompose(planEndingDate)):JObject, JObject(Nil))
           } else if (status == "canceled") {
             val endedAt = (objectJson \ "ended_at").extractOpt[Long]
-            endedAt.map(_ * 1000).map(new DateTime(_))
+            val planEndingDate = endedAt.map(_ * 1000).map(new DateTime(_))
+
+            (("subscriptions.$.ends" -> decompose(planEndingDate)):JObject, JObject(Nil))
           } else {
-            None
+            (JObject(Nil), ("subscriptions.$.ends" -> true):JObject)
           }
         }
 
@@ -143,10 +147,13 @@ object StripeHook extends RestHelper with Loggable {
         User.update(
           ("_id" -> user._id) ~
           ("subscriptions._id" -> currentUserSubscription._id),
-          "$set" -> (
-            ("subscriptions.$.status" -> newStatus) ~
-            ("subscriptions.$.ends" -> decompose(planEnding))
-          )
+          ("$set" ->
+            (
+              ("subscriptions.$.status" -> newStatus) ~
+              setPlanEnding
+            )
+          ) ~
+          ("$unset" -> unsetPlanEnding)
         )
       } else if (plan._id != user.plan._id) {
         newPlanFromStripe(user, plan, status)
