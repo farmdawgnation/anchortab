@@ -37,6 +37,9 @@ class Boot {
     RequestHandling.setupSnippetHandlers
     RequestHandling.setupSiteMap
 
+    // Bootstrap newrelic
+    NewRelicBootstrap.newRelicTransactionNaming
+
     //Init the jQuery module, see http://liftweb.net/jquery for more information.
     LiftRules.jsArtifacts = JQueryArtifacts
     JQueryModule.InitParam.JQuery=JQueryModule.JQuery172
