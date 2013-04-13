@@ -32,7 +32,7 @@ common: &default_settings
   # Set to true to enable component-based transaction naming.
   # Set to false to use the URI of a web request as the name of the transaction.
   # Default is true.
-  enable_auto_transaction_naming: true
+  enable_auto_transaction_naming: false
  
   # Set the name of your application as you'd like it show up in New Relic.
   # if enable_auto_app_naming is false, the agent reports all data to this application.
@@ -111,7 +111,7 @@ common: &default_settings
     # Transaction tracer is enabled by default. Set this to false to
     # turn it off. This feature is only available at the higher product levels.
     # Default is true.
-    enabled: true
+    enabled: false
     
     # Threshold in seconds for when to collect a transaction
     # trace. When the response time of a controller action exceeds
@@ -227,15 +227,15 @@ common: &default_settings
 
 development:
   <<: *default_settings
-  app_name: My Application (Development)
+  app_name: Anchor Tab (Development)
 
 test:
   <<: *default_settings
-  app_name: My Application (Test)
+  app_name: Anchor Tab (Test)
 
 production:
   <<: *default_settings
 
 staging:
   <<: *default_settings
-  app_name: My Application (Staging)
+  app_name: Anchor Tab (Staging)
