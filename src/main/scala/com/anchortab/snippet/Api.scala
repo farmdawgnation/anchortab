@@ -23,6 +23,8 @@ import org.bson.types.ObjectId
 import com.anchortab.model._
 import com.anchortab.actor._
 
+import com.newrelic.api.agent._
+
 object Api extends RestHelper with Loggable {
   def statelessRewrite : RewritePF = {
     case RewriteRequest(ParsePath("api" :: "v1" :: "user" :: userId :: "tabs" :: Nil, _, _, _), _, _) =>
@@ -38,6 +40,8 @@ object Api extends RestHelper with Loggable {
     //////////
     case req @ Req("api" :: "v1" :: "embed" :: tabId :: Nil, _, GetRequest) =>
       {
+        NewRelic.setTransactionName("API", "/api/v1/embed")
+
         for {
           tab <- (Tab.find(tabId):Box[Tab])
           user <- tab.user.filter(_.tabsActive_?) ?~! "This tab has been disabled." ~> 403
@@ -99,6 +103,8 @@ object Api extends RestHelper with Loggable {
     // JSONP can't be semantic. :(
     case req @ Req("api" :: "v1" :: "embed" :: tabId :: "submit" :: Nil, _, GetRequest) =>
       {
+        NewRelic.setTransactionName("API", "/api/v1/embed/star/submit")
+
         for {
           tab <- (Tab.find(tabId):Box[Tab]) // Force box type.
           user <- tab.user.filter(_.tabsActive_?) ?~! "This tab has been disabled." ~> 403
