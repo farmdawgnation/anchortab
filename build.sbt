@@ -46,7 +46,7 @@ libraryDependencies ++= {
     "com.ecwid"         % "ecwid-mailchimp"     % "1.3.0.5",
     "org.scalatest"     %% "scalatest"          % "2.0.M5b" % "test->default",
     "org.seleniumhq.selenium" % "selenium-java" % "2.29.1"  % "test->default",
-    "com.newrelic.agent.java" % "newrelic-api"  % "2.15.1"
+    "com.newrelic.agent.java" % "newrelic-api"  % "2.17.1"
   )
 }
 
