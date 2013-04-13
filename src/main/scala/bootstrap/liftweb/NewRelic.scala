@@ -18,6 +18,12 @@ object NewRelicBootstrap {
       LiftRules.siteMap.flatMap(_.findLoc(req)).map { matchedLoc =>
         val transactionName = "/" + matchedLoc.link.uriList.mkString("/")
         NewRelic.setTransactionName("SiteMap", transactionName)
+      } openOr {
+        if (req.uri.startsWith("/comet_request")) {
+          NewRelic.setTransactionName("AJAX", "/comet_request")
+        } else if (req.uri.startsWith("/ajax_request")) {
+          NewRelic.setTransactionName("AJAX", "/ajax_request")
+        }
       }
     }
   }
