@@ -41,6 +41,7 @@ object Api extends RestHelper with Loggable {
     case req @ Req("api" :: "v1" :: "embed" :: tabId :: Nil, _, GetRequest) =>
       {
         NewRelic.setTransactionName("API", "/api/v1/embed")
+        NewRelic.addCustomParameter("tabId", tabId)
 
         for {
           tab <- (Tab.find(tabId):Box[Tab])
@@ -104,6 +105,7 @@ object Api extends RestHelper with Loggable {
     case req @ Req("api" :: "v1" :: "embed" :: tabId :: "submit" :: Nil, _, GetRequest) =>
       {
         NewRelic.setTransactionName("API", "/api/v1/embed/star/submit")
+        NewRelic.addCustomParameter("tabId", tabId)
 
         for {
           tab <- (Tab.find(tabId):Box[Tab]) // Force box type.
