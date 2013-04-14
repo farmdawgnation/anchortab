@@ -3,13 +3,6 @@ $(document).ready ->
   viewData = []
   submitData = []
 
-  options = {
-    scaleOverride: true,
-    scaleSteps: 10,
-    scaleStepWidth: 5,
-    scaleStartValue: 0
-  }
-
   requestEventSummary()
 
   $(document).on 'event-summary-updated', (event) ->
@@ -17,6 +10,25 @@ $(document).ready ->
       viewData = event.eventSummary.data
     else if event.eventSummary.name == "tab-submit"
       submitData = event.eventSummary.data
+
+    maxOfViews = Math.max.apply(null, viewData.y)
+    maxOfSubmits = Math.max.apply(null, submitData.y)
+    minimumMaxValue = 50
+    maxValue = Math.max(maxOfViews, maxOfSubmits, minimumMaxValue)
+    maxValueRemainder = maxValue % 10
+    maxValueAdd = if maxValueRemainder > 0
+      10 - maxValueRemainder
+    else
+      0
+    ceilingValue = maxValue + maxValueAdd
+    stepWidth = ceilingValue / 10
+
+    options = {
+      scaleOverride: true,
+      scaleSteps: 10,
+      scaleStepWidth: stepWidth,
+      scaleStartValue: 0
+    }
 
     labels = $.map(viewData, (elem) -> elem.name)
     viewDataset = $.map(viewData, (elem) -> elem.y)
