@@ -13,6 +13,8 @@ import net.liftweb._
 import com.anchortab.snippet._
 import com.anchortab.actor._
 
+import me.frmr.newrelic._
+
 import net.liftmodules.JQueryModule
 
 import com.stripe
@@ -37,8 +39,8 @@ class Boot {
     RequestHandling.setupSnippetHandlers
     RequestHandling.setupSiteMap
 
-    // Bootstrap newrelic
-    NewRelicBootstrap.newRelicTransactionNaming
+    // Bootstrap NewRelic
+    NewRelicTransactionNaming.setup
 
     //Init the jQuery module, see http://liftweb.net/jquery for more information.
     LiftRules.jsArtifacts = JQueryArtifacts
