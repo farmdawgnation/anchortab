@@ -11,8 +11,12 @@ $(document).ready ->
     else if event.eventSummary.name == "tab-submit"
       submitData = event.eventSummary.data
 
-    maxOfViews = Math.max.apply(null, viewData.y)
-    maxOfSubmits = Math.max.apply(null, submitData.y)
+    labels = $.map(viewData, (elem) -> elem.name)
+    viewDataset = $.map(viewData, (elem) -> elem.y)
+    submitDataset = $.map(submitData, (elem) -> elem.y)
+
+    maxOfViews = Math.max.apply(null, viewDataset)
+    maxOfSubmits = Math.max.apply(null, submitDataset)
     minimumMaxValue = 50
     maxValue = Math.max(maxOfViews, maxOfSubmits, minimumMaxValue)
     maxValueRemainder = maxValue % 10
@@ -24,15 +28,12 @@ $(document).ready ->
     stepWidth = ceilingValue / 10
 
     options = {
+      animation: false,
       scaleOverride: true,
       scaleSteps: 10,
       scaleStepWidth: stepWidth,
       scaleStartValue: 0
     }
-
-    labels = $.map(viewData, (elem) -> elem.name)
-    viewDataset = $.map(viewData, (elem) -> elem.y)
-    submitDataset = $.map(submitData, (elem) -> elem.y)
 
     chartData = {
         labels: labels,
