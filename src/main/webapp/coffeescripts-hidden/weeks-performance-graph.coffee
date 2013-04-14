@@ -24,6 +24,7 @@ $(document).ready ->
     stepWidth = ceilingValue / 10
 
     options = {
+      animation: false,
       scaleOverride: true,
       scaleSteps: 10,
       scaleStepWidth: stepWidth,
