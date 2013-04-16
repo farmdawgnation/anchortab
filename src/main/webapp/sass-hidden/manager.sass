@@ -369,7 +369,12 @@ body
           line-height: 1.5rem
 
         #weeks-performance-graph
-          width: 590px
+          // We add an important override here because in the process
+          // of accounting for retina, Chart.js seems to double the
+          // size of the entire canvas when it doubles the backing
+          // store - thereby breaking our page.
+          width: 700px !important
+          height: 400px !important
 
         .weeks-performance-graph-legend
           text-align: right
