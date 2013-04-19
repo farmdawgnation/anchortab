@@ -41,7 +41,7 @@ libraryDependencies ++= {
     "org.joda"          % "joda-convert"        % "1.2",
     "org.mindrot"       % "jbcrypt"             % "0.3m",
     "net.databinder.dispatch" %% "dispatch-core" % "0.9.5",
-    "net.databinder.dispatch" %% "dispatch-lift-json" % "0.9.5",
+    "net.databinder.dispatch" %% "dispatch-lift-json" % "0.9.5" intransitive(),
     "com.stripe"        %% "stripe-scala"       % "1.1.2",
     "com.ecwid"         % "ecwid-mailchimp"     % "1.3.0.5",
     "org.scalatest"     %% "scalatest"          % "2.0.M5b" % "test->default",
@@ -64,10 +64,6 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
     case "about.html" => MergeStrategy.first
     case x => old(x)
   }
-}
-
-excludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
-  cp filter {_.data.getName == "lift-json_2.9.1-2.4.jar"}
 }
 
 initialCommands := """
