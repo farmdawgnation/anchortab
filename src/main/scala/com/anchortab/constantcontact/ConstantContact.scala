@@ -15,8 +15,8 @@ object ConstantContact {
 
   private val oauthBase = "oauth2.constantcontact.com"
 
-  private val clientId = Props.get("constantcontact.clientId") openOr "b234e86f-abd1-4cd2-b8a6-9c41d82f7322"
-  private val clientSecret = Props.get("constantcontact.clientSecret") openOr "05427000467048d4b9ebfe83119185a4"
+  private val clientId = Props.get("constantcontact.clientId") openOr "pa5km7uykw8jsm6rp34ums53"
+  private val clientSecret = Props.get("constantcontact.clientSecret") openOr "VhRgdhwCcQ5mtXvvkMyc4vU8"
   private val redirectUrl = Props.get("constantcontact.redirectUrl") openOr "http://local.anchortab.com/oauth2/constant-contact"
 
   case class ConstantContactError(error_key: String, error_message: String)
@@ -85,27 +85,27 @@ object ConstantContact {
 
   private[constantcontact] def get(resource:String, params:Map[String,String] = Map.empty)(implicit accessToken:String) : Box[JValue] = {
     runRequest {
-      host(endpointBase) / endpointVersion / resource <<? (params + ("access_token" -> accessToken))
+      host(endpointBase) / endpointVersion / resource <:< Map("Authorization" -> ("Bearer " + accessToken)) <<? (params + ("api_key" -> clientId))
     }
   }
 
-  private[constantcontact] def post(resource:String, body:JValue)(implicit accessToken:String) : Box[JValue] = {
+  private[constantcontact] def post(resource:String, body:JValue, params:Map[String, String] = Map.empty)(implicit accessToken:String) : Box[JValue] = {
     runRequest {
       val requestBody = compact(render(body))
-      host(endpointBase) / endpointVersion / resource << requestBody <<? Map("access_token" -> accessToken)
+      host(endpointBase) / endpointVersion / resource << requestBody <:< Map("Authorization" -> ("Bearer " + accessToken)) <<? (params + ("api_key" -> clientId))
     }
   }
 
-  private[constantcontact] def put(resource:String, body:JValue)(implicit accessToken:String) : Box[JValue] = {
+  private[constantcontact] def put(resource:String, body:JValue, params:Map[String, String] = Map.empty)(implicit accessToken:String) : Box[JValue] = {
     runRequest {
       val requestBody = compact(render(body))
-      (host(endpointBase) / endpointVersion / resource).PUT.setBody(requestBody) <<? Map("access_token" -> accessToken)
+      (host(endpointBase) / endpointVersion / resource).PUT.setBody(requestBody) <:< Map("Authorization" -> ("Bearer " + accessToken)) <<? (params + ("api_key" -> clientId))
     }
   }
 
   private[constantcontact] def delete(resource:String)(implicit accessToken:String) : Box[JValue] = {
     runRequest {
-      (host(endpointBase) / endpointVersion / resource).DELETE <<? Map("access_token" -> accessToken)
+      (host(endpointBase) / endpointVersion / resource).DELETE <:< Map("Authorization" -> ("Bearer " + accessToken)) <<? Map("api_key" -> clientId)
     }
   }
 }

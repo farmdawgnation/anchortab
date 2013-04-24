@@ -29,7 +29,7 @@ import org.bson.types.ObjectId
 case class TabEmbedCodeReceived(embedCode: String) extends SimpleAnchorTabEvent("tab-embed-code-received")
 case class NewTabCreated(embedCode: String) extends SimpleAnchorTabEvent("new-tab-created")
 
-object Tabs {
+object Tabs extends Loggable {
   val tabListMenu = Menu.i("Tabs") / "manager" / "tabs"
   val tabNewMenu = Menu.i("New Tab") / "manager" / "tabs" / "new" >>
     TemplateBox(() => Templates("manager" :: "tab" :: "form" :: Nil))
@@ -243,10 +243,16 @@ object Tabs {
         credentials <- user.credentialsFor("Constant Contact")
       } yield {
         implicit val accessToken = credentials.serviceCredentials.get("token") getOrElse ""
-        ContactList.findAll openOr List()
+        ContactList.findAll match {
+          case Full(list) => list
+          case Failure(msg, _, _) =>
+            logger.error(msg)
+            Nil
+          case _ => Nil
+        }
       }
     } openOr {
-      List()
+      Nil
     }
 
     val mailChimpAuthorized_? = {
@@ -371,7 +377,7 @@ object Tabs {
       ) &
       ".only-if-constantcontact-authorized" #> (constantContactLists.nonEmpty ? PassThru | ClearNodes) andThen
       "#constantcontact-listid" #> select(
-        constantContactLists.map(l => (l.id.toString, l.name)),
+        constantContactLists.map(l => (l.id.toString, l.name.getOrElse(""))),
         constantContactListId,
         id => constantContactListId = Full(id)
       ) &
