@@ -377,7 +377,7 @@ object Tabs extends Loggable {
       ) &
       ".only-if-constantcontact-authorized" #> (constantContactLists.nonEmpty ? PassThru | ClearNodes) andThen
       "#constantcontact-listid" #> select(
-        constantContactLists.map(l => (l.id.toString, l.name)),
+        constantContactLists.map(l => (l.id.toString, l.name.getOrElse(""))),
         constantContactListId,
         id => constantContactListId = Full(id)
       ) &

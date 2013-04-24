@@ -81,15 +81,15 @@ object Contacts {
       }
     }
 
-    def save(contactJson:JValue, id:Option[Long] = None)(implicit accessToken:String) = {
+    def save(contactJson:JValue, id:Option[Long] = None, actionBy: String = ActionBy.Owner)(implicit accessToken:String) = {
       id match {
         case None =>
-          ConstantContact.post("contacts", contactJson).flatMap{ json =>
+          ConstantContact.post("contacts", contactJson, params = Map("action_by" -> actionBy)).flatMap{ json =>
             tryo(json.extract[Contact])
           }
 
         case Some(id) =>
-          ConstantContact.put("contacts/" + id, contactJson).flatMap { json =>
+          ConstantContact.put("contacts/" + id, contactJson, params = Map("action_by" -> actionBy)).flatMap { json =>
             tryo(json.extract[Contact])
           }
       }
@@ -103,7 +103,7 @@ object Contacts {
       ConstantContact.post("contacts/" + id + "/lists", listIdsJson)
     }
   }
-  case class Contact(email_addresses:List[EmailAddress], action_by:String, id:Option[Long] = None,
+  case class Contact(email_addresses:List[EmailAddress], id:Option[Long] = None,
                       status:Option[String] = None, prefix_name:Option[String] = None,
                       name:Option[ContactName] = None, job_title:Option[String] = None,
                       department_name:Option[String] = None, company_name:Option[String] = None,
@@ -119,7 +119,7 @@ object Contacts {
     }
 
     def save(implicit accessToken:String) = {
-      Contact.save(decompose(this), id)
+      Contact.save(decompose(this), id, ActionBy.Visitor)
     }
 
     def addToLists(listIds:List[Long])(implicit accessToken:String) = {

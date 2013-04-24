@@ -21,7 +21,7 @@ object ContactLists {
     val Hidden = "HIDDEN"
   }
 
-  case class ContactList( id:String, name:String, contact_count:Int, status:String) {
+  case class ContactList( id:String, name:Option[String] = None, contact_count:Option[Int] = None, status:Option[String] = None) {
     def delete(implicit accessToken:String) = {
       ContactList.delete(id)
     }

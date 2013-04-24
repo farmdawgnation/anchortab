@@ -89,17 +89,17 @@ object ConstantContact {
     }
   }
 
-  private[constantcontact] def post(resource:String, body:JValue)(implicit accessToken:String) : Box[JValue] = {
+  private[constantcontact] def post(resource:String, body:JValue, params:Map[String, String] = Map.empty)(implicit accessToken:String) : Box[JValue] = {
     runRequest {
       val requestBody = compact(render(body))
-      host(endpointBase) / endpointVersion / resource << requestBody <:< Map("Authorization" -> ("Bearer " + accessToken)) <<? Map("api_key" -> clientId)
+      host(endpointBase) / endpointVersion / resource << requestBody <:< Map("Authorization" -> ("Bearer " + accessToken)) <<? (params + ("api_key" -> clientId))
     }
   }
 
-  private[constantcontact] def put(resource:String, body:JValue)(implicit accessToken:String) : Box[JValue] = {
+  private[constantcontact] def put(resource:String, body:JValue, params:Map[String, String] = Map.empty)(implicit accessToken:String) : Box[JValue] = {
     runRequest {
       val requestBody = compact(render(body))
-      (host(endpointBase) / endpointVersion / resource).PUT.setBody(requestBody) <:< Map("Authorization" -> ("Bearer " + accessToken)) <<? Map("api_key" -> clientId)
+      (host(endpointBase) / endpointVersion / resource).PUT.setBody(requestBody) <:< Map("Authorization" -> ("Bearer " + accessToken)) <<? (params + ("api_key" -> clientId))
     }
   }
 
