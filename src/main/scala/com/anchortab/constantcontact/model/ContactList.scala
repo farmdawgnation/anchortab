@@ -21,8 +21,7 @@ object ContactLists {
     val Hidden = "HIDDEN"
   }
 
-  case class ContactList( id:Long, name:String, contact_count:Int, status:String,
-                          opt_in_default:Boolean) {
+  case class ContactList( id:String, name:String, contact_count:Int, status:String) {
     def delete(implicit accessToken:String) = {
       ContactList.delete(id)
     }
@@ -32,7 +31,7 @@ object ContactLists {
     }
   }
   object ContactList {
-    def find(id:Long)(implicit accessToken:String) = {
+    def find(id:String)(implicit accessToken:String) = {
       ConstantContact.get("lists/" + id).flatMap { json =>
         tryo(json.extract[ContactList])
       }
@@ -44,13 +43,13 @@ object ContactLists {
       }
     }
 
-    def delete(id:Long)(implicit accessToken:String) = {
+    def delete(id:String)(implicit accessToken:String) = {
       ConstantContact.delete("lists/" + id).flatMap { json=>
         tryo(json.extract[Boolean])
       }
     }
 
-    def save(contactListJson:JValue, id:Long)(implicit accessToken:String) = {
+    def save(contactListJson:JValue, id:String)(implicit accessToken:String) = {
       Failure("Not implemented.")
     }
   }
