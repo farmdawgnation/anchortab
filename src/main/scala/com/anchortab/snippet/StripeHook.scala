@@ -72,19 +72,22 @@ object StripeHook extends RestHelper with Loggable {
       user <- User.find("stripeCustomerId" -> stripeCustomerId)
       totalAmountInCents <- tryo((objectJson \ "total").extract[Long]) ?~! "No total."
     } yield {
-      val nextPaymentAttemptSecs: Option[Long] =
-        tryo((objectJson \ "next_payment_attempt").extract[Option[Long]])
-        .flatten
-        .headOption
+      if (user.activeCard.isDefined) {
+        val nextPaymentAttemptSecs: Option[Long] =
+          tryo((objectJson \ "next_payment_attempt").extract[Option[Long]])
+          .flatten
+          .headOption
 
-      val nextPaymentAttempt = nextPaymentAttemptSecs.map { nextPaymentAttemptInSecs =>
-        new DateTime(nextPaymentAttemptInSecs * 1000)
-      } filter {
-        _ isAfterNow
+        val nextPaymentAttempt = nextPaymentAttemptSecs.map { nextPaymentAttemptInSecs =>
+          new DateTime(nextPaymentAttemptInSecs * 1000)
+        } filter {
+          _ isAfterNow
+        }
+        val amount = totalAmountInCents / 100d
+
+        EmailActor ! SendInvoicePaymentFailedEmail(user.email, amount, nextPaymentAttempt)
       }
-      val amount = totalAmountInCents / 100d
 
-      EmailActor ! SendInvoicePaymentFailedEmail(user.email, amount, nextPaymentAttempt)
       OkResponse()
     }
   }
