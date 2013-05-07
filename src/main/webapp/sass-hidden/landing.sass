@@ -236,6 +236,7 @@
     background-image: image-url('im-on-a-boat.jpg')
     background-repeat: no-repeat
     background-position: top center
+    border-bottom: 5px solid #a9a9a9
     height: 486px
 
     .get-started-now
@@ -297,6 +298,11 @@
           &:hover
             text-decoration: underline
 
+    .intro-video
+      position: absolute
+      right: 0
+      top: 13rem
+
     h1
       +replace-text('logo.png')
 
@@ -324,7 +330,7 @@
       text-transform: uppercase
 
       &.headline
-        width: 600px
+        width: 500px
 
       small
         font-size: 2.5rem
@@ -336,7 +342,7 @@
 
     p.description
       color: $light-black
-      width: 630px
+      width: 410px
 
       font-size: 16px
       font-size: 1.14rem
