@@ -230,7 +230,7 @@
       margin-left: auto
 
       // Explicitly setting the width here for IE8.
-      width: 242px
+      width: 176px
 
   > .im-on-a-boat
     background-image: image-url('im-on-a-boat.jpg')
@@ -297,6 +297,11 @@
           &:hover
             text-decoration: underline
 
+    .intro-video
+      position: absolute
+      right: 0
+      top: 13rem
+
     h1
       +replace-text('logo.png')
 
@@ -324,7 +329,7 @@
       text-transform: uppercase
 
       &.headline
-        width: 600px
+        width: 500px
 
       small
         font-size: 2.5rem
@@ -336,7 +341,7 @@
 
     p.description
       color: $light-black
-      width: 630px
+      width: 410px
 
       font-size: 16px
       font-size: 1.14rem
@@ -351,6 +356,9 @@
     color: white
 
     padding-top: 96px
+
+    .how-it-works-video
+      text-align: center
 
     .slide-strip-navigator
       position: relative
@@ -422,6 +430,7 @@
       width: auto
       text-align: center
       margin-top: 40px
+      margin-bottom: 40px
 
       li
         display: inline-block
