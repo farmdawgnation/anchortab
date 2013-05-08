@@ -20,6 +20,7 @@ import net.liftweb._
 import com.anchortab.model._
 import com.anchortab.constantcontact.ConstantContact
 import com.anchortab.mailchimp._
+import com.anchortab.campaignmonitor._
 
 object OAuth extends Loggable {
   implicit val formats = DefaultFormats
@@ -74,6 +75,35 @@ object OAuth extends Loggable {
           )
 
           Notices.notice("Your MailChimp account has been successfully connected.")
+          RedirectResponse("/manager/services")
+        }
+      }
+
+    case req @ Req("oauth2" :: "campaign-monitor" :: Nil, _, _) =>
+      () => {
+        for {
+          session <- userSession.is
+          code <- req.param("code")
+          tokenDetails <- CampaignMonitor.exchangeToken(code)
+        } yield {
+          val serviceCredential = UserServiceCredentials(
+            CampaignMonitor.serviceIdentifier,
+            tokenDetails.refresh_token,
+            Map(
+              "accessToken" -> tokenDetails.access_token,
+              "refreshToken" -> tokenDetails.refresh_token,
+              "expiresIn" -> tokenDetails.expires_in.toString
+            )
+          )
+
+          User.update("_id" -> session.userId,
+            ("$addToSet" -> (("serviceCredentials" -> decompose(serviceCredential)))) ~
+            ("$unset" -> (
+              ("firstSteps." + UserFirstStep.Keys.ConnectAnExternalService) -> true
+            ))
+          )
+
+          Notices.notice("Your Campaign Monitor account has been successfully connected.")
           RedirectResponse("/manager/services")
         }
       }
