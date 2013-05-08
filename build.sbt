@@ -47,7 +47,8 @@ libraryDependencies ++= {
     "org.scalatest"     %% "scalatest"          % "2.0.M5b" % "test->default",
     "org.seleniumhq.selenium" % "selenium-java" % "2.29.1"  % "test->default",
     "com.newrelic.agent.java" % "newrelic-api"  % "2.17.1",
-    "me.frmr.newrelic"  %% "lift-newrelic"      % "1.0.0"
+    "me.frmr.newrelic"  %% "lift-newrelic"      % "1.0.0",
+    "com.createsend"    % "createsend-java"     % "3.1.0"
   )
 }
 
