@@ -34,7 +34,7 @@ $(document).ready ->
       error : onFailure,
       crossDomain: true
 
-  $('body').on 'click', '.get-started-now', ->
+  $('body').on 'click', '.plans-and-pricing', ->
     $targetElem = $("section.plans-and-pricing > h3")
     targetTop = $targetElem.offset().top
     scrollableElem = scrollableElement('html', 'body')
