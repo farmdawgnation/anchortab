@@ -35,7 +35,7 @@ $(document).ready ->
       crossDomain: true
 
   $('body').on 'click', '.get-started-now', ->
-    $targetElem = $("section.plans-and-pricing")
+    $targetElem = $("section.plans-and-pricing > h3")
     targetTop = $targetElem.offset().top
     scrollableElem = scrollableElement('html', 'body')
 
