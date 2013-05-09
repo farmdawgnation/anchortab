@@ -35,6 +35,8 @@ $(document).ready ->
       crossDomain: true
 
   $('body').on 'click', '.plans-and-pricing', ->
+    mixpanel.track("Click Plans & Pricing")
+
     $targetElem = $("section.plans-and-pricing > h3")
     targetTop = $targetElem.offset().top
     scrollableElem = scrollableElement('html', 'body')
@@ -51,6 +53,7 @@ $(document).ready ->
     $(".login input").addClass("error")
 
   $(".enterprise-action-button").on 'click', (event) ->
+    mixpanel.track("Click Enrprise Signup Button")
     document.location.href = "mailto:hello@anchortab.com?subject=Enterprise Edition"
 
   $(".register-button").on 'click', (event) ->

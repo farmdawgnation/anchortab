@@ -12,7 +12,7 @@
         <lift:script-bundle name="register"></lift:script-bundle>
       </head>
 
-      <form class="registration-form stripe-form" data-lift="registration-form">
+      <form id="registration-form" class="registration-form stripe-form" data-lift="registration-form">
         <input type="hidden" id="stripe-token">
         <h3 data-lift="redirect-to-dashboard-if-logged-in">Registration</h3>
 
@@ -80,6 +80,10 @@
 
         <input type="submit" class="submit" value="Next >">
       </form>
+
+      <tail>
+        <script data-lift="mixpanel"></script>
+      </tail>
     </div>
   </body>
 </html>

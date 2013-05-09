@@ -28,3 +28,6 @@ $(document).ready ->
     $("option[value=" + hash + "]").attr("selected", "selected")
 
   $(".plan-selection").change()
+
+  selectedPlan = $(".plan-selection").find("option:selected").text()
+  mixpanel.track("View registration form", {selectedPlan: selectedPlan, hash: window.location.hash})
