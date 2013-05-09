@@ -15,6 +15,7 @@ $(document).ready ->
       $(".billing-information").show()
 
   $("body").on "click", '.stripe-form .submit', (event) ->
+    mixpanel.track("Submit registration form")
     return if $(".plan-selection").find(":selected").data("has-trial")
 
     event.preventDefault()
