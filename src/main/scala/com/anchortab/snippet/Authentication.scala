@@ -350,13 +350,13 @@ object Authentication extends Loggable {
     def processRegistration = {
       val validators = Map(
         "input.email-address" -> (() =>
-          if (emailAddress.nonEmpty)
+          if (".+@.+\\..+".r.findAllIn(emailAddress).nonEmpty)
             if (User.count("email" -> emailAddress) > 0)
               Full("That email address is already in use by another user.")
             else
               Empty
           else
-            Full("Email address is required.")
+            Full("A valid email address is required.")
         ),
         "input.password" -> (() =>
           if (requestedPassword.nonEmpty)
