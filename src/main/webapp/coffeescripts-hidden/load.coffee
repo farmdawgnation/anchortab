@@ -121,10 +121,25 @@ submitEmail = (event) ->
   $target = $(event.target)
   $input = $target.closest("#anchor-tab").find(".email-input")
 
+  email = $input.val()
+
+  unless email.match(/.+@.+\..+/)
+    $("#anchor-tab")
+      .find(".success-message")
+        .text("That doesn't look like a valid email address. Please check for typos and try again.")
+      .end()
+      .addClass("success")
+
+    setTimeout ->
+      $("#anchor-tab")
+        .removeClass("success")
+    , 4000
+
+    return
+
   $target.attr('disabled', 'disabled')
   $input.attr('disabled', 'disabled')
 
-  email = $input.val()
   submissionUri = "//" + apiDomain + "/api/v1/embed/" + tabId + "/submit"
 
   $.ajax
