@@ -24,6 +24,8 @@ import net.liftweb._
 import com.anchortab.model._
 import com.anchortab.constantcontact.model.ContactLists._
 
+import com.newrelic.api.agent.NewRelic
+
 import org.bson.types.ObjectId
 
 case class TabEmbedCodeReceived(embedCode: String) extends SimpleAnchorTabEvent("tab-embed-code-received")
@@ -246,6 +248,10 @@ object Tabs extends Loggable {
         ContactList.findAll match {
           case Full(list) => list
           case Failure(msg, _, _) =>
+            NewRelic.noticeError("Constant Contact List List Error", Map(
+              "error message" -> msg
+            ).asJava)
+
             logger.error(msg)
             Nil
           case _ => Nil
@@ -271,7 +277,7 @@ object Tabs extends Loggable {
       import com.ecwid.mailchimp._
         import method.list._
 
-      {
+      val lists = {
         for {
           session <- userSession.is
           user <- User.find(session.userId)
@@ -284,7 +290,20 @@ object Tabs extends Loggable {
 
           mcClient.execute(listsMethod)
         }
-      } map(_.data.asScala.toList) openOr List()
+      } map(_.data.asScala.toList)
+
+      lists match {
+        case Full(mcLists) => mcLists
+
+        case Failure(msg, _, _) =>
+          NewRelic.noticeError("MailChimp List List Error", Map(
+            "error message" -> msg
+          ).asJava)
+
+          Nil
+
+        case _ => Nil
+      }
     }
 
     val hasWhitelabel_? = {
