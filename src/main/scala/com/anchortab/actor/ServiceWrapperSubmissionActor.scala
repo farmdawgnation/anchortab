@@ -19,7 +19,7 @@ object ServiceWrapperSubmissionActor extends LiftActor with Loggable {
         case Failure(msg, _, _) =>
           logger.error("Error submitting email " + email + ":" + msg)
 
-          NewRelic.noticeError("Error submitting email to external service.", Map(
+          NewRelic.noticeError("External Submission Error", Map(
             "service wrapper" -> serviceWrapper.wrapperIdentifier,
             "email" -> email,
             "error message" -> msg
@@ -28,7 +28,7 @@ object ServiceWrapperSubmissionActor extends LiftActor with Loggable {
         case Empty =>
           logger.error("Got Empty while trying to submit email " + email)
 
-          NewRelic.noticeError("Empty while submitting email to external service.", Map(
+          NewRelic.noticeError("External Submission Empty", Map(
             "service wrapper" -> serviceWrapper.wrapperIdentifier,
             "email" -> email
           ))
