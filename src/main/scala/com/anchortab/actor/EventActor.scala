@@ -22,7 +22,7 @@ import com.anchortab.model._
 import com.anchortab.comet._
 
 case class TrackEvent(eventType:String, ip:String, userAgent:String, userId:ObjectId, tabId:ObjectId,
-                      cookieId:Option[String] = None, email:Option[String] = None)
+                      email:Option[String] = None)
 case class EventActorClientCometRegistered(comet: CometActor)
 case class EventActorClientCometDeregistered(cometName: String)
 case class EventSummaryRequested(comet: CometActor, userId:ObjectId, eventType: String)
@@ -34,8 +34,8 @@ object EventActor extends LiftActor with Loggable {
   val registeredComets: HashMap[String, CometActor] = new HashMap
 
   def messageHandler = {
-    case TrackEvent(eventType, ip, userAgent, userId, tabId, cookieId, email) =>
-      EventLog.track(eventType, ip, userAgent, userId, tabId, cookieId, email)
+    case TrackEvent(eventType, ip, userAgent, userId, tabId, email) =>
+      EventLog.track(eventType, ip, userAgent, userId, tabId, email)
 
       if (eventType == Event.Types.TabView || eventType == Event.Types.TabSubmit) {
         val targetComet = "event-summary-comet-" + userId
