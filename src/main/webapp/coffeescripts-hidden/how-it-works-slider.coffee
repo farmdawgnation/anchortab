@@ -16,6 +16,9 @@ nextSlide = ->
   # Ignore if already on the last slide.
   return false if currentSlide == numberOfSlides - 1
 
+  # Track MP
+  mixpanel.track("Click Next Slide")
+
   currentSlide = currentSlide + 1
   offset = (slideWidth * currentSlide) * -1
 
@@ -32,6 +35,9 @@ nextSlide = ->
 previousSlide = ->
   # Ignore if already on first slide.
   return false if currentSlide == 0
+
+  # Track MP
+  mixpanel.track("Click Previous Slide")
 
   currentSlide = currentSlide - 1
   offset = (slideWidth * currentSlide) * -1
@@ -51,6 +57,9 @@ jumpToSlide = (event) ->
 
   # something funky
   return false if page < 1 || page > numberOfSlides
+
+  # Track MP
+  mixpanel.track("Jump to page", page: page)
 
   currentSlide = page - 1
   offset = (slideWidth * currentSlide) * -1

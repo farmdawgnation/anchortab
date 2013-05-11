@@ -53,16 +53,6 @@ object Api extends RestHelper with Loggable {
           val remoteIp = req.header("X-Forwarded-For") openOr req.remoteAddr
           val userAgent = req.userAgent openOr "unknown"
 
-          val cookieId =
-            S.cookieValue("unique-event-actor") match {
-              case Full(uniqueEventActorId) => uniqueEventActorId
-              case _ =>
-                val uniqueEventActor = UniqueEventActor(remoteIp, userAgent, tab._id)
-                // TODO WRITE CONCERN ME
-                uniqueEventActor.save
-                uniqueEventActor.cookieId
-            }
-
           Tab.update("_id" -> tab._id, "$inc" -> ("stats.views" -> 1))
 
           if (user.firstSteps.get(UserFirstStep.Keys.EmbedYourTab).isDefined) {
@@ -80,7 +70,7 @@ object Api extends RestHelper with Loggable {
           )
 
           QuotasActor ! CheckQuotaCounts(user._id)
-          EventActor ! TrackEvent(Event.Types.TabView, remoteIp, userAgent, user._id, tab._id, Some(cookieId))
+          EventActor ! TrackEvent(Event.Types.TabView, remoteIp, userAgent, user._id, tab._id)
 
           val whitelabelTab = tab.appearance.whitelabel && plan.hasFeature_?(Plan.Features.WhitelabeledTabs)
           val colorScheme = {
@@ -115,16 +105,6 @@ object Api extends RestHelper with Loggable {
         } yield {
           val remoteIp = req.header("X-Forwarded-For") openOr req.remoteAddr
           val userAgent = req.userAgent openOr "unknown"
-
-          val cookieId =
-            S.cookieValue("unique-event-actor") match {
-              case Full(uniqueEventActorId) => uniqueEventActorId
-              case _ =>
-                val uniqueEventActor = UniqueEventActor(remoteIp, userAgent, tab._id)
-                // TODO WRITE CONCERN ME
-                uniqueEventActor.save
-                uniqueEventActor.cookieId
-            }
 
           // Ensure this new subscriber is unique.
           val submitResult =
@@ -166,7 +146,7 @@ object Api extends RestHelper with Loggable {
             }
 
           QuotasActor ! CheckQuotaCounts(user._id)
-          EventActor ! TrackEvent(Event.Types.TabSubmit, remoteIp, userAgent, user._id, tab._id, Some(cookieId))
+          EventActor ! TrackEvent(Event.Types.TabSubmit, remoteIp, userAgent, user._id, tab._id)
 
           Call(callbackFnName, submitResult)
         }

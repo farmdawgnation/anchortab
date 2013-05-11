@@ -21,6 +21,8 @@ sealed trait ServiceWrapper {
   def credentialsValid_? : Boolean
   def subscribeEmail(email:String) : Box[Boolean]
   def unsubscribeEmail(email:String) : Box[Boolean]
+
+  def wrapperIdentifier: String
 }
 object ServiceWrapper {
   val typeHints = ShortTypeHints(classOf[MailChimpServiceWrapper] :: classOf[ConstantContactServiceWrapper] :: Nil)
@@ -50,6 +52,10 @@ case class ConstantContactServiceWrapper(username:String, implicit val accessTok
     } yield {
       true
     }
+  }
+
+  def wrapperIdentifier = {
+    "Constant Contact - " + username
   }
 }
 
@@ -100,5 +106,9 @@ case class MailChimpServiceWrapper(apiKey:String, listId:String) extends Service
 
     // Execute the call against the remote server
     tryo(mcClient.execute(listUnsubscribeCall))
+  }
+
+  def wrapperIdentifier = {
+    "MailChimp - " + listId
   }
 }
