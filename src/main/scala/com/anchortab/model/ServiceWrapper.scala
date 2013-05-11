@@ -27,7 +27,11 @@ sealed trait ServiceWrapper {
   def wrapperIdentifier: String
 }
 object ServiceWrapper {
-  val typeHints = ShortTypeHints(classOf[MailChimpServiceWrapper] :: classOf[ConstantContactServiceWrapper] :: Nil)
+  val typeHints = ShortTypeHints(List(
+    classOf[MailChimpServiceWrapper],
+    classOf[ConstantContactServiceWrapper],
+    classOf[CampaignMonitorServiceWrapper]
+  ))
 }
 
 case class CampaignMonitorServiceWrapper(userId: ObjectId, listId: String) extends ServiceWrapper with Loggable {
