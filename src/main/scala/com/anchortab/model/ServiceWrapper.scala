@@ -11,6 +11,8 @@ import org.joda.time._
 import com.ecwid.mailchimp._
   import method.list._
 
+import org.bson.types.ObjectId
+
 /**
  * The ServiceWrapper trait is the common interface for all wrappers around external email
  * subscription services. The only two functions these wrappers are required to expose are
@@ -26,6 +28,70 @@ sealed trait ServiceWrapper {
 }
 object ServiceWrapper {
   val typeHints = ShortTypeHints(classOf[MailChimpServiceWrapper] :: classOf[ConstantContactServiceWrapper] :: Nil)
+}
+
+case class CampaignMonitorServiceWrapper(userId: ObjectId, listId: String) extends ServiceWrapper with Loggable {
+  import com.anchortab.campaignmonitor._
+
+  protected def updateCredentials(userId: ObjectId, accessToken: String, refreshToken: String, expiresAt: DateTime) = {
+    //TODO
+  }
+
+  protected def doWithNewAccessCredentials[T](userId: ObjectId, accessToken: String, refreshToken: String, doSomething: (String, String)=>Box[T]): Box[T] = {
+    for {
+      newToken <- CampaignMonitor.refreshToken(accessToken, refreshToken)
+      expiresAt = (new DateTime()).plusSeconds(newToken.expires_in)
+      updateCredentialsUnit = updateCredentials(userId, accessToken, refreshToken, expiresAt)
+      resultOfSomething <- doSomething(newToken.access_token, newToken.refresh_token)
+    } yield {
+      resultOfSomething
+    }
+  }
+
+  protected def withAccessCredentials[T](doSomething: (String, String)=>Box[T]): Box[T] = {
+    {
+      for {
+        user <- (User.find(userId):Box[User])
+        credentials <- user.credentialsFor(CampaignMonitor.serviceIdentifier)
+        accessToken <- credentials.serviceCredentials.get("accessToken")
+        refreshToken <- credentials.serviceCredentials.get("refreshToken")
+        expiresAt <- credentials.serviceCredentials.get("expiresAt")
+      } yield {
+        if (DateTime.parse(expiresAt) isBeforeNow) {
+          doWithNewAccessCredentials(userId, accessToken, refreshToken, doSomething)
+        } else {
+          doSomething(accessToken, refreshToken)
+        }
+      }
+    } match {
+      // We unwrap fulls.
+      case Full(t) => t
+      case fail: Failure => fail
+      case _ => Empty
+    }
+  }
+
+  val credentialsValid_? = true
+
+  def subscribeEmail(email: String) = {
+    val result = withAccessCredentials { (accessToken, refreshToken) =>
+      CampaignMonitor.addSubscriber(accessToken, refreshToken, listId, email)
+    }
+
+    result.map(thing => true)
+  }
+
+  def unsubscribeEmail(email: String) = {
+    val result = withAccessCredentials { (accessToken, refreshToken) =>
+      CampaignMonitor.removeSubscriber(accessToken, refreshToken, listId, email)
+    }
+
+    result.map(thing => true)
+  }
+
+  def wrapperIdentifier = {
+    "Campaign Monitor - " + userId.toString
+  }
 }
 
 case class ConstantContactServiceWrapper(username:String, implicit val accessToken:String, listId:Long) extends ServiceWrapper with Loggable {

@@ -10,6 +10,7 @@ import net.liftweb._
 
 import com.createsend._
 import com.createsend.util._
+import com.createsend.models._
 import com.createsend.models.subscribers._
 
 case class CampaignMonitorListBasics(id: String, name: String)
@@ -59,7 +60,7 @@ object CampaignMonitor {
     }
   }
 
-  def refreshToken(accessToken: String, refreshToken: String) = {
+  def refreshToken(accessToken: String, refreshToken: String): Box[OAuthTokenDetails] = {
     val general = new General(new OAuthAuthenticationDetails(accessToken, refreshToken))
 
     for {
@@ -84,7 +85,7 @@ object CampaignMonitor {
     }
   }
 
-  def addSubscriber(accessToken: String, refreshToken: String, listId: String, email: String) = {
+  def addSubscriber(accessToken: String, refreshToken: String, listId: String, email: String): Box[String] = {
     val auth = new OAuthAuthenticationDetails(accessToken, refreshToken)
     val cmSubscribers = new Subscribers(auth, listId)
 
@@ -93,7 +94,7 @@ object CampaignMonitor {
     subscriber.ListID = listId
 
     for {
-      result <- cmSubscribers.add(subscriber)
+      result <- tryo(cmSubscribers.add(subscriber))
     } yield {
       result
     }
