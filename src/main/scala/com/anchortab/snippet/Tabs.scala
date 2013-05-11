@@ -28,6 +28,8 @@ import com.newrelic.api.agent.NewRelic
 
 import org.bson.types.ObjectId
 
+import org.joda.time._
+
 case class TabEmbedCodeReceived(embedCode: String) extends SimpleAnchorTabEvent("tab-embed-code-received")
 case class NewTabCreated(embedCode: String) extends SimpleAnchorTabEvent("new-tab-created")
 
@@ -138,6 +140,7 @@ object Tabs extends Loggable {
     var mailChimpApiKey = ""
     var mailChimpListId: Box[String] = Empty
     var constantContactListId: Box[String] = Empty
+    var campaignMonitorListId: Box[String] = Empty
 
     var service : Tab.EmailServices.Value = {
       requestTab.map(_.service).openOr(None) match {
@@ -150,6 +153,11 @@ object Tabs extends Loggable {
           constantContactListId = Full(ccsw.listId.toString)
 
           Tab.EmailServices.ConstantContact
+
+        case Some(cmsw: CampaignMonitorServiceWrapper) =>
+          campaignMonitorListId = Full(cmsw.listId)
+
+          Tab.EmailServices.CampaignMonitor
 
         case _ => Tab.EmailServices.None
       }
@@ -181,6 +189,14 @@ object Tabs extends Loggable {
                 constantContactListId <- constantContactListId
               } yield {
                 ConstantContactServiceWrapper(credentials.userIdentifier, token, constantContactListId.toLong)
+              }
+
+            case Tab.EmailServices.CampaignMonitor =>
+              for {
+                session <- userSession.is
+                listId <- campaignMonitorListId
+              } yield {
+                CampaignMonitorServiceWrapper(session.userId, listId)
               }
 
             case _ => None
@@ -306,6 +322,50 @@ object Tabs extends Loggable {
       }
     }
 
+    val campaignMonitorAuthorized_? = {
+      import com.anchortab.campaignmonitor._
+
+      for {
+        session <- userSession.is
+        user <- User.find(session.userId)
+        credentials <- user.credentialsFor(CampaignMonitor.serviceIdentifier)
+      } yield {
+        true
+      }
+    } openOr {
+      false
+    }
+
+    val campaignMonitorLists = {
+      import com.anchortab.campaignmonitor._
+
+      val lists = {
+        for {
+          session <- userSession.is
+          user <- User.find(session.userId)
+          credentials <- user.credentialsFor(CampaignMonitor.serviceIdentifier)
+          accessToken <- credentials.serviceCredentials.get("accessToken")
+          refreshToken <- credentials.serviceCredentials.get("refreshToken")
+          lists <- CampaignMonitor.getLists(accessToken, refreshToken)
+        } yield {
+          lists.toList
+        }
+      }
+
+      lists match {
+        case Full(cmLists) => cmLists
+
+        case Failure(msg, _, _) =>
+          NewRelic.noticeError("Campaign Monitor List List Error", Map(
+            "error message" -> msg
+          ).asJava)
+
+          Nil
+
+        case _ => Nil
+      }
+    }
+
     val hasWhitelabel_? = {
       {
         for {
@@ -348,8 +408,9 @@ object Tabs extends Loggable {
       val none = List(Tab.EmailServices.None)
       val cc = (constantContactLists.nonEmpty ? List(Tab.EmailServices.ConstantContact) | List())
       val mc = (mailChimpAuthorized_? ? List(Tab.EmailServices.MailChimp) | List())
+      val cm = (campaignMonitorAuthorized_? ? List(Tab.EmailServices.CampaignMonitor) | List())
 
-      none ++ cc ++ mc
+      none ++ cc ++ mc ++ cm
     }
 
     val bind =
@@ -399,6 +460,12 @@ object Tabs extends Loggable {
         constantContactLists.map(l => (l.id.toString, l.name.getOrElse(""))),
         constantContactListId,
         id => constantContactListId = Full(id)
+      ) &
+      ".only-if-campaignmonitor-authorized" #> (campaignMonitorAuthorized_? ? PassThru | ClearNodes) andThen
+      "#campaignmonitor-listid" #> select(
+        campaignMonitorLists.map(l => (l.id.toString, l.name)),
+        campaignMonitorListId,
+        id => campaignMonitorListId = Full(id)
       ) &
       ".submit" #> ajaxSubmit("Save Tab", submit _)
 
