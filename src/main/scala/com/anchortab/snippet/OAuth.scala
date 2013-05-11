@@ -17,13 +17,15 @@ import net.liftweb._
     import Extraction._
   import mongodb.BsonDSL._
 
+import org.joda.time._
+
 import com.anchortab.model._
 import com.anchortab.constantcontact.ConstantContact
 import com.anchortab.mailchimp._
 import com.anchortab.campaignmonitor._
 
 object OAuth extends Loggable {
-  implicit val formats = DefaultFormats
+  implicit val formats = User.formats
 
   def dispatch : DispatchPF = {
     case req @ Req("oauth2" :: "constant-contact" :: Nil, _, _) =>
@@ -86,13 +88,15 @@ object OAuth extends Loggable {
           code <- req.param("code")
           tokenDetails <- CampaignMonitor.exchangeToken(code)
         } yield {
+          val expiresAt = (new DateTime()).plusSeconds(tokenDetails.expires_in)
+
           val serviceCredential = UserServiceCredentials(
             CampaignMonitor.serviceIdentifier,
             tokenDetails.refresh_token,
             Map(
               "accessToken" -> tokenDetails.access_token,
               "refreshToken" -> tokenDetails.refresh_token,
-              "expiresIn" -> tokenDetails.expires_in.toString
+              "expiresAt" -> decompose(expiresAt).extract[String]
             )
           )
 
