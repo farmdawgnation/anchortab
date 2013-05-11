@@ -3,8 +3,10 @@ package com.anchortab.model
 import net.liftweb._
   import common._
   import mongodb._
+    import BsonDSL._
   import util.Helpers._
   import json._
+    import Extraction._
 
 import org.joda.time._
 
@@ -38,17 +40,43 @@ case class CampaignMonitorServiceWrapper(userId: ObjectId, listId: String) exten
   import com.anchortab.campaignmonitor._
 
   protected def updateCredentials(userId: ObjectId, accessToken: String, refreshToken: String, expiresAt: DateTime) = {
-    //TODO
+    implicit val formats = User.formats
+
+    User.update(
+      (
+        ("_id" -> userId) ~
+        ("serviceCredentials.serviceName" -> CampaignMonitor.serviceIdentifier)
+      ),
+      ("$set" -> (
+        ("serviceCredentials.$.serviceCredentials.accessToken" -> accessToken) ~
+        ("serviceCredentials.$.serviceCredentials.refreshToken" -> refreshToken) ~
+        ("serviceCredentials.$.serviceCredentials.expiresAt" -> decompose(expiresAt))
+      ))
+    )
   }
 
   protected def doWithNewAccessCredentials[T](userId: ObjectId, accessToken: String, refreshToken: String, doSomething: (String, String)=>Box[T]): Box[T] = {
-    for {
+    val tokenRefreshResult = for {
       newToken <- CampaignMonitor.refreshToken(accessToken, refreshToken)
       expiresAt = (new DateTime()).plusSeconds(newToken.expires_in)
       updateCredentialsUnit = updateCredentials(userId, accessToken, refreshToken, expiresAt)
       resultOfSomething <- doSomething(newToken.access_token, newToken.refresh_token)
     } yield {
       resultOfSomething
+    }
+
+    tokenRefreshResult match {
+      case result @ Full(_) =>
+        logger.info("Refreshed CM token.")
+        result
+
+      case fail @ Failure(msg, _, _) =>
+        logger.error("Error refreshing CM token: " + msg)
+        fail
+
+      case Empty =>
+        logger.error("Empty refreshing CM token.")
+        Empty
     }
   }
 
@@ -70,7 +98,11 @@ case class CampaignMonitorServiceWrapper(userId: ObjectId, listId: String) exten
     } match {
       // We unwrap fulls.
       case Full(t) => t
-      case fail: Failure => fail
+
+      case fail @ Failure(msg, _, _) =>
+        logger.error("Returning a failure from Campaign Monitor: " + msg)
+        fail
+
       case _ => Empty
     }
   }
