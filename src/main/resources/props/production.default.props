@@ -4,6 +4,12 @@ mongodb.database=anchortab
 
 mixpanel.key=e95d8807fd51d89d60eaed716610c8d0
 
+# Campaign Monitor
+campaignmonitor.clientId=98979
+campaignmonitor.clientSecret=1Yj8V8y8p8aw8A88a05fM8hx888C8eeVQ1qCOsUl8zE8pg8tevVV8AeUuIbu843juM8npzimlcy8ynKu
+campaignmonitor.redirectUri=https://anchortab.com/oauth2/campaign-monitor
+campaignmonitor.scope=ManageLists,ImportSubscribers
+
 mailchimp.redirectUrl=https://anchortab.com/oauth2/mailchimp
 mailchimp.clientId=398234061384
 mailchimp.clientSecret=ef5348bb94503e35fac79bf0230b6015
