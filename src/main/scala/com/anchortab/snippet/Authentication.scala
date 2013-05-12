@@ -312,7 +312,6 @@ object Authentication extends Loggable {
     var stripeToken = ""
     var emailAddress = ""
     var requestedPassword = ""
-    var requestedPasswordConfirmation = ""
     var firstName = ""
     var lastName = ""
     var organization = ""
@@ -363,15 +362,6 @@ object Authentication extends Loggable {
             Empty
           else
             Full("Password is required.")
-        ),
-        "input.password-confirmation" -> (() =>
-          if (requestedPasswordConfirmation.nonEmpty)
-            if (requestedPassword != requestedPasswordConfirmation)
-              Full("Password and Confirm Password must match.")
-            else
-              Empty
-          else
-            Full("Password confirmation is required.")
         )
       )
 
@@ -443,7 +433,6 @@ object Authentication extends Loggable {
       "#stripe-token" #> hidden(stripeToken = _, stripeToken) &
       ".email-address" #> text(emailAddress, emailAddress = _) &
       ".password" #> password(requestedPassword, requestedPassword = _) &
-      ".password-confirmation" #> password(requestedPasswordConfirmation, requestedPasswordConfirmation = _) &
       ".first-name" #> text(firstName, firstName = _) &
       ".last-name" #> text(lastName, lastName = _) &
       ".organization" #> text(organization, organization = _) &
