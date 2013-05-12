@@ -6,14 +6,19 @@ All Rights Reserved
 ###
 
 ##
-## Configuration - It'd be nice if we could deduce these from a props
-## file for something, but in lieu of that, this works.
+## In dev and staging, we calculate the hostnames for the tab embed based
+## on the hostname used to embed them. Since we serve the load script from
+## S3 for production, we use a hack that sbt-resource-management gains us:
+## the ability to mash two files together on deploy.
 ##
+parser = document.createElement("a")
+parser.href = document.getElementById("anchortab-loader").src
+
 googleAnalyticsAccount = anchortab?.googleAnalyticsAccount || "UA-35269224-4"
-apiDomain = anchortab?.apiDomain || "local.anchortab.com"
-secureApiDomain = anchortab?.secureApiDomain || "local.anchortab.com"
-resourcesDomain = anchortab?.resourcesDomain || "local.anchortab.com"
-secureResourcesDomain = anchortab?.secureResourcesDomain || "local.anchortab.com"
+apiDomain = anchortab?.apiDomain || parser.hostname
+secureApiDomain = anchortab?.secureApiDomain || parser.hostname
+resourcesDomain = anchortab?.resourcesDomain || parser.hostname
+secureResourcesDomain = anchortab?.secureResourcesDomain || parser.hostname
 jqVersion = "1.9.1"
 
 ##
