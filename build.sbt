@@ -25,6 +25,8 @@ seq(com.github.siasia.WebPlugin.webSettings :_*)
 
 seq(resourceManagementSettings :_*)
 
+net.virtualvoid.sbt.graph.Plugin.graphSettings
+
 scalacOptions ++= Seq("-deprecation", "-unchecked")
 
 libraryDependencies ++= {

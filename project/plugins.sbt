@@ -17,3 +17,5 @@ resolvers += Resolver.url("artifactory", url("http://scalasbt.artifactoryonline.
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.8.4")
 
 addSbtPlugin("com.openstudy" % "sbt-resource-management" % "0.1.3-SNAPSHOT")
+
+addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.3")
