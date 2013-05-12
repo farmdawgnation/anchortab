@@ -62,6 +62,10 @@ test in assembly := {}
 
 jarName in assembly := "anchortab.jar"
 
+excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
+  cp filter {_.data.getName == "stax-api-1.0.1.jar"}
+}
+
 mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   {
     case "about.html" => MergeStrategy.first
