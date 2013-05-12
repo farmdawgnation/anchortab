@@ -81,7 +81,7 @@ object OAuth extends Loggable {
         }
       }
 
-    case req @ Req("oauth2" :: "campaign-monitor" :: Nil, _, _) =>
+    case req @ Req("oauth2" :: "campaign-monitor" :: Nil, _, _) if req.param("code").isDefined =>
       () => {
         for {
           session <- userSession.is
@@ -108,6 +108,17 @@ object OAuth extends Loggable {
           )
 
           Notices.notice("Your Campaign Monitor account has been successfully connected.")
+          RedirectResponse("/manager/services")
+        }
+      }
+
+    case req @ Req("oauth2" :: "campaign-monitor" :: Nil, _, _) if req.param("error").isDefined =>
+      () => {
+        for {
+          error <- req.param("error")
+          errorDescription <- req.param("error_description")
+        } yield {
+          Notices.error("Campaign Monitor Error: " + errorDescription)
           RedirectResponse("/manager/services")
         }
       }
