@@ -312,9 +312,6 @@ object Authentication extends Loggable {
     var stripeToken = ""
     var emailAddress = ""
     var requestedPassword = ""
-    var firstName = ""
-    var lastName = ""
-    var organization = ""
     var selectedPlan = ""
 
     val plans = {
@@ -394,7 +391,7 @@ object Authentication extends Loggable {
               }
 
               User(emailAddress, User.hashPassword(requestedPassword),
-                   Some(UserProfile(Some(firstName), Some(lastName), Some(organization))),
+                   None,
                    subscriptions = List(subscription), firstSteps = firstSteps,
                    stripeCustomerId = Some(customer.id),
                    activeCard = userActiveCard)
@@ -433,9 +430,6 @@ object Authentication extends Loggable {
       "#stripe-token" #> hidden(stripeToken = _, stripeToken) &
       ".email-address" #> text(emailAddress, emailAddress = _) &
       ".password" #> password(requestedPassword, requestedPassword = _) &
-      ".first-name" #> text(firstName, firstName = _) &
-      ".last-name" #> text(lastName, lastName = _) &
-      ".organization" #> text(organization, organization = _) &
       ".submit" #> ajaxSubmit("Register", () => processRegistration)
 
     "form" #> { ns:NodeSeq =>
