@@ -158,6 +158,8 @@ submitEmail = (event) ->
           .text(event.message)
         .end()
         .addClass("success")
+        .find(".email-input")
+          .val("")
 
       gaqInfo = "Domain: " + document.domain
       _gaq.push ["at._trackEvent", "Submission", "Email Submitted", gaqInfo]
