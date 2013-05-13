@@ -25,6 +25,8 @@ seq(com.github.siasia.WebPlugin.webSettings :_*)
 
 seq(resourceManagementSettings :_*)
 
+net.virtualvoid.sbt.graph.Plugin.graphSettings
+
 scalacOptions ++= Seq("-deprecation", "-unchecked")
 
 libraryDependencies ++= {
@@ -47,7 +49,8 @@ libraryDependencies ++= {
     "org.scalatest"     %% "scalatest"          % "2.0.M5b" % "test->default",
     "org.seleniumhq.selenium" % "selenium-java" % "2.29.1"  % "test->default",
     "com.newrelic.agent.java" % "newrelic-api"  % "2.17.1",
-    "me.frmr.newrelic"  %% "lift-newrelic"      % "1.0.0"
+    "me.frmr.newrelic"  %% "lift-newrelic"      % "1.0.0",
+    "com.createsend"    % "createsend-java"     % "3.1.0"
   )
 }
 
@@ -58,6 +61,10 @@ mainClass in assembly := Some("bootstrap.Start")
 test in assembly := {}
 
 jarName in assembly := "anchortab.jar"
+
+excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
+  cp filter {_.data.getName == "stax-api-1.0.1.jar"}
+}
 
 mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   {

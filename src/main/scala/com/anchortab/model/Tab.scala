@@ -79,6 +79,7 @@ object Tab extends MongoDocumentMeta[Tab] {
     val None = Value("None")
     val MailChimp = Value("MailChimp")
     val ConstantContact = Value("Constant Contact")
+    val CampaignMonitor = Value("Campaign Monitor")
   }
 
   private def validParameter(options:Enumeration, value:String) = {
