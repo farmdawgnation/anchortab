@@ -342,11 +342,9 @@ object Tabs extends Loggable {
       val lists = {
         for {
           session <- userSession.is
-          user <- User.find(session.userId)
-          credentials <- user.credentialsFor(CampaignMonitor.serviceIdentifier)
-          accessToken <- credentials.serviceCredentials.get("accessToken")
-          refreshToken <- credentials.serviceCredentials.get("refreshToken")
-          lists <- CampaignMonitor.getLists(accessToken, refreshToken)
+          lists <- CampaignMonitorCredentialsHelper.withAccessCredentials(session.userId) { (accessToken, refreshToken) =>
+            CampaignMonitor.getLists(accessToken, refreshToken)
+          }
         } yield {
           lists.toList
         }

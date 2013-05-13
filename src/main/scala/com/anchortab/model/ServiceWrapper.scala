@@ -8,6 +8,8 @@ import net.liftweb._
   import json._
     import Extraction._
 
+import com.anchortab.campaignmonitor._
+
 import org.joda.time._
 
 import com.ecwid.mailchimp._
@@ -36,81 +38,13 @@ object ServiceWrapper {
   ))
 }
 
-case class CampaignMonitorServiceWrapper(userId: ObjectId, listId: String) extends ServiceWrapper with Loggable {
-  import com.anchortab.campaignmonitor._
-
-  protected def updateCredentials(userId: ObjectId, accessToken: String, refreshToken: String, expiresAt: DateTime) = {
-    implicit val formats = User.formats
-
-    User.update(
-      (
-        ("_id" -> userId) ~
-        ("serviceCredentials.serviceName" -> CampaignMonitor.serviceIdentifier)
-      ),
-      ("$set" -> (
-        ("serviceCredentials.$.serviceCredentials.accessToken" -> accessToken) ~
-        ("serviceCredentials.$.serviceCredentials.refreshToken" -> refreshToken) ~
-        ("serviceCredentials.$.serviceCredentials.expiresAt" -> decompose(expiresAt))
-      ))
-    )
-  }
-
-  protected def doWithNewAccessCredentials[T](userId: ObjectId, accessToken: String, refreshToken: String, doSomething: (String, String)=>Box[T]): Box[T] = {
-    val tokenRefreshResult = for {
-      newToken <- CampaignMonitor.refreshToken(accessToken, refreshToken)
-      expiresAt = (new DateTime()).plusSeconds(newToken.expires_in)
-      updateCredentialsUnit = updateCredentials(userId, accessToken, refreshToken, expiresAt)
-      resultOfSomething <- doSomething(newToken.access_token, newToken.refresh_token)
-    } yield {
-      resultOfSomething
-    }
-
-    tokenRefreshResult match {
-      case result @ Full(_) =>
-        logger.info("Refreshed CM token.")
-        result
-
-      case fail @ Failure(msg, _, _) =>
-        logger.error("Error refreshing CM token: " + msg)
-        fail
-
-      case Empty =>
-        logger.error("Empty refreshing CM token.")
-        Empty
-    }
-  }
-
-  protected def withAccessCredentials[T](doSomething: (String, String)=>Box[T]): Box[T] = {
-    {
-      for {
-        user <- (User.find(userId):Box[User])
-        credentials <- user.credentialsFor(CampaignMonitor.serviceIdentifier)
-        accessToken <- credentials.serviceCredentials.get("accessToken")
-        refreshToken <- credentials.serviceCredentials.get("refreshToken")
-        expiresAt <- credentials.serviceCredentials.get("expiresAt")
-      } yield {
-        if (DateTime.parse(expiresAt) isBeforeNow) {
-          doWithNewAccessCredentials(userId, accessToken, refreshToken, doSomething)
-        } else {
-          doSomething(accessToken, refreshToken)
-        }
-      }
-    } match {
-      // We unwrap fulls.
-      case Full(t) => t
-
-      case fail @ Failure(msg, _, _) =>
-        logger.error("Returning a failure from Campaign Monitor: " + msg)
-        fail
-
-      case _ => Empty
-    }
-  }
-
+case class CampaignMonitorServiceWrapper(userId: ObjectId, listId: String) extends ServiceWrapper
+                                                                              with CampaignMonitorCredentialsHelper
+                                                                              with Loggable {
   val credentialsValid_? = true
 
   def subscribeEmail(email: String) = {
-    val result = withAccessCredentials { (accessToken, refreshToken) =>
+    val result = withAccessCredentials(userId) { (accessToken, refreshToken) =>
       CampaignMonitor.addSubscriber(accessToken, refreshToken, listId, email)
     }
 
@@ -118,7 +52,7 @@ case class CampaignMonitorServiceWrapper(userId: ObjectId, listId: String) exten
   }
 
   def unsubscribeEmail(email: String) = {
-    val result = withAccessCredentials { (accessToken, refreshToken) =>
+    val result = withAccessCredentials(userId) { (accessToken, refreshToken) =>
       CampaignMonitor.removeSubscriber(accessToken, refreshToken, listId, email)
     }
 
