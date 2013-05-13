@@ -22,12 +22,13 @@ import net.liftweb._
 import com.anchortab.model.{User, UserProfile}
 import com.anchortab.constantcontact.ConstantContact
 import com.anchortab.mailchimp._
+import com.anchortab.campaignmonitor._
 
 import com.stripe
 
 import org.bson.types.ObjectId
 
-object Accounts {
+object Accounts extends Loggable {
   val profileMenu = Menu.i("Profile") / "manager" / "account"
   val servicesMenu = Menu.i("Connected Services") / "manager" / "services"
 
@@ -41,6 +42,7 @@ object Accounts {
 
   def snippetHandlers : SnippetPF = {
     case "profile-form" :: Nil => profileForm
+    case "campaign-monitor-connection" :: Nil => campaignMonitorConnection _
     case "constant-contact-connection" :: Nil => constantContactConnection _
     case "mailchimp-connection" :: Nil => mailchimpConnection _
   }
@@ -118,6 +120,54 @@ object Accounts {
       } openOr {
         ".disconnect-service" #> ClearNodes &
         ".connect-service [onclick]" #> onEvent(startConstantContactOauth _)
+      }
+
+    connectionTransform.apply(xhtml)
+  }
+
+  def campaignMonitorConnection(xhtml:NodeSeq) = {
+    def startCampaignMonitorOauth(s:String) = {
+      {
+        for (oauthUrl <- CampaignMonitor.oauthAuthorizeUrl)  yield {
+          RedirectTo(oauthUrl)
+        }
+      } match {
+        case Full(jsCmd) => jsCmd
+        case somethingUnexpected =>
+          logger.error("Error calculating Campaign Monitor OAuth URL: " + somethingUnexpected)
+          GeneralError("Something went wrong.")
+      }
+    }
+
+    def disconnectCampaignMonitorOauth(s:String) = {
+      {
+        for {
+          session <- userSession.is
+        } yield {
+          User.update("_id" -> session.userId, "$pull" -> ("serviceCredentials" -> ("serviceName" -> CampaignMonitor.serviceIdentifier)))
+          Notices.notice("Your Campaign Monitor account has been disconnected.")
+          Reload
+        }
+      } openOr {
+        GeneralError("Something went wrong.")
+      }
+    }
+
+    val connectionTransform =
+      {
+        for {
+          session <- userSession.is
+          user <- User.find(session.userId)
+          credentials <- user.credentialsFor(CampaignMonitor.serviceIdentifier)
+          username = credentials.userIdentifier
+        } yield {
+          ".connection-status *" #> ("Connected.") &
+          ".connect-service" #> ClearNodes &
+          ".disconnect-service [onclick]" #> onEvent(disconnectCampaignMonitorOauth _)
+        }
+      } openOr {
+        ".disconnect-service" #> ClearNodes &
+        ".connect-service [onclick]" #> onEvent(startCampaignMonitorOauth _)
       }
 
     connectionTransform.apply(xhtml)
