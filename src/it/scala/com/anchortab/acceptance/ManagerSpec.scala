@@ -5,7 +5,7 @@ import org.scalatest.selenium._
 
 import net.liftweb.util.Helpers._
 
-case class RemoteManagerSpec(testHost: String, testAuthorization: String) extends PublicSpecImpl
+//case class RemoteManagerSpec(testHost: String, testAuthorization: String) extends PublicSpecImpl
 
 class ManagerSpec extends AnchorTabSpec with ManagerSpecImpl
 trait ManagerSpecImpl extends AcceptanceSpec {
