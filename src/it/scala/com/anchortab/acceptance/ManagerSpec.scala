@@ -15,7 +15,7 @@ trait ManagerSpecImpl extends AcceptanceSpec {
 
   val manageTabsUrl = managerUrl + "/tabs"
   val newTabsUrl = managerUrl + "/tabs/new"
-  def editTabUrl(tabId: String) = managerUrl + "/tab/" + tabId + "/edit"
+  def editTabUrl(tabId: String) = managerUrl + "/tab/" + tabId
 
   val profileUrl = managerUrl + "/account"
 
