@@ -46,8 +46,8 @@ libraryDependencies ++= {
     "net.databinder.dispatch" %% "dispatch-lift-json" % "0.9.5" intransitive(),
     "com.stripe"        %% "stripe-scala"       % "1.1.2",
     "com.ecwid"         % "ecwid-mailchimp"     % "1.3.0.5",
-    "org.scalatest"     %% "scalatest"          % "2.0.M5b" % "test->default",
-    "org.seleniumhq.selenium" % "selenium-java" % "2.29.1"  % "test->default",
+    "org.scalatest"     %% "scalatest"          % "2.0.M5b" % "it,test",
+    "org.seleniumhq.selenium" % "selenium-java" % "2.29.1" % "it",
     "com.newrelic.agent.java" % "newrelic-api"  % "2.17.1",
     "me.frmr.newrelic"  %% "lift-newrelic"      % "1.0.0",
     "com.createsend"    % "createsend-java"     % "3.1.0"
