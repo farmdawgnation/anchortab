@@ -56,6 +56,10 @@ libraryDependencies ++= {
 
 parallelExecution in Test := false
 
+parallelExecution in IntegrationTest := false
+
+test in IntegrationTest <<= (test in IntegrationTest) dependsOn(com.github.siasia.PluginKeys.start in com.github.siasia.WebPlugin.container.Configuration)
+
 mainClass in assembly := Some("bootstrap.Start")
 
 test in assembly := {}
