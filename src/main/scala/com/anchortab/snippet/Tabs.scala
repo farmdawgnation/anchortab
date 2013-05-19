@@ -236,7 +236,7 @@ object Tabs extends Loggable {
 
                 case _ =>
                   val tab = Tab(tabName, session.userId,
-                      TabAppearance(appearanceDelay.toInt, customizedColorScheme, customText, whitelabel),
+                      TabAppearance(tryo(appearanceDelay.toInt) openOr 0, customizedColorScheme, customText, whitelabel),
                       serviceWrapper)
                   tab.save
 
