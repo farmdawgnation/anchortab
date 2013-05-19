@@ -65,6 +65,14 @@
     $positionX: -148px
     $positionY: -22px
 
+  @if $name == 'campaign-monitor'
+    $height: 17px
+    $width: 148px
+    $hoverPositionX: 0px
+    $hoverPositionY: -58px
+    $positionX: -148px
+    $positionY: -58px
+
   text-indent: -9999999px
   display: block
   float: right
@@ -569,6 +577,10 @@
 
       .mailchimp
         +mail-service-sprite('mailchimp')
+
+      .campaign-monitor
+        margin-bottom: 20px
+        +mail-service-sprite('campaign-monitor')
 
   > .plans-and-pricing
     background-image: image-url('textures/texture3c.png')
