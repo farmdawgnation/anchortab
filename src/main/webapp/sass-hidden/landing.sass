@@ -176,12 +176,6 @@
     &:before, &:after
       display: none
 
-    &:before
-      margin-right: 0
-
-    &:after
-      margin-left: 0
-
 =arrow-sprite($which)
   $positionX: 0
 
@@ -202,7 +196,7 @@
     background-position: $positionX -27px
 
 +smartphone
-  #uvTab, #anchor-tab
+  #uvTab
     display: none
 
 #landing
@@ -215,9 +209,6 @@
       margin-right: auto
       margin-left: auto
       position: relative
-
-      +smartphone
-        width: auto
 
     h3
       font-family: 'Open Sans', 'Arial', sans-serif
@@ -256,9 +247,6 @@
     background-position: top center
     height: 486px
 
-    +smartphone
-      height: auto
-
     .plans-and-pricing
       position: relative
       top: 10px
@@ -267,16 +255,10 @@
       &:hover
         top: 6px
 
-      +smartphone
-        display: none
-
     .login-container
       position: absolute
       right: 20px
       top: 15px
-
-      +smartphone
-        display: none
 
       .go-to-manager
         +pretty-button
@@ -325,14 +307,9 @@
             text-decoration: underline
 
     .intro-video
-      display: none
       position: absolute
       right: 20px
       top: 13rem
-
-      +smartphone
-        position: initial
-        text-align: center
 
     h1
       +replace-text('logo.png')
@@ -343,27 +320,10 @@
 
       margin-top: 20px
 
-      +smartphone
-        display: block
-
-        width: 310px
-        height: 94px
-        background-size: cover
-
-        margin-top: 0
-
-        margin-right: auto
-        margin-left: auto
-
       a
         display: block
         width: 397px
         height: 125px
-
-        +smartphone
-          width: 300px
-          height: 94px
-          margin: 0 auto
 
     h2
       font-size: 63px
@@ -380,14 +340,6 @@
       &.headline
         width: 500px
 
-        +smartphone
-          margin-left: auto
-          margin-right: auto
-          text-align: center
-          width: 100%
-
-          font-size: 3.5rem
-
       small
         font-size: 2.5rem
         display: block
@@ -395,9 +347,6 @@
         text-transform: none
 
         color: $dark-blue
-
-        +smartphone
-          font-size: 2rem
 
     p.description
       color: $light-black
@@ -409,12 +358,6 @@
       line-height: 26px
       line-height: 1.85rem
 
-      +smartphone
-        text-align: center
-        margin: 0 auto
-        padding-bottom: 15px
-        width: 100%
-
   > .how-it-works
     background-image: image-url('textures/texture1.png')
     border-bottom: 5px solid #a9a9a9
@@ -422,9 +365,6 @@
     color: white
 
     padding-top: 96px
-
-    +smartphone
-      display: none
 
     .how-it-works-video
       text-align: center
@@ -472,20 +412,38 @@
             p
               margin-right: 35%
 
+              +smartphone
+                margin-right: 0
+
           > .create-slide
             background-image: image-url('how-it-works/create.png')
+
+            +smartphone
+              background-image: none
 
           > .embed-slide
             background-image: image-url('how-it-works/embed.png')
 
+            +smartphone
+              background-image: none
+
           > .collect-slide
             background-image: image-url('how-it-works/collect.png')
+
+            +smartphone
+              background-image: none
 
           > .analyze-slide
             background-image: image-url('how-it-works/analyze.png')
 
+            +smartphone
+              background-image: none
+
           > .expand-influence-slide
             background-image: image-url('how-it-works/expand-influence.png')
+
+            +smartphone
+              background-image: none
 
     ol.pages
       width: auto
@@ -497,7 +455,12 @@
         display: inline-block
         font-family: 'Open Sans', Arial, sans-serif
         font-size: 14px
+        font-size: 1rem
         margin-right: 18px
+
+        +smartphone
+          font-size: 1.4rem
+          font-weight: bold
 
         a
           text-decoration: none
@@ -534,9 +497,6 @@
         li:nth-child(odd)
           margin-right: 47px
 
-          +smartphone
-            margin-right: auto
-
         li
           display: inline-block
           background-image: image-url('feature-anchor.png')
@@ -559,14 +519,6 @@
           h4
             color: #187bda
 
-          +smartphone
-            display: block
-            margin-bottom: 3rem
-            margin-left: auto
-            margin-right: auto
-
-            width: 28%
-
       & > .coming-soon
         display: none
         position: absolute
@@ -583,12 +535,6 @@
       border: 1px solid #f0f0f0
       padding: 30px 30px 30px 30px
       margin-bottom: 85px
-
-      +smartphone
-        display: none
-        width: 385px
-        margin-left: auto
-        margin-right: auto
 
       h4
         font-family: 'Open Sans', 'Arial', sans-serif
@@ -608,8 +554,8 @@
         a
           display: block
 
-        +smartphone
-          display: none
+          +smartphone
+            display: none
 
       p
         margin-right: 200px
@@ -628,9 +574,6 @@
     background-image: image-url('textures/texture3c.png')
     text-align: center
     padding-top: 96px
-
-    +smartphone
-      display: none
 
     > h3.light-rope
       &:before, &:after
@@ -793,9 +736,6 @@
     font-size: 0.85rem
 
     font-family: 'Open Sans', 'Arial', sans-serif
-
-    +smartphone
-      display: none
 
     > .section-container
       width: 907px
