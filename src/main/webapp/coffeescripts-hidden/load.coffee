@@ -115,6 +115,14 @@ isBrowserIe8OrLess = ->
 
   return isIeLessThan9
 
+shouldMobilize = ->
+  # We say that we should mobilize if the screen with is 320 or the inner width
+  # of the window is less than 925 on load.
+  if screen?.width == 320 || window.innerWidth < 925
+    true
+  else
+    false
+
 ##
 ## ANCHOR TAB LOADING AND DISPLAY
 ##
@@ -281,6 +289,9 @@ displayTab = (tabJson) ->
 
     _gaq.push ["at._trackEvent", "Bootstrap", "MSIE", navigator.userAgent]
     anchorTab.addClass "msie"
+
+  if shouldMobilize()
+    anchorTab.addClass "mobilized"
 
   $("body").append anchorTab
 
