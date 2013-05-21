@@ -116,9 +116,8 @@ isBrowserIe8OrLess = ->
   return isIeLessThan9
 
 shouldMobilize = ->
-  # We say that we should mobilize if the screen with is 320 or the inner width
-  # of the window is less than 925 on load.
-  if screen?.width == 320 || window.innerWidth < 925
+  # We say that we should mobilize if the screen with is 320
+  if screen?.width == 320
     true
   else
     false
@@ -291,16 +290,21 @@ displayTab = (tabJson) ->
     anchorTab.addClass "msie"
 
   if shouldMobilize()
-    anchorTab.addClass "mobilized"
+    anchorTab.addClass("mobilized").addClass("minimized")
+
+    anchorTab.find(".maximize").text("Subscribe")
+  else
+    anchorTab.addClass "desktop"
 
   $("body").append anchorTab
 
-  setTimeout ->
-    if getStateCookie() == 'minimized'
-      anchorTab.addClass "minimized"
-    else
-      anchorTab.addClass "visible"
-  , displayDelay
+  unless shouldMobilize()
+    setTimeout ->
+      if getStateCookie() == 'minimized'
+        anchorTab.addClass "minimized"
+      else
+        anchorTab.addClass "visible"
+    , displayDelay
 
 loadAnchorTab = ->
   # Load the anchor tab. At this point we can assume that jQuery exists and that we're able to use it
