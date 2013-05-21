@@ -292,6 +292,9 @@ displayTab = (tabJson) ->
   if shouldMobilize()
     anchorTab.addClass("mobilized").addClass("minimized")
 
+    if $("meta[name=viewport]").length > 0
+      anchorTab.addClass("mobile-optimized-page")
+
     anchorTab.find(".maximize").text("Subscribe")
   else
     anchorTab.addClass "desktop"

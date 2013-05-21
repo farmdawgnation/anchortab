@@ -14,6 +14,8 @@
     right: 0
     top: 0
 
+    z-index: 100
+
     &.minimized
       position: absolute
       bottom: auto
@@ -39,6 +41,8 @@
         +background(linear-gradient(#706f6f, #262625))
 
         +border-radius(10px 10px 0 0)
+
+        z-index: 100
 
     .success-message
       display: none
@@ -84,6 +88,17 @@
       line-height: normal
       padding: 8px 4px
       cursor: pointer
+
+    &.mobile-optimized-page
+      > p
+        font-size: 18px
+        line-height: 20px
+
+      .email-input
+        font-size: 20px
+
+      .email-submission, .minimize
+        font-size: 20px
 
     .anchortab-stamp
       display: none
