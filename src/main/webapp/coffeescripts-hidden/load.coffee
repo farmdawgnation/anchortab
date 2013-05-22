@@ -296,6 +296,7 @@ displayTab = (tabJson) ->
       anchorTab.addClass("mobile-optimized-page")
 
     anchorTab.find(".maximize").text("Subscribe")
+    anchorTab.find(".minimize").text("Close")
   else
     anchorTab.addClass "desktop"
 

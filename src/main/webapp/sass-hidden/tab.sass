@@ -47,6 +47,13 @@
     .success-message
       display: none
 
+    &.success
+      .custom-message, .email-input, .email-submission
+        display: none
+
+      .success-message
+        display: inline-block
+
     > p
       font-family: Arial, sans-serif
       font-size: 50px
@@ -89,6 +96,15 @@
       padding: 8px 4px
       cursor: pointer
 
+    .minimize
+      width: auto
+      position: absolute
+
+      margin: 0
+
+      right: 0.5em
+      bottom: 0.5em
+
     &.mobile-optimized-page
       > p
         font-size: 18px
@@ -101,7 +117,15 @@
         font-size: 20px
 
     .anchortab-stamp
-      display: none
+      text-indent: -999999999px
+      background-image: image-url('anchortab-stamp.png')
+      display: block
+      width: 35px
+      height: 36px
+
+      position: absolute
+      bottom: 0.9em
+      left: 0.5em
 
     .maximize
       display: none
