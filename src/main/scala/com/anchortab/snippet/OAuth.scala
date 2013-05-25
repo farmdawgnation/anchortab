@@ -17,12 +17,15 @@ import net.liftweb._
     import Extraction._
   import mongodb.BsonDSL._
 
+import org.joda.time._
+
 import com.anchortab.model._
 import com.anchortab.constantcontact.ConstantContact
 import com.anchortab.mailchimp._
+import com.anchortab.campaignmonitor._
 
 object OAuth extends Loggable {
-  implicit val formats = DefaultFormats
+  implicit val formats = User.formats
 
   def dispatch : DispatchPF = {
     case req @ Req("oauth2" :: "constant-contact" :: Nil, _, _) =>
@@ -74,6 +77,48 @@ object OAuth extends Loggable {
           )
 
           Notices.notice("Your MailChimp account has been successfully connected.")
+          RedirectResponse("/manager/services")
+        }
+      }
+
+    case req @ Req("oauth2" :: "campaign-monitor" :: Nil, _, _) if req.param("code").isDefined =>
+      () => {
+        for {
+          session <- userSession.is
+          code <- req.param("code")
+          tokenDetails <- CampaignMonitor.exchangeToken(code)
+        } yield {
+          val expiresAt = (new DateTime()).plusSeconds(tokenDetails.expires_in)
+
+          val serviceCredential = UserServiceCredentials(
+            CampaignMonitor.serviceIdentifier,
+            tokenDetails.refresh_token,
+            Map(
+              "accessToken" -> tokenDetails.access_token,
+              "refreshToken" -> tokenDetails.refresh_token,
+              "expiresAt" -> decompose(expiresAt).extract[String]
+            )
+          )
+
+          User.update("_id" -> session.userId,
+            ("$addToSet" -> (("serviceCredentials" -> decompose(serviceCredential)))) ~
+            ("$unset" -> (
+              ("firstSteps." + UserFirstStep.Keys.ConnectAnExternalService) -> true
+            ))
+          )
+
+          Notices.notice("Your Campaign Monitor account has been successfully connected.")
+          RedirectResponse("/manager/services")
+        }
+      }
+
+    case req @ Req("oauth2" :: "campaign-monitor" :: Nil, _, _) if req.param("error").isDefined =>
+      () => {
+        for {
+          error <- req.param("error")
+          errorDescription <- req.param("error_description")
+        } yield {
+          Notices.error("Campaign Monitor Error: " + errorDescription)
           RedirectResponse("/manager/services")
         }
       }

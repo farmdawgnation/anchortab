@@ -1,0 +1,36 @@
+// CSS Query Mixins
+=smartphone
+  @media only screen and (min-device-width : 320px) and (max-device-width : 480px)
+    @content
+
+=smartphoneLandscape
+  @media only screen and (min-width : 321px)
+    @content
+
+=smartphonePortrait
+  @media only screen and (max-width : 320px)
+    @content
+
+=iPad
+  @media only screen and (min-device-width : 768px) and (max-device-width : 1024px)
+    @content
+
+=iPadLandscape
+  @media only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : landscape)
+    @content
+
+=iPadPortrait
+  @media only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : portrait)
+    @content
+
+=desktop
+  @media only screen and (min-width : 1224px)
+    @content
+
+=largeScreen
+  @media only screen and (min-width : 1824px)
+    @content
+
+=iPhone4
+  @media only screen and (-webkit-min-device-pixel-ratio : 1.5), only screen and (min-device-pixel-ratio : 1.5)
+    @content

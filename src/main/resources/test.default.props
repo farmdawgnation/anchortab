@@ -1,0 +1,19 @@
+mongodb.host=127.0.0.1
+mongodb.port=27017
+mongodb.database=anchortab-test
+
+# WePay Properties
+wepay.clientId=88119
+wepay.clientSecret=22ede51741
+wepay.userAgent=AnchorTabServer/0.1
+wepay.anchorTabAccessToken=1fdd120f71e0865f56ed3e2ff1bb1bee6c7504eeaadd80a5a55ff9816518a125
+wepay.anchorTabUserId=0
+wepay.anchorTabAccountId=1670008
+wepay.anchorTabRedirectUri=http://local.anchortab.com/wepay-redirect
+wepay.anchorTabCallbackUri=http://local.anchortab.com/wepay-ipn
+wepay.oauthPermissions=collect_payments
+wepay.oauthRedirectUrl=http://anchortab.com
+
+# Set the url for the embed code.
+anchortab.embedscript=http://local.anchortab.com/javascripts/load.js
+anchortab.analyticsid=UA-35269224-3

@@ -84,31 +84,17 @@ trait AcceptanceSpec extends FeatureSpec with GivenWhenThen
 }
 
 trait AnchorTabSpec extends AcceptanceSpec {
-  private var server : Server       = null
-  private val GUI_PORT              = 8080
   val testHost            = "http://local.anchortab.com"
   val testAuthorization   = "NZDTCNLTJVINNUW3RMEQTPWFW0VOBU52"
 
   implicitlyWait(Span(2, Seconds))
 
   override def beforeAll() {
-    // Setting up the jetty instance which will be running the
-    // GUI for the duration of the tests
-    server  = new Server(GUI_PORT)
-    val context = new WebAppContext()
-    context.setServer(server)
-    context.setContextPath("/")
-    context.setWar("src/main/webapp")
-    server.setHandler(context)
-    server.start()
-
     super.beforeAll()
   }
 
   override def afterAll() {
     super.afterAll()
-
-    server.stop()
     quit()
   }
 }

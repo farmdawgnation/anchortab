@@ -115,6 +115,13 @@ isBrowserIe8OrLess = ->
 
   return isIeLessThan9
 
+shouldMobilize = ->
+  # We say that we should mobilize if the screen with is 320
+  if screen?.width == 320
+    true
+  else
+    false
+
 ##
 ## ANCHOR TAB LOADING AND DISPLAY
 ##
@@ -158,6 +165,8 @@ submitEmail = (event) ->
           .text(event.message)
         .end()
         .addClass("success")
+        .find(".email-input")
+          .val("")
 
       gaqInfo = "Domain: " + document.domain
       _gaq.push ["at._trackEvent", "Submission", "Email Submitted", gaqInfo]
@@ -280,14 +289,28 @@ displayTab = (tabJson) ->
     _gaq.push ["at._trackEvent", "Bootstrap", "MSIE", navigator.userAgent]
     anchorTab.addClass "msie"
 
+  if shouldMobilize()
+    anchorTab.addClass("mobilized").addClass("minimized")
+
+    if $("meta[name=viewport]").length > 0
+      anchorTab.addClass("mobile-optimized-page")
+
+    anchorTab.find(".maximize").text("Subscribe")
+    anchorTab.find(".maximize").attr("style", colorSchemeStyle)
+
+    anchorTab.find(".minimize").text("Close")
+  else
+    anchorTab.addClass "desktop"
+
   $("body").append anchorTab
 
-  setTimeout ->
-    if getStateCookie() == 'minimized'
-      anchorTab.addClass "minimized"
-    else
-      anchorTab.addClass "visible"
-  , displayDelay
+  unless shouldMobilize()
+    setTimeout ->
+      if getStateCookie() == 'minimized'
+        anchorTab.addClass "minimized"
+      else
+        anchorTab.addClass "visible"
+    , displayDelay
 
 loadAnchorTab = ->
   # Load the anchor tab. At this point we can assume that jQuery exists and that we're able to use it

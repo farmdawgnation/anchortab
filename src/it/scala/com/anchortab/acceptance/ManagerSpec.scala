@@ -5,7 +5,7 @@ import org.scalatest.selenium._
 
 import net.liftweb.util.Helpers._
 
-case class RemoteManagerSpec(testHost: String, testAuthorization: String) extends PublicSpecImpl
+//case class RemoteManagerSpec(testHost: String, testAuthorization: String) extends PublicSpecImpl
 
 class ManagerSpec extends AnchorTabSpec with ManagerSpecImpl
 trait ManagerSpecImpl extends AcceptanceSpec {
@@ -15,7 +15,7 @@ trait ManagerSpecImpl extends AcceptanceSpec {
 
   val manageTabsUrl = managerUrl + "/tabs"
   val newTabsUrl = managerUrl + "/tabs/new"
-  def editTabUrl(tabId: String) = managerUrl + "/tab/" + tabId + "/edit"
+  def editTabUrl(tabId: String) = managerUrl + "/tab/" + tabId
 
   val profileUrl = managerUrl + "/account"
 
