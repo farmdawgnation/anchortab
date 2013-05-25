@@ -312,10 +312,6 @@ object Authentication extends Loggable {
     var stripeToken = ""
     var emailAddress = ""
     var requestedPassword = ""
-    var requestedPasswordConfirmation = ""
-    var firstName = ""
-    var lastName = ""
-    var organization = ""
     var selectedPlan = ""
 
     val plans = {
@@ -351,10 +347,12 @@ object Authentication extends Loggable {
       val validators = Map(
         "input.email-address" -> (() =>
           if (".+@.+\\..+".r.findAllIn(emailAddress).nonEmpty)
-            if (User.count("email" -> emailAddress) > 0)
-              Full("That email address is already in use by another user.")
-            else
+            if (User.count("email" -> emailAddress) > 0) {
+              Notices.error("Your email is already registered. Log in below.")
+              S.redirectTo(managerMenu.loc.calcDefaultHref)
+            } else {
               Empty
+            }
           else
             Full("A valid email address is required.")
         ),
@@ -363,15 +361,6 @@ object Authentication extends Loggable {
             Empty
           else
             Full("Password is required.")
-        ),
-        "input.password-confirmation" -> (() =>
-          if (requestedPasswordConfirmation.nonEmpty)
-            if (requestedPassword != requestedPasswordConfirmation)
-              Full("Password and Confirm Password must match.")
-            else
-              Empty
-          else
-            Full("Password confirmation is required.")
         )
       )
 
@@ -404,7 +393,7 @@ object Authentication extends Loggable {
               }
 
               User(emailAddress, User.hashPassword(requestedPassword),
-                   Some(UserProfile(Some(firstName), Some(lastName), Some(organization))),
+                   None,
                    subscriptions = List(subscription), firstSteps = firstSteps,
                    stripeCustomerId = Some(customer.id),
                    activeCard = userActiveCard)
@@ -443,10 +432,6 @@ object Authentication extends Loggable {
       "#stripe-token" #> hidden(stripeToken = _, stripeToken) &
       ".email-address" #> text(emailAddress, emailAddress = _) &
       ".password" #> password(requestedPassword, requestedPassword = _) &
-      ".password-confirmation" #> password(requestedPasswordConfirmation, requestedPasswordConfirmation = _) &
-      ".first-name" #> text(firstName, firstName = _) &
-      ".last-name" #> text(lastName, lastName = _) &
-      ".organization" #> text(organization, organization = _) &
       ".submit" #> ajaxSubmit("Register", () => processRegistration)
 
     "form" #> { ns:NodeSeq =>

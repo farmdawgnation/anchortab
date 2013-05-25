@@ -3,13 +3,19 @@ package com.anchortab.model
 import net.liftweb._
   import common._
   import mongodb._
+    import BsonDSL._
   import util.Helpers._
   import json._
+    import Extraction._
+
+import com.anchortab.campaignmonitor._
 
 import org.joda.time._
 
 import com.ecwid.mailchimp._
   import method.list._
+
+import org.bson.types.ObjectId
 
 /**
  * The ServiceWrapper trait is the common interface for all wrappers around external email
@@ -25,7 +31,37 @@ sealed trait ServiceWrapper {
   def wrapperIdentifier: String
 }
 object ServiceWrapper {
-  val typeHints = ShortTypeHints(classOf[MailChimpServiceWrapper] :: classOf[ConstantContactServiceWrapper] :: Nil)
+  val typeHints = ShortTypeHints(List(
+    classOf[MailChimpServiceWrapper],
+    classOf[ConstantContactServiceWrapper],
+    classOf[CampaignMonitorServiceWrapper]
+  ))
+}
+
+case class CampaignMonitorServiceWrapper(userId: ObjectId, listId: String) extends ServiceWrapper
+                                                                              with CampaignMonitorCredentialsHelper
+                                                                              with Loggable {
+  val credentialsValid_? = true
+
+  def subscribeEmail(email: String) = {
+    val result = withAccessCredentials(userId) { (accessToken, refreshToken) =>
+      CampaignMonitor.addSubscriber(accessToken, refreshToken, listId, email)
+    }
+
+    result.map(thing => true)
+  }
+
+  def unsubscribeEmail(email: String) = {
+    val result = withAccessCredentials(userId) { (accessToken, refreshToken) =>
+      CampaignMonitor.removeSubscriber(accessToken, refreshToken, listId, email)
+    }
+
+    result.map(thing => true)
+  }
+
+  def wrapperIdentifier = {
+    "Campaign Monitor - " + userId.toString
+  }
 }
 
 case class ConstantContactServiceWrapper(username:String, implicit val accessToken:String, listId:Long) extends ServiceWrapper with Loggable {

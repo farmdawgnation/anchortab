@@ -5,6 +5,7 @@
 @import "compass/css3/border-radius"
 @import "compass/css3/images"
 @import "compass/css3/transition"
+@import "mobile-mixins"
 
 =pretty-input
   font-family: 'Open Sans', Ariel, sans-serif
@@ -63,6 +64,14 @@
     $hoverPositionY: -22px
     $positionX: -148px
     $positionY: -22px
+
+  @if $name == 'campaign-monitor'
+    $height: 17px
+    $width: 148px
+    $hoverPositionX: 0px
+    $hoverPositionY: -58px
+    $positionX: -148px
+    $positionY: -58px
 
   text-indent: -9999999px
   display: block
@@ -171,6 +180,10 @@
   &:after
     margin-left: 20px
 
+  +smartphone
+    &:before, &:after
+      display: none
+
 =arrow-sprite($which)
   $positionX: 0
 
@@ -189,6 +202,10 @@
 
   &:hover
     background-position: $positionX -27px
+
++smartphone
+  #uvTab
+    display: none
 
 #landing
   > section
@@ -403,20 +420,38 @@
             p
               margin-right: 35%
 
+              +smartphone
+                margin-right: 0
+
           > .create-slide
             background-image: image-url('how-it-works/create.png')
+
+            +smartphone
+              background-image: none
 
           > .embed-slide
             background-image: image-url('how-it-works/embed.png')
 
+            +smartphone
+              background-image: none
+
           > .collect-slide
             background-image: image-url('how-it-works/collect.png')
+
+            +smartphone
+              background-image: none
 
           > .analyze-slide
             background-image: image-url('how-it-works/analyze.png')
 
+            +smartphone
+              background-image: none
+
           > .expand-influence-slide
             background-image: image-url('how-it-works/expand-influence.png')
+
+            +smartphone
+              background-image: none
 
     ol.pages
       width: auto
@@ -428,7 +463,12 @@
         display: inline-block
         font-family: 'Open Sans', Arial, sans-serif
         font-size: 14px
+        font-size: 1rem
         margin-right: 18px
+
+        +smartphone
+          font-size: 1.4rem
+          font-weight: bold
 
         a
           text-decoration: none
@@ -522,8 +562,14 @@
         a
           display: block
 
+          +smartphone
+            display: none
+
       p
         margin-right: 200px
+
+        +smartphone
+          margin-right: 0
 
       .constant-contact
         +mail-service-sprite('constant-contact')
@@ -531,6 +577,10 @@
 
       .mailchimp
         +mail-service-sprite('mailchimp')
+
+      .campaign-monitor
+        margin-bottom: 20px
+        +mail-service-sprite('campaign-monitor')
 
   > .plans-and-pricing
     background-image: image-url('textures/texture3c.png')
