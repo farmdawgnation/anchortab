@@ -237,23 +237,24 @@ object Api extends RestHelper with Loggable {
     case req @ Req("api" :: "v1" :: "admin" :: "users" :: Nil, _, GetRequest) =>
       {
         for {
-          currentUser <- statelessUser.is
-            if currentUser.admin_?
+          possibleAdminUser <- (statelessUser.is ?~ "Authentication Failed." ~> 401)
+          adminUser <- (Full(possibleAdminUser).filter(_.admin_?) ?~ "Not authorized." ~> 403)
         } yield {
           decompose(User.findAll.map(_.asJson))
         }
-      } ?~ "Authentication Failed." ~> 401
+      }
 
     case req @ Req("api" :: "v1" :: "admin" :: "users" :: "find" :: Nil, _, GetRequest) =>
       {
         for {
-          currentUser <- statelessUser.is if currentUser.admin_?
+          possibleAdminUser <- (statelessUser.is ?~ "Authentication Failed." ~> 401)
+          adminUser <- (Full(possibleAdminUser).filter(_.admin_?) ?~ "Not authorized." ~> 403)
           email <- req.param("email") ?~! "The Email parameter is required." ~> 400
           user <- (User.find("email" -> email):Box[User]) ?~! "User not found." ~> 404
         } yield {
           user.asJson
         }
-      } ?~ "Authentication Failed." ~> 401
+      }
 
     case req @ Req("api" :: "v1" :: "admin" :: "users" :: Nil, _, PostRequest) =>
       {

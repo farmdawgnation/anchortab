@@ -33,6 +33,7 @@ libraryDependencies ++= {
   val liftVersion = "2.5-RC6"
   Seq(
     "net.liftweb"       %% "lift-webkit"        % liftVersion        % "compile",
+    "net.liftweb"       %% "lift-testkit"       % liftVersion        % "test",
     "net.liftweb"       %% "lift-mongodb"       % liftVersion        % "compile",
     "net.liftmodules"   %% "lift-jquery-module_2.5" % "2.3",
     "javax.servlet"     %  "servlet-api"        % "2.5" % "provided",
