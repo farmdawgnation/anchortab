@@ -102,7 +102,10 @@ trait ManagerSpecImpl extends AcceptanceSpec {
       And("my new tab is displayed on the tabs list")
       val tabNames: List[String] =
         cssSelector(".tab-list .tab-name").findAllElements.map(_.text).toList
-      tabNames should contain (tabName)
+
+      eventually {
+        tabNames should contain (tabName)
+      }
     }
 
     scenario("User edits a tab") {
