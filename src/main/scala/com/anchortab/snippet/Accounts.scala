@@ -4,6 +4,8 @@ import scala.xml.NodeSeq
 
 import java.text.SimpleDateFormat
 
+import scala.collection.JavaConversions._
+
 import net.liftweb._
   import sitemap._
   import http._
@@ -27,6 +29,8 @@ import com.anchortab.campaignmonitor._
 import com.stripe
 
 import org.bson.types.ObjectId
+
+import com.newrelic.api.agent.NewRelic
 
 object Accounts extends Loggable {
   val profileMenu = Menu.i("Profile") / "manager" / "account"
@@ -233,20 +237,29 @@ object Accounts extends Loggable {
             }
           }
 
+          emailChange match {
+            case Failure(msg, _, _) =>
+              NewRelic.noticeError("Email Change Stripe Error", Map(
+                "user" -> user._id.toString,
+                "error" -> msg
+              ))
+
+              Notices.warning(msg)
+
+            case _ =>
+          }
+
           val userProfile = UserProfile(firstNameOpt, lastNameOpt, organizationOpt)
 
-          (email, passwordChange, emailChange) match {
-            case ("", _, _) =>
+          (email, passwordChange) match {
+            case ("", _) =>
               FormValidationError(".email", "Email is a required field.")
 
-            case (_, Failure(msg, _, _), _) =>
+            case (_, Failure(msg, _, _)) =>
               FormValidationError(".change-password", "") &
               FormValidationError(".confirm-password", msg)
 
-            case (_, _, Failure(msg, _, _)) =>
-              GeneralError("Something went wrong while updating your email: " + msg)
-
-            case (_, Empty, _) =>
+            case (_, Empty) =>
               User.update("_id" -> user._id, "$set" -> (
                 ("email" -> email) ~
                 ("profile" -> decompose(userProfile))
@@ -255,7 +268,7 @@ object Accounts extends Loggable {
               Notices.notice("Your profile was updated successfully. Jolly good fun.")
               Reload
 
-            case (_, Full(pw), _) =>
+            case (_, Full(pw)) =>
               User.update("_id" -> user._id, "$set" -> (
                 ("email" -> email) ~
                 ("profile" -> decompose(userProfile)) ~
