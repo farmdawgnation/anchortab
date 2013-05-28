@@ -386,18 +386,6 @@ class ApiSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll {
     }
   }
 
-  describe("PUT /api/v1/tab/*/appearance") {
-    it("should update the appearance information for the tab w/ valid creds/tab ID") (pending)
-
-    it("should return a 401 for invalid credentials and valid tab ID") (pending)
-
-    it("should return a 401 for invalid credentials and invalid tab ID") (pending)
-
-    it("should return a 404 for valid non-admin credentials and other user's tab ID") (pending)
-
-    it("should update the appearance of another user's tab w/ admin credentials") (pending)
-  }
-
   describe("GET /api/v1/admin/users") {
     it("should return all users as JSON for valid admin credentials") {
       runApiRequest("/api/v1/admin/users", Some(adminUserAuthorizationKey)) { response =>

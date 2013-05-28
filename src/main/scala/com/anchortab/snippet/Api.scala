@@ -164,36 +164,6 @@ object Api extends RestHelper with Loggable {
         }
       } ?~ "Authentication Failed." ~> 401
 
-    case Req("api" :: "v1" :: "user" :: userId :: "tabs" :: AsInt(page) :: Nil, _, GetRequest) =>
-      {
-        for {
-          currentUser <- statelessUser.is
-            if userId == currentUser._id || currentUser.admin_?
-        } yield {
-          val limit = 20
-          val skip = max((page - 1) * limit, 0)
-          val userTabs =
-            Tab.findAll("userId" -> userId, "createdAt" -> 1, Limit(20), Skip(skip)).map(_.asJson)
-
-          ("tabs" -> userTabs):JObject
-        }
-      } ?~ "Authentication Failed." ~> 401
-
-    case req @ Req("api" :: "v1" :: "user" :: userId :: "tabs" :: Nil, _, PostRequest) =>
-      {
-        for {
-          currentUser <- statelessUser.is
-            if userId == currentUser._id || currentUser.admin_?
-          name <- req.param("name") ?~! "The name parameters is required." ~> 400
-        } yield {
-          val tab = Tab(name, new ObjectId(userId), TabAppearance.defaults)
-          tab.save
-
-          ("success" -> 1) ~
-          ("tabId" -> tab._id)
-        }
-      } ?~ "Authentication Failed." ~> 401
-
     //////////
     // API "tab" resource
     //////////
@@ -210,29 +180,6 @@ object Api extends RestHelper with Loggable {
         }
       }
 
-    case req @ Req("api" :: "v1" :: "tab" :: tabId :: "appearance" :: Nil, _, PutRequest) =>
-      {
-        for {
-          currentUser <- statelessUser.is
-          tab <- (Tab.find(tabId):Box[Tab])
-            if tab.userId == currentUser._id || currentUser.admin_?
-          delay <- req.param("delay") ?~! "Delay parameter is required." ~> 400
-          validDelay <- Tab.validAppearanceDelay(delay) ?~! "The delay parameter was invalid." ~> 400
-          font <- req.param("font") ?~! "The font parameter is required." ~> 400
-          colorScheme <- req.param("colorScheme") ?~! "The colorScheme parameter is required." ~> 400
-          customText <- req.param("customText") ?~! "the customText parameter is required." ~> 400
-        } yield {
-          Tab.update("_id" -> tabId, "$set" -> (
-            "appearance" -> (
-              ("delay" -> delay.toInt) ~
-              ("customTest" -> customText)
-            )
-          ))
-
-          JObject(Nil)
-        }
-      } ?~ "Tab not found." ~> 404
-
     //////////
     // API "admin" resource.
     //////////
@@ -243,18 +190,6 @@ object Api extends RestHelper with Loggable {
           adminUser <- (Full(possibleAdminUser).filter(_.admin_?) ?~ "Not authorized." ~> 403)
         } yield {
           decompose(User.findAll.map(_.asJson))
-        }
-      }
-
-    case req @ Req("api" :: "v1" :: "admin" :: "users" :: "find" :: Nil, _, GetRequest) =>
-      {
-        for {
-          possibleAdminUser <- (statelessUser.is ?~ "Authentication Failed." ~> 401)
-          adminUser <- (Full(possibleAdminUser).filter(_.admin_?) ?~ "Not authorized." ~> 403)
-          email <- req.param("email") ?~! "The Email parameter is required." ~> 400
-          user <- (User.find("email" -> email):Box[User]) ?~! "User not found." ~> 404
-        } yield {
-          user.asJson
         }
       }
 
