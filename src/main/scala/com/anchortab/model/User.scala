@@ -168,6 +168,7 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
   }
 
   lazy val tabsActive_? = admin_? || (
+    subscription.isDefined &&
     withinQuotaFor_?(Plan.Quotas.EmailSubscriptions) &&
     withinQuotaFor_?(Plan.Quotas.Views)
   )
