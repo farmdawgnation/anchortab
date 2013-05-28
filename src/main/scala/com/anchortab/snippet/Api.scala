@@ -44,11 +44,11 @@ object Api extends RestHelper with Loggable {
         NewRelic.addCustomParameter("tabId", tabId)
 
         for {
-          tab <- (Tab.find(tabId):Box[Tab])
-          user <- tab.user.filter(_.tabsActive_?) ?~! "This tab has been disabled." ~> 403
-          subscription <- user.subscription
-          plan <- subscription.plan
-          callbackFnName <- req.param("callback") ?~! "Callback not specified." ~> 400
+          tab <- (Tab.find(tabId):Box[Tab]) ?~ "Unknown tab." ~> 404
+          user <- tab.user.filter(_.tabsActive_?) ?~ "This tab has been disabled." ~> 403
+          subscription <- (user.subscription: Box[UserSubscription]) ?~ "No subscription found." ~> 500
+          plan <- (subscription.plan: Box[Plan]) ?~ "No plan found." ~> 500
+          callbackFnName <- req.param("callback") ?~ "Callback not specified." ~> 400
         } yield {
           val remoteIp = req.header("X-Forwarded-For") openOr req.remoteAddr
           val userAgent = req.userAgent openOr "unknown"
@@ -89,7 +89,7 @@ object Api extends RestHelper with Loggable {
 
           Call(callbackFnName, tabJson)
         }
-      } ?~ "Unknown Tab." ~> 404
+      }
 
     // JSONP can't be semantic. :(
     case req @ Req("api" :: "v1" :: "embed" :: tabId :: "submit" :: Nil, _, GetRequest) =>
@@ -98,10 +98,10 @@ object Api extends RestHelper with Loggable {
         NewRelic.addCustomParameter("tabId", tabId)
 
         for {
-          tab <- (Tab.find(tabId):Box[Tab]) // Force box type.
+          tab <- (Tab.find(tabId):Box[Tab]) ?~ "Unknown tab." ~> 404
           user <- tab.user.filter(_.tabsActive_?) ?~! "This tab has been disabled." ~> 403
-          callbackFnName <- req.param("callback") ?~! "Callback not specified." ~> 403
-          email <- req.param("email").filter(_.trim.nonEmpty) ?~! "Email was not specified." ~> 403
+          callbackFnName <- req.param("callback") ?~! "Callback not specified." ~> 400
+          email <- req.param("email").filter(_.trim.nonEmpty) ?~! "Email was not specified." ~> 400
         } yield {
           val remoteIp = req.header("X-Forwarded-For") openOr req.remoteAddr
           val userAgent = req.userAgent openOr "unknown"
@@ -150,7 +150,7 @@ object Api extends RestHelper with Loggable {
 
           Call(callbackFnName, submitResult)
         }
-      } ?~ "Unknwon Tab" ~> 404
+      }
 
     //////////
     // API "user" resource.
@@ -200,13 +200,15 @@ object Api extends RestHelper with Loggable {
     case Req("api" :: "v1" :: "tab" :: tabId :: Nil, _, GetRequest) =>
       {
         for {
-          currentUser <- statelessUser.is
-          tab <- (Tab.find(tabId):Box[Tab])
-            if tab.userId == currentUser._id || currentUser.admin_?
+          currentUser <- statelessUser.is ?~ "Authentication Failed." ~> 401
+          possibleTab = (Tab.find(tabId):Box[Tab])
+          tab <- possibleTab.filter { tabInQuestion =>
+            tabInQuestion.userId == currentUser._id || currentUser.admin_?
+          } ?~ "Unknown tab." ~> 404
         } yield {
           tab.asJson
         }
-      } ?~ "Tab not found." ~> 404
+      }
 
     case req @ Req("api" :: "v1" :: "tab" :: tabId :: "appearance" :: Nil, _, PutRequest) =>
       {
@@ -275,25 +277,25 @@ object Api extends RestHelper with Loggable {
     case req @ Req("api" :: "v1" :: "admin" :: "user" :: id :: Nil, _, GetRequest) =>
       {
         for {
-          currentUser <- statelessUser.is
-            if currentUser.admin_?
+          possibleAdminUser <- (statelessUser.is ?~ "Authentication Failed." ~> 401)
+          adminUser <- (Full(possibleAdminUser).filter(_.admin_?) ?~ "Not authorized." ~> 403)
           user <- (User.find(id):Box[User]) ?~! "User not found." ~> 404
         } yield {
           user.asJson
         }
-      } ?~ "Authentication Failed." ~> 401
+      }
 
     case req @ Req("api" :: "v1" :: "admin" :: "user" :: id :: Nil, _, DeleteRequest) =>
       {
         for {
-          currentUser <- statelessUser.is
-            if currentUser.admin_?
+          possibleAdminUser <- (statelessUser.is ?~ "Authentication Failed." ~> 401)
+          adminUser <- (Full(possibleAdminUser).filter(_.admin_?) ?~ "Not authorized." ~> 403)
           user <- (User.find(id):Box[User]) ?~! "User not found." ~> 404
         } yield {
           user.delete
 
           OkResponse()
         }
-      } ?~ "Authentication failed." ~> 401
+      }
   }
 }

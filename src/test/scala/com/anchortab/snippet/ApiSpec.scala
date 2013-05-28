@@ -13,14 +13,6 @@ import net.liftweb.json._
 import com.anchortab.model._
 
 object ApiSpecExamples {
-  lazy val validTab = {
-    // TODO
-  }
-
-  lazy val disabledTab = {
-    // TODO
-  }
-
   val nonAdminUserAuthorizationKey = "JIVEDADDY"
   lazy val nonAdminUser = {
     val user = User(
@@ -48,6 +40,33 @@ object ApiSpecExamples {
     user
   }
 
+  lazy val testPlan = {
+    val plan = Plan(
+      "Test Plan",
+      "Wakka wakka",
+      0.0,
+      0,
+      Map.empty,
+      Map("email-subscriptions" -> 10)
+    )
+
+    plan.save
+
+    plan
+  }
+
+  lazy val subscribedUser = {
+    val user = User(
+      email = "subscribed@anchortab.com",
+      password = "abc123",
+      subscriptions = UserSubscription(testPlan._id, 0.0, Plan.MonthlyTerm) :: Nil
+    )
+
+    user.save
+
+    user
+  }
+
   lazy val userToDelete = {
     val user = User(
       email = "delete@me.com",
@@ -57,6 +76,22 @@ object ApiSpecExamples {
     user.save
 
     user
+  }
+
+  lazy val validTab = {
+    val theTab = Tab("Test Tab", subscribedUser._id, TabAppearance.defaults)
+
+    theTab.save
+
+    theTab
+  }
+
+  lazy val disabledTab = {
+    val theTab = Tab("Disabled Tab", nonAdminUser._id, TabAppearance.defaults)
+
+    theTab.save
+
+    theTab
   }
 }
 
@@ -71,12 +106,24 @@ class ApiSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll {
     nonAdminUser
     adminUser
     userToDelete
+
+    testPlan
+    subscribedUser
+
+    validTab
+    disabledTab
   }
 
   override def afterAll() {
     nonAdminUser.delete
     adminUser.delete
     userToDelete.delete
+
+    testPlan.delete
+    subscribedUser.delete
+
+    validTab.delete
+    disabledTab.delete
   }
 
   private def runApiRequest(url: String, authorization: Option[String] = None, requestModifier: (MockHttpServletRequest)=>Any = (req)=>false)(responseHandler: (Box[LiftResponse])=>Any) = {
@@ -132,24 +179,123 @@ class ApiSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll {
     }
   }
 
-  describe("GET /api/v1/embed") {
-    it("should return tab JSON and increment the view count for valid tab information") (pending)
+  describe("GET /api/v1/embed/*") {
+    it("should return 200 and a jscmd for a valid tab id") {
+      runApiRequest("/api/v1/embed/" + validTab._id.toString, None, _.parameters = List("callback" -> "123")) { response =>
+        response match {
+          case Full(JavaScriptResponse(jscmd, _, _, code)) =>
+            code should equal (200)
 
-    it("should return a 404 and error for invalid tab information") (pending)
+          case somethingUnexpected => fail(somethingUnexpected.toString)
+        }
+      }
+    }
 
-    it("should return a 403 and error if the tab has been disabled") (pending)
+    it("should return a 404 and error for an invalid tab id") {
+      runApiRequest("/api/v1/embed/BACON", None, _.parameters = List("callback" -> "123")) { response =>
+        response match {
+          case Full(InMemoryResponse(data, _, _, code)) =>
+            code should equal (404)
+            (new String(data)) should equal ("Unknown tab.")
 
-    it("should return a 400 and error if the callback parameter wasn't specified") (pending)
+          case somethingUnexpected => fail(somethingUnexpected.toString)
+        }
+      }
+    }
+
+    it("should return a 403 and error if the tab has been disabled") {
+      runApiRequest("/api/v1/embed/" + disabledTab._id.toString, None, _.parameters = List("callback" -> "123")) { response =>
+        response match {
+          case Full(InMemoryResponse(data, _, _, code)) =>
+            code should equal (403)
+            (new String(data)) should equal ("This tab has been disabled.")
+
+          case somethingUnexpected => fail(somethingUnexpected.toString)
+        }
+      }
+    }
+
+    it("should return a 400 and error if the callback parameter wasn't specified") {
+      runApiRequest("/api/v1/embed/" + validTab._id.toString, None) { response =>
+        response match {
+          case Full(InMemoryResponse(data, _, _, code)) =>
+            code should equal (400)
+            (new String(data)) should equal ("Callback not specified.")
+
+          case somethingUnexpected => fail(somethingUnexpected.toString)
+        }
+      }
+    }
   }
 
   describe("GET /api/v1/embed/*/submit") {
-    it("should record the submission in the database for a valid, enabled tab") (pending)
+    it("should record the submission in the database for a valid, enabled tab") {
+      runApiRequest("/api/v1/embed/" + validTab._id.toString + "/submit", None, _.parameters = List("callback" -> "123", "email" -> "bacon@sammich.com")) { response =>
+        response match {
+          case Full(JavaScriptResponse(jscmd, _, _, code)) =>
+            code should equal (200)
 
-    it("should return a 404 and error for invalid tab information") (pending)
+            implicit val formats = DefaultFormats
+            val jsWithoutPad = jscmd.toJsCmd.substring(4)
+            val result = parse(jsWithoutPad.substring(0, jsWithoutPad.length-2))
+            val success = (result \ "success").extract[Int]
+            success should equal (1)
 
-    it("should return a 403 and error for a missing callback") (pending)
+            val theValidTab = Tab.find(validTab._id).get
+            theValidTab.subscribers.filter(_.email == "bacon@sammich.com").head.email should equal ("bacon@sammich.com")
 
-    it("should return a 403 and error for a missing email") (pending)
+          case somethingUnexpected => fail(somethingUnexpected.toString)
+        }
+      }
+    }
+
+    it("should return a 404 and error for invalid tab information") {
+      runApiRequest("/api/v1/embed/BACON/submit", None, _.parameters = List("callback" -> "123", "email" -> "bacon@sammich.com")) { response =>
+        response match {
+          case Full(InMemoryResponse(data, _, _, code)) =>
+            code should equal (404)
+            (new String(data)) should equal ("Unknown tab.")
+
+          case somethingUnexpected => fail(somethingUnexpected.toString)
+        }
+      }
+    }
+
+    it("should return a 403 and error if the tab has been disabled") {
+      runApiRequest("/api/v1/embed/" + disabledTab._id.toString + "/submit", None, _.parameters = List("callback" -> "123", "email" -> "bacon@sammich.com")) { response =>
+        response match {
+          case Full(InMemoryResponse(data, _, _, code)) =>
+            code should equal (403)
+            (new String(data)) should equal ("This tab has been disabled.")
+
+          case somethingUnexpected => fail(somethingUnexpected.toString)
+        }
+      }
+    }
+
+    it("should return a 400 and error for a missing callback") {
+      runApiRequest("/api/v1/embed/" + validTab._id.toString + "/submit", None) { response =>
+        response match {
+          case Full(InMemoryResponse(data, _, _, code)) =>
+            code should equal (400)
+            (new String(data)) should equal ("Callback not specified.")
+
+          case somethingUnexpected => fail(somethingUnexpected.toString)
+        }
+      }
+    }
+
+    it("should return a 400 and error for a missing email") {
+      runApiRequest("/api/v1/embed/" + validTab._id.toString + "/submit", None, _.parameters = List("callback" -> "123")) { response =>
+        response match {
+          case Full(InMemoryResponse(data, _, _, code)) =>
+            code should equal (400)
+            (new String(data)) should equal ("Email was not specified.")
+
+          case somethingUnexpected => fail(somethingUnexpected.toString)
+        }
+      }
+    }
   }
 
   describe("GET /api/v1/user") {
@@ -181,23 +327,71 @@ class ApiSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll {
   }
 
   describe("GET /api/v1/tab/*") {
-    it("should return the tab as JSON for valid credentials and tab ID") (pending)
+    it("should return the tab as JSON for valid credentials and tab ID") {
+      runApiRequest("/api/v1/tab/" + disabledTab._id.toString, Some(nonAdminUserAuthorizationKey)) { response =>
+        response match {
+          case Full(JsonResponse(json, _, _, code)) =>
+            code should equal (200)
 
-    it("should return a 404 for valid credentials and an invalid tab ID") (pending)
+            (compact(render(disabledTab.asJson))) should equal(json.toJsCmd)
 
-    it("should return a 401 for invalid credentials and an invalid tab ID") (pending)
+          case somethingUnexpected => fail(somethingUnexpected.toString)
+        }
+      }
+    }
 
-    it("should return a 401 for invalid credentials and a valid tab ID") (pending)
+    it("should return a 404 for valid credentials and an invalid tab ID") {
+      runApiRequest("/api/v1/tab/BACON", Some(nonAdminUserAuthorizationKey)) { response =>
+        response match {
+          case Full(InMemoryResponse(data, _, _, code)) =>
+            code should equal (404)
+            (new String(data)) should equal ("Unknown tab.")
 
-    it("should return a 404 for valid non-admin credentials and a another user's valid tab ID") (pending)
+          case somethingUnexpected => fail(somethingUnexpected.toString)
+        }
+      }
+    }
 
-    it("should return the tab as JSON for valid admin credentials and another user's valid tab ID") (pending)
+    it("should return a 401 for invalid credentials and an invalid tab ID") {
+      invalidCredentialsTest("/api/v1/tab/BACON")
+    }
+
+    it("should return a 401 for invalid credentials and a valid tab ID") {
+      invalidCredentialsTest("/api/v1/tab/" + validTab._id.toString)
+    }
+
+    it("should return a 404 for valid non-admin credentials and a another user's valid tab ID") {
+      runApiRequest("/api/v1/tab/" + validTab._id.toString, Some(nonAdminUserAuthorizationKey)) { response =>
+        response match {
+          case Full(InMemoryResponse(data, _, _, code)) =>
+            code should equal (404)
+            (new String(data)) should equal ("Unknown tab.")
+
+          case somethingUnexpected => fail(somethingUnexpected.toString)
+        }
+      }
+    }
+
+    it("should return the tab as JSON for valid admin credentials and another user's valid tab ID") {
+      runApiRequest("/api/v1/tab/" + validTab._id.toString, Some(adminUserAuthorizationKey)) { response =>
+        response match {
+          case Full(JsonResponse(json, _, _, code)) =>
+            code should equal (200)
+
+            (compact(render(validTab.asJson))) should equal(json.toJsCmd)
+
+          case somethingUnexpected => fail(somethingUnexpected.toString)
+        }
+      }
+    }
   }
 
   describe("PUT /api/v1/tab/*/appearance") {
     it("should update the appearance information for the tab w/ valid creds/tab ID") (pending)
 
-    it("should return a 401 for invalid credentails and valid tab ID") (pending)
+    it("should return a 401 for invalid credentials and valid tab ID") (pending)
+
+    it("should return a 401 for invalid credentials and invalid tab ID") (pending)
 
     it("should return a 404 for valid non-admin credentials and other user's tab ID") (pending)
 
