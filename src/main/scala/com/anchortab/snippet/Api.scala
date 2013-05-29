@@ -196,18 +196,19 @@ object Api extends RestHelper with Loggable {
     case req @ Req("api" :: "v1" :: "admin" :: "users" :: Nil, _, PostRequest) =>
       {
         for {
-          currentUser <- statelessUser.is if currentUser.admin_?
+          possibleAdminUser <- (statelessUser.is ?~ "Authentication Failed." ~> 401)
+          adminUser <- (Full(possibleAdminUser).filter(_.admin_?) ?~ "Not authorized." ~> 403)
           requestBody <- req.body ?~ "No request body." ~> 400
-          requestJson <- tryo(Serialization.read[JValue](new String(requestBody))) ?~ "Error reading JSON." ~> 400
-          email <- tryo(requestJson \ "email").map(_.extract[String])
-          password <- tryo(requestJson \ "password").map(_.extract[String])
+          requestJson <- tryo(Serialization.read[JValue](new String(requestBody))) ?~! "Invalid JSON." ~> 400
+          email <- tryo(requestJson \ "email").map(_.extract[String]) ?~ "Email is missing" ~> 400
+          password <- tryo(requestJson \ "password").map(_.extract[String]) ?~ "Password is missing." ~> 400
         } yield {
           val user = User(email, User.hashPassword(password))
           user.save
 
           ("id" -> user._id.toString):JObject
         }
-      } ?~ "Authentication failed." ~> 401
+      }
 
     case req @ Req("api" :: "v1" :: "admin" :: "user" :: id :: Nil, _, GetRequest) =>
       {

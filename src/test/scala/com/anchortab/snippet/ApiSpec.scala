@@ -419,9 +419,54 @@ class ApiSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll {
   }
 
   describe("POST /api/v1/admin/users") {
-    it("should add a new user and return its ID for valid admin credentials and params") (pending)
+    it("should add a new user and return its ID for valid admin credentials and params") {
+      def requestTransformer(request: MockHttpServletRequest) = {
+        import JsonDSL._
 
-    it("should return a 400 for invalid user JSON in body") (pending)
+        request.method = "POST"
+        request.body = {
+          compact(render(
+            ("email" -> "test@boat.com") ~
+            ("password" -> "bacon!sammich")
+          )).getBytes("UTF-8")
+        }
+      }
+
+      runApiRequest("/api/v1/admin/users", Some(adminUserAuthorizationKey), requestTransformer _) { response =>
+        response match {
+          case Full(JsonResponse(json, _, _, code)) =>
+            code should equal (200)
+
+            implicit val formats = DefaultFormats
+            val jvalue = parse(json.toJsCmd)
+            val userId = (jvalue \ "id").extract[String]
+
+            val user = User.find(userId).get
+
+            user.email should equal ("test@boat.com")
+            user.delete
+
+          case somethingUnexpected => fail(somethingUnexpected.toString)
+        }
+      }
+    }
+
+    it("should return a 400 and error for invalid user JSON in body") {
+      def requestTransformer(request: MockHttpServletRequest) = {
+        request.method = "POST"
+        request.body = "bokebowrktg".getBytes("UTF-8")
+      }
+
+      runApiRequest("/api/v1/admin/users", Some(adminUserAuthorizationKey), requestTransformer _) { response =>
+        response match {
+          case Full(InMemoryResponse(data, _, _, code)) =>
+            code should equal (400)
+            (new String(data)) should equal ("Invalid JSON.")
+
+          case somethingUnexpected => fail(somethingUnexpected.toString)
+        }
+      }
+    }
 
     it("should return a 401 for invalid credentials") {
       invalidCredentialsTest("/api/v1/admin/users", (req) => req.method = "POST")
