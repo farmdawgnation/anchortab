@@ -45,7 +45,7 @@ trait AcceptanceSpec extends FeatureSpec with GivenWhenThen
   override def beforeAll() {
     implicit val formats = DefaultFormats
 
-    val email = randomString(32)
+    val email = randomString(32) + "@test.local"
     val password = randomString(32)
     validUser = (email, password)
 

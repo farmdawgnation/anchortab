@@ -44,11 +44,11 @@ object Api extends RestHelper with Loggable {
         NewRelic.addCustomParameter("tabId", tabId)
 
         for {
-          tab <- (Tab.find(tabId):Box[Tab])
-          user <- tab.user.filter(_.tabsActive_?) ?~! "This tab has been disabled." ~> 403
-          subscription <- user.subscription
-          plan <- subscription.plan
-          callbackFnName <- req.param("callback") ?~! "Callback not specified." ~> 400
+          tab <- (Tab.find(tabId):Box[Tab]) ?~ "Unknown tab." ~> 404
+          user <- tab.user.filter(_.tabsActive_?) ?~ "This tab has been disabled." ~> 403
+          subscription <- (user.subscription: Box[UserSubscription]) ?~ "No subscription found." ~> 500
+          plan <- (subscription.plan: Box[Plan]) ?~ "No plan found." ~> 500
+          callbackFnName <- req.param("callback") ?~ "Callback not specified." ~> 400
         } yield {
           val remoteIp = req.header("X-Forwarded-For") openOr req.remoteAddr
           val userAgent = req.userAgent openOr "unknown"
@@ -89,7 +89,7 @@ object Api extends RestHelper with Loggable {
 
           Call(callbackFnName, tabJson)
         }
-      } ?~ "Unknown Tab." ~> 404
+      }
 
     // JSONP can't be semantic. :(
     case req @ Req("api" :: "v1" :: "embed" :: tabId :: "submit" :: Nil, _, GetRequest) =>
@@ -98,10 +98,10 @@ object Api extends RestHelper with Loggable {
         NewRelic.addCustomParameter("tabId", tabId)
 
         for {
-          tab <- (Tab.find(tabId):Box[Tab]) // Force box type.
+          tab <- (Tab.find(tabId):Box[Tab]) ?~ "Unknown tab." ~> 404
           user <- tab.user.filter(_.tabsActive_?) ?~! "This tab has been disabled." ~> 403
-          callbackFnName <- req.param("callback") ?~! "Callback not specified." ~> 403
-          email <- req.param("email").filter(_.trim.nonEmpty) ?~! "Email was not specified." ~> 403
+          callbackFnName <- req.param("callback") ?~! "Callback not specified." ~> 400
+          email <- req.param("email").filter(_.trim.nonEmpty) ?~! "Email was not specified." ~> 400
         } yield {
           val remoteIp = req.header("X-Forwarded-For") openOr req.remoteAddr
           val userAgent = req.userAgent openOr "unknown"
@@ -150,7 +150,7 @@ object Api extends RestHelper with Loggable {
 
           Call(callbackFnName, submitResult)
         }
-      } ?~ "Unknwon Tab" ~> 404
+      }
 
     //////////
     // API "user" resource.
@@ -164,72 +164,21 @@ object Api extends RestHelper with Loggable {
         }
       } ?~ "Authentication Failed." ~> 401
 
-    case Req("api" :: "v1" :: "user" :: userId :: "tabs" :: AsInt(page) :: Nil, _, GetRequest) =>
-      {
-        for {
-          currentUser <- statelessUser.is
-            if userId == currentUser._id || currentUser.admin_?
-        } yield {
-          val limit = 20
-          val skip = max((page - 1) * limit, 0)
-          val userTabs =
-            Tab.findAll("userId" -> userId, "createdAt" -> 1, Limit(20), Skip(skip)).map(_.asJson)
-
-          ("tabs" -> userTabs):JObject
-        }
-      } ?~ "Authentication Failed." ~> 401
-
-    case req @ Req("api" :: "v1" :: "user" :: userId :: "tabs" :: Nil, _, PostRequest) =>
-      {
-        for {
-          currentUser <- statelessUser.is
-            if userId == currentUser._id || currentUser.admin_?
-          name <- req.param("name") ?~! "The name parameters is required." ~> 400
-        } yield {
-          val tab = Tab(name, new ObjectId(userId), TabAppearance.defaults)
-          tab.save
-
-          ("success" -> 1) ~
-          ("tabId" -> tab._id)
-        }
-      } ?~ "Authentication Failed." ~> 401
-
     //////////
     // API "tab" resource
     //////////
     case Req("api" :: "v1" :: "tab" :: tabId :: Nil, _, GetRequest) =>
       {
         for {
-          currentUser <- statelessUser.is
-          tab <- (Tab.find(tabId):Box[Tab])
-            if tab.userId == currentUser._id || currentUser.admin_?
+          currentUser <- statelessUser.is ?~ "Authentication Failed." ~> 401
+          possibleTab = (Tab.find(tabId):Box[Tab])
+          tab <- possibleTab.filter { tabInQuestion =>
+            tabInQuestion.userId == currentUser._id || currentUser.admin_?
+          } ?~ "Unknown tab." ~> 404
         } yield {
           tab.asJson
         }
-      } ?~ "Tab not found." ~> 404
-
-    case req @ Req("api" :: "v1" :: "tab" :: tabId :: "appearance" :: Nil, _, PutRequest) =>
-      {
-        for {
-          currentUser <- statelessUser.is
-          tab <- (Tab.find(tabId):Box[Tab])
-            if tab.userId == currentUser._id || currentUser.admin_?
-          delay <- req.param("delay") ?~! "Delay parameter is required." ~> 400
-          validDelay <- Tab.validAppearanceDelay(delay) ?~! "The delay parameter was invalid." ~> 400
-          font <- req.param("font") ?~! "The font parameter is required." ~> 400
-          colorScheme <- req.param("colorScheme") ?~! "The colorScheme parameter is required." ~> 400
-          customText <- req.param("customText") ?~! "the customText parameter is required." ~> 400
-        } yield {
-          Tab.update("_id" -> tabId, "$set" -> (
-            "appearance" -> (
-              ("delay" -> delay.toInt) ~
-              ("customTest" -> customText)
-            )
-          ))
-
-          JObject(Nil)
-        }
-      } ?~ "Tab not found." ~> 404
+      }
 
     //////////
     // API "admin" resource.
@@ -237,62 +186,52 @@ object Api extends RestHelper with Loggable {
     case req @ Req("api" :: "v1" :: "admin" :: "users" :: Nil, _, GetRequest) =>
       {
         for {
-          currentUser <- statelessUser.is
-            if currentUser.admin_?
+          possibleAdminUser <- (statelessUser.is ?~ "Authentication Failed." ~> 401)
+          adminUser <- (Full(possibleAdminUser).filter(_.admin_?) ?~ "Not authorized." ~> 403)
         } yield {
           decompose(User.findAll.map(_.asJson))
         }
-      } ?~ "Authentication Failed." ~> 401
-
-    case req @ Req("api" :: "v1" :: "admin" :: "users" :: "find" :: Nil, _, GetRequest) =>
-      {
-        for {
-          currentUser <- statelessUser.is if currentUser.admin_?
-          email <- req.param("email") ?~! "The Email parameter is required." ~> 400
-          user <- (User.find("email" -> email):Box[User]) ?~! "User not found." ~> 404
-        } yield {
-          user.asJson
-        }
-      } ?~ "Authentication Failed." ~> 401
+      }
 
     case req @ Req("api" :: "v1" :: "admin" :: "users" :: Nil, _, PostRequest) =>
       {
         for {
-          currentUser <- statelessUser.is if currentUser.admin_?
+          possibleAdminUser <- (statelessUser.is ?~ "Authentication Failed." ~> 401)
+          adminUser <- (Full(possibleAdminUser).filter(_.admin_?) ?~ "Not authorized." ~> 403)
           requestBody <- req.body ?~ "No request body." ~> 400
-          requestJson <- tryo(Serialization.read[JValue](new String(requestBody))) ?~ "Error reading JSON." ~> 400
-          email <- tryo(requestJson \ "email").map(_.extract[String])
-          password <- tryo(requestJson \ "password").map(_.extract[String])
+          requestJson <- tryo(Serialization.read[JValue](new String(requestBody))) ?~! "Invalid JSON." ~> 400
+          email <- tryo(requestJson \ "email").map(_.extract[String]) ?~ "Email is missing" ~> 400
+          password <- tryo(requestJson \ "password").map(_.extract[String]) ?~ "Password is missing." ~> 400
         } yield {
           val user = User(email, User.hashPassword(password))
           user.save
 
           ("id" -> user._id.toString):JObject
         }
-      } ?~ "Authentication failed." ~> 401
+      }
 
     case req @ Req("api" :: "v1" :: "admin" :: "user" :: id :: Nil, _, GetRequest) =>
       {
         for {
-          currentUser <- statelessUser.is
-            if currentUser.admin_?
+          possibleAdminUser <- (statelessUser.is ?~ "Authentication Failed." ~> 401)
+          adminUser <- (Full(possibleAdminUser).filter(_.admin_?) ?~ "Not authorized." ~> 403)
           user <- (User.find(id):Box[User]) ?~! "User not found." ~> 404
         } yield {
           user.asJson
         }
-      } ?~ "Authentication Failed." ~> 401
+      }
 
     case req @ Req("api" :: "v1" :: "admin" :: "user" :: id :: Nil, _, DeleteRequest) =>
       {
         for {
-          currentUser <- statelessUser.is
-            if currentUser.admin_?
+          possibleAdminUser <- (statelessUser.is ?~ "Authentication Failed." ~> 401)
+          adminUser <- (Full(possibleAdminUser).filter(_.admin_?) ?~ "Not authorized." ~> 403)
           user <- (User.find(id):Box[User]) ?~! "User not found." ~> 404
         } yield {
           user.delete
 
           OkResponse()
         }
-      } ?~ "Authentication failed." ~> 401
+      }
   }
 }

@@ -106,6 +106,9 @@ trait ManagerSpecImpl extends AcceptanceSpec {
       eventually {
         tabNames should contain (tabName)
       }
+
+      And("I see a success message on the tabs list")
+      cssSelector("ul > li.notice").webElement
     }
 
     scenario("User edits a tab") {
@@ -139,6 +142,9 @@ trait ManagerSpecImpl extends AcceptanceSpec {
 
       And("the new tab name should be in the tabs list in place of the old name")
       cssSelector(".tab-name").element.text should be (newTabName)
+
+      And("I see a success message on the tabs list")
+      cssSelector("ul > li.notice").webElement
     }
 
     scenario("User retrieves embed code for a tab") {
@@ -170,6 +176,9 @@ trait ManagerSpecImpl extends AcceptanceSpec {
       eventually {
         cssSelector(".subscriber").findElement should be (None)
       }
+
+      And("I see a success message on the tabs list")
+      cssSelector("ul > li.notice").webElement
     }
   }
 
@@ -216,6 +225,9 @@ trait ManagerSpecImpl extends AcceptanceSpec {
       textField(cssSelector(".first-name")).value should be (newFirstName)
       textField(cssSelector(".last-name")).value should be (newLastName)
       textField(cssSelector(".organization")).value should be (newOrganization)
+
+      And("I see a success message after save")
+      cssSelector("ul > li.notice").webElement
     }
 
     scenario("User attempts to remove email from profile") {
@@ -317,6 +329,9 @@ trait ManagerSpecImpl extends AcceptanceSpec {
 
       And("the disconnect button should be visible")
       cssSelector(".constant-contact-connection .disconnect-service").findElement should not be (None)
+
+      And("I see a success message")
+      cssSelector("ul > li.notice").webElement
     }
 
     scenario("User connects to MailChimp") {
@@ -356,6 +371,9 @@ trait ManagerSpecImpl extends AcceptanceSpec {
 
       And("the disconnect button should be visible")
       cssSelector(".mailchimp-connection .disconnect-service").findElement should not be (None)
+
+      And("I see a success message")
+      cssSelector("ul > li.notice").webElement
     }
   }
 }

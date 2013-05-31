@@ -76,7 +76,7 @@ object UserFirstStep {
   }
 
   object Steps {
-    val ConnectAnExternalService = UserFirstStep("Connect to a Mailchimp or Constant Contact account.", "/manager/services")
+    val ConnectAnExternalService = UserFirstStep("Connect to a Campaign Monitor, Constant Contact, or MailChimp account.", "/manager/services")
     val CreateATab = UserFirstStep("Create your first Anchor Tab.", "/manager/tabs/new")
     val EmbedYourTab = UserFirstStep("Embed your Anchor Tab on your site.", "/manager/tabs")
   }
@@ -168,6 +168,7 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
   }
 
   lazy val tabsActive_? = admin_? || (
+    subscription.isDefined &&
     withinQuotaFor_?(Plan.Quotas.EmailSubscriptions) &&
     withinQuotaFor_?(Plan.Quotas.Views)
   )
