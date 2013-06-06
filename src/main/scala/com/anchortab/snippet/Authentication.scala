@@ -322,7 +322,7 @@ object Authentication extends Loggable {
     }
 
     val planSelections = plans.map { plan =>
-      (plan.hasTrial_?.toString, plan._id.toString, plan.registrationTitle)
+      ((plan.hasTrial_? || plan.free_?).toString, plan._id.toString, plan.registrationTitle)
     }
 
     def createStripeCustomer(plan: Plan) = {
