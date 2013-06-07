@@ -15,7 +15,7 @@ mailchimp.clientId=398234061384
 mailchimp.clientSecret=ef5348bb94503e35fac79bf0230b6015
 
 constantcontact.clientId=zm7excv9qwb4t9egdha92j97
-constantcontact.clientSecret=VBESPRGFCNhtbTHBsnfNvjHy
+constantcontact.clientSecret=c542b248bebd43499aabce41c37e5976
 constantcontact.redirectUrl=https://anchortab.com/oauth2/constant-contact
 
 # Set the url for the embed code.
