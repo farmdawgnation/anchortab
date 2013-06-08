@@ -14,6 +14,11 @@ sealed trait NeighborhoodWatchMessage
 case object ScheduleNeighborhoodWatch extends NeighborhoodWatchMessage
 case object NeighborhoodWatch extends NeighborhoodWatchMessage
 
+sealed trait NeighborhoodWatchResult
+case class SameSiteMultipleAccount(domain: String, accounts: List[String]) extends NeighborhoodWatchResult
+case class MultipleAccountsSameIpAndUserAgent(accounts: List[String], ip: String, userAgent: String) extends NeighborhoodWatchResult
+case class SimilarEmailAddresses(accounts: List[String]) extends NeighborhoodWatchResult
+
 object NeighborhoodWatchActor extends LiftActor with Loggable {
   private def timeSpanUntilNextNeighborhoodWatch = {
     val beginningOfNextMonth = Props.mode match {
