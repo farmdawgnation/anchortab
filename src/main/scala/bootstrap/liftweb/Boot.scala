@@ -50,6 +50,9 @@ class Boot {
     // Schedule quota reset
     QuotasActor ! ScheduleQuotaReset
 
+    // Schedule neighborhood watch
+    NeighborhoodWatchActor ! ScheduleNeighborhoodWatch
+
     // Set Stripe API key
     stripe.apiKey = Props.get("stripe.apiKey") openOr "sk_test_eIk3iZ4csTxHtFmmh86M0E1n"
   }
