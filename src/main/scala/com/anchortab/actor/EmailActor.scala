@@ -22,7 +22,7 @@ import com.ning.http.client.{Request, RequestBuilder, Response}
 import org.joda.time._
 
 import com.anchortab.model._
-import com.anchortab.lib.Mandrill
+import com.anchortab.lib._
 
 import org.bson.types.ObjectId
 
@@ -34,25 +34,6 @@ case class SendQuotaErrorEmail(userEmail: String) extends EmailActorMessage
 case class SendTrialEndingEmail(userEmail: String, billingInfoPresent: Boolean, planName: String, trialEnd: DateTime) extends EmailActorMessage
 case class SendInvoicePaymentFailedEmail(userEmail: String, amount: Double, nextPaymentAttempt: Option[DateTime]) extends EmailActorMessage
 case class SendInvoicePaymentSucceededEmail(userEmail: String, amount: Double) extends EmailActorMessage
-
-trait HandlerChain extends LiftActor with Loggable {
-  private val defaultHandler: PartialFunction[Any, Unit] = {
-    case somethingUnexpected =>
-      logger.warn("Got a message I didn't expect: " + somethingUnexpected)
-  }
-
-  private var handlers: List[PartialFunction[Any, Unit]] = Nil
-
-  override lazy val messageHandler: PartialFunction[Any, Unit] =
-    handlers.foldRight(defaultHandler)(_ orElse _)
-
-  protected def addHandler(pf: PartialFunction[Any, Unit]) =
-    handlers = handlers :+ pf
-}
-
-trait EmailHandlerChain extends HandlerChain {
-  def sendEmail(subject: String, emails: List[String], nodes: NodeSeq): Unit
-}
 
 trait WelcomeEmailHandling extends EmailHandlerChain {
   val welcomeEmailSubject = "Welcome to Anchor Tab!"
