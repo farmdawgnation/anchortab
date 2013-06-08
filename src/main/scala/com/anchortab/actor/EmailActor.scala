@@ -34,6 +34,11 @@ case class SendQuotaErrorEmail(userEmail: String) extends EmailActorMessage
 case class SendTrialEndingEmail(userEmail: String, billingInfoPresent: Boolean, planName: String, trialEnd: DateTime) extends EmailActorMessage
 case class SendInvoicePaymentFailedEmail(userEmail: String, amount: Double, nextPaymentAttempt: Option[DateTime]) extends EmailActorMessage
 case class SendInvoicePaymentSucceededEmail(userEmail: String, amount: Double) extends EmailActorMessage
+case class SendNeighborhoodWatchEmail(
+  sameSiteMultipleAccount: List[SameSiteMultipleAccount],
+  multipleAccountsSameIpAndUserAgent: List[MultipleAccountsSameIpAndUserAgent],
+  similarEmailAddresses: List[SimilarEmailAddresses]
+) extends EmailActorMessage
 
 trait WelcomeEmailHandling extends EmailHandlerChain {
   val welcomeEmailSubject = "Welcome to Anchor Tab!"
@@ -129,13 +134,51 @@ trait InvoicePaymentFailedEmailHandling extends EmailHandlerChain {
   }
 }
 
+trait NeighborhoodWatchEmailHandling extends EmailHandlerChain {
+  val template =
+    Templates("emails-hidden" :: "neighborhood-watch-email" :: Nil) openOr NodeSeq.Empty
+  val subject = "Anchor Tab Neighborhood Watch"
+  val to = "main+neighborhoodwatch@anchortab.flowdock.com"
+
+  addHandler {
+    case SendNeighborhoodWatchEmail(sameSiteMultipleAccount, multipleAccountsSameIpAndUserAgent, similarEmailAddresses) =>
+      val allClear =
+        sameSiteMultipleAccount.isEmpty &&
+        multipleAccountsSameIpAndUserAgent.isEmpty &&
+        similarEmailAddresses.isEmpty
+
+      val neighborhoodWatchMessage = (
+        ".all-clear" #> (allClear ? PassThru | ClearNodes) andThen
+        ".intro" #> (allClear ? ClearNodes | PassThru) andThen
+        ".same-site-multiple-account" #> (sameSiteMultipleAccount.nonEmpty ? PassThru | ClearNodes) andThen
+        ".same-site-multiple-account-item" #> sameSiteMultipleAccount.map { result =>
+          ".domain *" #> result.domain &
+          ".accounts *" #> result.accounts.mkString(", ")
+        } &
+        ".multiple-accounts-same-ip-and-user-agent" #> (multipleAccountsSameIpAndUserAgent.nonEmpty ? PassThru | ClearNodes) andThen
+        ".multiple-accounts-same-ip-and-user-agent-item" #> multipleAccountsSameIpAndUserAgent.map { result =>
+          ".accounts *" #> result.accounts.mkString(", ") &
+          ".ip-address *" #> result.ip &
+          ".user-agent *" #> result.userAgent
+        } &
+        ".similar-email-registration" #> (similarEmailAddresses.nonEmpty ? PassThru | ClearNodes) andThen
+        ".similar-email-address-item" #> similarEmailAddresses.map { result =>
+          ".accounts *" #> result.accounts.mkString(", ")
+        }
+      ).apply(template)
+
+      sendEmail(subject, to :: Nil, neighborhoodWatchMessage)
+  }
+}
+
 object EmailActor extends EmailHandlerChain
                   with WelcomeEmailHandling
                   with ForgotPasswordEmailHandling
                   with QuotaWarningEmailHandling
                   with QuotaErrorEmailHandling
                   with TrialEndingEmailHandling
-                  with InvoicePaymentFailedEmailHandling {
+                  with InvoicePaymentFailedEmailHandling
+                  with NeighborhoodWatchEmailHandling {
   implicit val formats = DefaultFormats
 
   val fromEmail = "hello@anchortab.com"
