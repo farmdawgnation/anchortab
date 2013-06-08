@@ -22,7 +22,7 @@ case class SimilarEmailAddresses(accounts: List[String]) extends NeighborhoodWat
 object NeighborhoodWatchActor extends LiftActor with Loggable {
   private def timeSpanUntilNextNeighborhoodWatch = {
     val beginningOfNextMonth = Props.mode match {
-      //case Props.RunModes.Development => (new DateTime()).plusMinutes(5).getMillis
+      case Props.RunModes.Development => (new DateTime()).plusMinutes(1).getMillis
       case _ => (new DateTime()).toDateMidnight.plusWeeks(1).withDayOfWeek(1).getMillis
     }
     val now = new DateTime().getMillis
