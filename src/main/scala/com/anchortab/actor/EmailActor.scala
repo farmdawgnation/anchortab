@@ -36,7 +36,7 @@ case class SendInvoicePaymentFailedEmail(userEmail: String, amount: Double, next
 case class SendInvoicePaymentSucceededEmail(userEmail: String, amount: Double) extends EmailActorMessage
 case class SendNeighborhoodWatchEmail(
   sameSiteMultipleAccount: List[SameSiteMultipleAccount],
-  multipleAccountsSameIpAndUserAgent: List[MultipleAccountsSameIpAndUserAgent],
+  multipleAccountsSameIpAndUserAgent: List[MultipleAccountsSameIp],
   similarEmailAddresses: List[SimilarEmailAddresses]
 ) extends EmailActorMessage
 
@@ -158,8 +158,7 @@ trait NeighborhoodWatchEmailHandling extends EmailHandlerChain {
         ".multiple-accounts-same-ip-and-user-agent" #> (multipleAccountsSameIpAndUserAgent.nonEmpty ? PassThru | ClearNodes) andThen
         ".multiple-accounts-same-ip-and-user-agent-item" #> multipleAccountsSameIpAndUserAgent.map { result =>
           ".accounts *" #> result.accounts.mkString(", ") &
-          ".ip-address *" #> result.ip &
-          ".user-agent *" #> result.userAgent
+          ".ip-address *" #> result.ip
         } &
         ".similar-email-registration" #> (similarEmailAddresses.nonEmpty ? PassThru | ClearNodes) andThen
         ".similar-email-address-item" #> similarEmailAddresses.map { result =>

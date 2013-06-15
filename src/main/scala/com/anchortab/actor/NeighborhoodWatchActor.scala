@@ -3,6 +3,7 @@ package com.anchortab.actor
 import net.liftweb._
   import common._
   import actor._
+  import json.Extraction._
   import mongodb._
     import BsonDSL._
   import util._
@@ -10,13 +11,15 @@ import net.liftweb._
 
 import org.joda.time._
 
+import com.anchortab.model._
+
 sealed trait NeighborhoodWatchMessage
 case object ScheduleNeighborhoodWatch extends NeighborhoodWatchMessage
 case object NeighborhoodWatch extends NeighborhoodWatchMessage
 
 sealed trait NeighborhoodWatchResult
 case class SameSiteMultipleAccount(domain: String, accounts: List[String]) extends NeighborhoodWatchResult
-case class MultipleAccountsSameIpAndUserAgent(accounts: List[String], ip: String, userAgent: String) extends NeighborhoodWatchResult
+case class MultipleAccountsSameIp(accounts: List[String], ip: String) extends NeighborhoodWatchResult
 case class SimilarEmailAddresses(accounts: List[String]) extends NeighborhoodWatchResult
 
 object NeighborhoodWatchActor extends LiftActor with Loggable {
@@ -30,6 +33,27 @@ object NeighborhoodWatchActor extends LiftActor with Loggable {
     new TimeSpan(beginningOfNextMonth - now)
   }
 
+  private def accountsWithSameIp: List[MultipleAccountsSameIp] = {
+    implicit val formats = UserSession.formats
+
+    val recentSessions = UserSession.findAll(
+      ("createdAt" -> ("$gt" -> decompose(DateMidnight.now().minusWeeks(1))))
+    )
+
+    // A list of IPs mapped to a tuple3 of userID, ip, and agent.
+    val heuristicData = recentSessions.map({session =>
+      (session.userId.toString, session.ip)
+    }).distinct.groupBy(_._2)
+
+    heuristicData.filter(_._2.size > 1).collect({
+      case (ipAddress, identitySummaries) if identitySummaries.map(_._1).distinct.size > 1 =>
+        MultipleAccountsSameIp(
+          identitySummaries.map(_._1).distinct,
+          ipAddress
+        )
+    }).toList
+  }
+
   override def messageHandler = {
     case ScheduleNeighborhoodWatch =>
       val delay = timeSpanUntilNextNeighborhoodWatch
@@ -40,5 +64,9 @@ object NeighborhoodWatchActor extends LiftActor with Loggable {
 
     case NeighborhoodWatch =>
       logger.info("Running neighborhood watch.")
+
+      logger.info(accountsWithSameIp)
+
+      this ! ScheduleNeighborhoodWatch
   }
 }
