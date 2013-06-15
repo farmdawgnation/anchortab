@@ -53,45 +53,51 @@
             <input type="text" id="custom-text" />
           </div>
 
-          <div>
-            <label for="service">Email Marketing Service:</label>
-            <select id="service" name="service">
-              <option value="none">None</option>
-              <option value="mailchimp">MailChimp</option>
-            </select>
-          </div>
+          <div id="email-marketing-service-selection">
+            <div>
+              <label for="service">Email Marketing Service:</label>
+              <select id="service" name="service">
+                <option value="none">None</option>
+                <option value="mailchimp">MailChimp</option>
+              </select>
+            </div>
 
-          <div>
-            <label for="lead-generation-target-email">Target Email:</label>
-            <input type="text" id="lead-generation-target-email" />
-          </div>
+            <div class="only-if-lead-generation">
+              <label for="lead-generation-target-email">Target Email:</label>
+              <input type="text" id="lead-generation-target-email" />
+            </div>
 
-          <div class="only-if-mailchimp-authorized">
-            <label for="mailchimp-listid">MailChimp List:</label>
-            <select id="mailchimp-listid">
-              <option>Loading…</option>
-            </select>
-          </div>
+            <div class="only-if-mailchimp-authorized">
+              <label for="mailchimp-listid">MailChimp List:</label>
+              <select id="mailchimp-listid">
+                <option>Loading…</option>
+              </select>
+            </div>
 
-          <div class="only-if-constantcontact-authorized">
-            <label for="constantcontact-listid">Constant Contact List:</label>
-            <select id="constantcontact-listid">
-              <option>Loading…</option>
-            </select>
-          </div>
+            <div class="only-if-constantcontact-authorized">
+              <label for="constantcontact-listid">Constant Contact List:</label>
+              <select id="constantcontact-listid">
+                <option>Loading…</option>
+              </select>
+            </div>
 
-          <div class="only-if-campaignmonitor-authorized">
-            <label for="campaignmonitor-listid">Campaign Monitor List:</label>
-            <select id="campaignmonitor-listid">
-              <option>Loading…</option>
-            </select>
+            <div class="only-if-campaignmonitor-authorized">
+              <label for="campaignmonitor-listid">Campaign Monitor List:</label>
+              <select id="campaignmonitor-listid">
+                <option>Loading…</option>
+              </select>
+            </div>
+
+            <script type="text/javascript">
+              $("#email-marketing-service-selection select").customSelect();
+            </script>
           </div>
 
           <input type="submit" class="submit" value="Save Tab" />
         </form>
 
         <script type="text/javascript">
-          $("select").customSelect();
+          $("#color-scheme, #appearance-delay").customSelect();
 
           $("html.legacy-color-picker input[type=color]").addClass("color {hash: true}")
         </script>

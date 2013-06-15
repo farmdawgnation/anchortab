@@ -453,30 +453,60 @@ object Tabs extends Loggable {
       ".whitelabel-group" #> (hasWhitelabel_? ? PassThru | ClearNodes) andThen
       "#whitelabel" #> checkbox(whitelabel, whitelabel = _) &
       "#custom-text" #> text(customText, customText = _) &
-      "#service" #> selectObj[Tab.EmailServices.Value](
-        validEmailServices.map(v => (v,v.toString)),
-        Full(service),
-        selected => service = selected
-      ) &
-      "#lead-generation-target-email" #> text(leadGenerationTargetEmail, leadGenerationTargetEmail = _) &
-      ".only-if-mailchimp-authorized" #> (mailChimpAuthorized_? ? PassThru | ClearNodes) andThen
-      "#mailchimp-listid" #> select(
-        mailchimpLists.map(l => (l.id, l.name)),
-        mailChimpListId,
-        id => mailChimpListId = Full(id)
-      ) &
-      ".only-if-constantcontact-authorized" #> (constantContactLists.nonEmpty ? PassThru | ClearNodes) andThen
-      "#constantcontact-listid" #> select(
-        constantContactLists.map(l => (l.id.toString, l.name.getOrElse(""))),
-        constantContactListId,
-        id => constantContactListId = Full(id)
-      ) &
-      ".only-if-campaignmonitor-authorized" #> (campaignMonitorAuthorized_? ? PassThru | ClearNodes) andThen
-      "#campaignmonitor-listid" #> select(
-        campaignMonitorLists.map(l => (l.id.toString, l.name)),
-        campaignMonitorListId,
-        id => campaignMonitorListId = Full(id)
-      ) &
+      "#email-marketing-service-selection" #> idMemoize { renderer =>
+        "#service" #> ajaxSelectObj[Tab.EmailServices.Value](
+          validEmailServices.map(v => (v,v.toString)),
+          Full(service),
+          { selected: Tab.EmailServices.Value =>
+            if (selected != service) {
+              service = selected
+              renderer.setHtml
+            } else {
+              Noop
+            }
+          }
+        ) &
+        ".only-if-lead-generation" #> {
+          if (service == Tab.EmailServices.LeadGeneration)
+            PassThru
+          else
+            ClearNodes
+        } andThen
+        "#lead-generation-target-email" #> text(leadGenerationTargetEmail, leadGenerationTargetEmail = _) &
+        ".only-if-mailchimp-authorized" #> {
+          if (service == Tab.EmailServices.MailChimp && mailChimpAuthorized_?)
+            PassThru
+          else
+            ClearNodes
+        } andThen
+        "#mailchimp-listid" #> select(
+          mailchimpLists.map(l => (l.id, l.name)),
+          mailChimpListId,
+          id => mailChimpListId = Full(id)
+        ) &
+        ".only-if-constantcontact-authorized" #> {
+          if (service == Tab.EmailServices.ConstantContact && constantContactLists.nonEmpty)
+            PassThru
+          else
+            ClearNodes
+        } andThen
+        "#constantcontact-listid" #> select(
+          constantContactLists.map(l => (l.id.toString, l.name.getOrElse(""))),
+          constantContactListId,
+          id => constantContactListId = Full(id)
+        ) &
+        ".only-if-campaignmonitor-authorized" #> {
+          if(service == Tab.EmailServices.CampaignMonitor && campaignMonitorAuthorized_?)
+            PassThru
+          else
+            ClearNodes
+        } andThen
+        "#campaignmonitor-listid" #> select(
+          campaignMonitorLists.map(l => (l.id.toString, l.name)),
+          campaignMonitorListId,
+          id => campaignMonitorListId = Full(id)
+        )
+      } &
       ".submit" #> ajaxSubmit("Save Tab", submit _)
 
     "form" #> { ns:NodeSeq =>
