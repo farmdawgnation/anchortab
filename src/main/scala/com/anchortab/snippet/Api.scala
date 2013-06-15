@@ -115,7 +115,7 @@ object Api extends RestHelper with Loggable {
             if (! tab.hasSubscriber_?(email)) {
               implicit val formats = Tab.formats
 
-              val subscriberInformation = TabSubscriber(email)
+              val subscriberInformation = TabSubscriber(email, name)
 
               User.update("_id" -> user._id,
                 "$inc" -> (

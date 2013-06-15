@@ -230,7 +230,7 @@ class ApiSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll {
 
   describe("GET /api/v1/embed/*/submit") {
     it("should record the submission in the database for a valid, enabled tab") {
-      runApiRequest("/api/v1/embed/" + validTab._id.toString + "/submit", None, _.parameters = List("callback" -> "123", "email" -> "bacon@sammich.com")) { response =>
+      runApiRequest("/api/v1/embed/" + validTab._id.toString + "/submit", None, _.parameters = List("callback" -> "123", "email" -> "bacon@sammich.com", "name" -> "Bacon")) { response =>
         response match {
           case Full(JavaScriptResponse(jscmd, _, _, code)) =>
             code should equal (200)
@@ -243,6 +243,7 @@ class ApiSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll {
 
             val theValidTab = Tab.find(validTab._id).get
             theValidTab.subscribers.filter(_.email == "bacon@sammich.com").head.email should equal ("bacon@sammich.com")
+            theValidTab.subscribers.filter(_.name == Some("Bacon")).head.name should equal (Some("Bacon"))
 
           case somethingUnexpected => fail(somethingUnexpected.toString)
         }

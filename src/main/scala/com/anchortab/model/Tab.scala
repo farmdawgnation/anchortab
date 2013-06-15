@@ -36,7 +36,7 @@ object TabAppearance {
 
 case class TabStats(views:Long = 0, submissions:Long = 0)
 
-case class TabSubscriber(email:String, verified:Boolean = false, createdAt:DateTime = new DateTime(),
+case class TabSubscriber(email:String, name:Option[String] = None, verified:Boolean = false, createdAt:DateTime = new DateTime(),
                          _id:ObjectId = ObjectId.get)
 
 case class Tab(name:String, userId:ObjectId, appearance:TabAppearance, service:Option[ServiceWrapper] = Empty,
