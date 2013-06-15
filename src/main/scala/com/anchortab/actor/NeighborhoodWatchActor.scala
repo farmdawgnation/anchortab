@@ -69,6 +69,20 @@ object NeighborhoodWatchActor extends LiftActor with Loggable {
     }).toList
   }
 
+  private def domainsUsingMultipleAccounts: List[SameSiteMultipleAccount] = {
+    implicit val formats = Event.formats
+
+    val recentEventsWithDomain = Event.findAll(
+      ("createdAt" -> ("$gt" -> decompose(DateMidnight.now().minusMonths(1)))) ~
+      ("domain" -> ("$exists" -> true))
+    )
+
+    recentEventsWithDomain.groupBy(_.domain).mapValues(_.map(_.userId.toString)).collect({
+      case (Some(domain), userIds) if userIds.size > 1 =>
+        SameSiteMultipleAccount(domain, userIds)
+    }).toList
+  }
+
   override def messageHandler = {
     case ScheduleNeighborhoodWatch =>
       val delay = timeSpanUntilNextNeighborhoodWatch
