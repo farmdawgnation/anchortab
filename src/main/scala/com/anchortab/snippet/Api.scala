@@ -103,6 +103,7 @@ object Api extends RestHelper with Loggable {
           user <- tab.user.filter(_.tabsActive_?) ?~! "This tab has been disabled." ~> 403
           callbackFnName <- req.param("callback") ?~! "Callback not specified." ~> 400
           email <- req.param("email").filter(_.trim.nonEmpty) ?~! "Email was not specified." ~> 400
+          name = req.param("name").map(_.trim).filter(_.nonEmpty)
         } yield {
           val remoteIp = req.header("X-Forwarded-For") openOr req.remoteAddr
           val userAgent = req.userAgent openOr "unknown"
@@ -130,7 +131,7 @@ object Api extends RestHelper with Loggable {
                 for {
                   serviceWrapper <- tab.service
                 } yield {
-                  ServiceWrapperSubmissionActor ! SubscribeEmailToServiceWrapper(serviceWrapper, email)
+                  ServiceWrapperSubmissionActor ! SubscribeEmailToServiceWrapper(serviceWrapper, email, name)
 
                   "Success! An email has been sent to confirm your subscription."
                 }

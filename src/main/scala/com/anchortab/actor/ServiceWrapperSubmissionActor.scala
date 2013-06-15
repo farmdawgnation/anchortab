@@ -10,12 +10,12 @@ import com.anchortab.model.ServiceWrapper
 
 import com.newrelic.api.agent.NewRelic
 
-case class SubscribeEmailToServiceWrapper(serviceWrapper: ServiceWrapper, email: String)
+case class SubscribeEmailToServiceWrapper(serviceWrapper: ServiceWrapper, email: String, name: Option[String])
 
 object ServiceWrapperSubmissionActor extends LiftActor with Loggable {
   def messageHandler = {
-    case SubscribeEmailToServiceWrapper(serviceWrapper, email) =>
-      serviceWrapper.subscribeEmail(email) match {
+    case SubscribeEmailToServiceWrapper(serviceWrapper, email, name) =>
+      serviceWrapper.subscribeEmail(email, name) match {
         case Failure(msg, _, _) =>
           logger.error("Error submitting email " + email + ":" + msg)
 
