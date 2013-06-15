@@ -133,6 +133,7 @@ object RequestHandling {
       Accounts.menus ++
       Subscription.menus ++
       Invites.menus ++
+      Affiliate.menus ++
       Admin.menus
 
     LiftRules.setSiteMap(SiteMap(menus: _*))
