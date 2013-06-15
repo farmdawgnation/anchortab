@@ -1,7 +1,6 @@
 package com.anchortab.snippet
 
 import scala.xml._
-import scala.collection.JavaConverters._
 
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -32,7 +31,8 @@ import org.joda.time._
 case class TabEmbedCodeReceived(embedCode: String) extends SimpleAnchorTabEvent("tab-embed-code-received")
 case class NewTabCreated(embedCode: String) extends SimpleAnchorTabEvent("new-tab-created")
 
-object Tabs extends Loggable with MailChimpTabForm with ConstantContactTabForm {
+object Tabs extends Loggable with MailChimpTabForm with ConstantContactTabForm
+            with CampaignMonitorTabForm {
   val tabListMenu = Menu.i("Tabs") / "manager" / "tabs"
   val tabNewMenu = Menu.i("New Tab") / "manager" / "tabs" / "new" >>
     TemplateBox(() => Templates("manager" :: "tab" :: "form" :: Nil))
@@ -260,48 +260,6 @@ object Tabs extends Loggable with MailChimpTabForm with ConstantContactTabForm {
         }
       } openOr {
         GeneralError("Something went wrong. Please contact support by emailing hello@anchortab.com.")
-      }
-    }
-
-    val campaignMonitorAuthorized_? = {
-      import com.anchortab.campaignmonitor._
-
-      for {
-        session <- userSession.is
-        user <- User.find(session.userId)
-        credentials <- user.credentialsFor(CampaignMonitor.serviceIdentifier)
-      } yield {
-        true
-      }
-    } openOr {
-      false
-    }
-
-    val campaignMonitorLists = {
-      import com.anchortab.campaignmonitor._
-
-      val lists = {
-        for {
-          session <- userSession.is
-          lists <- CampaignMonitorCredentialsHelper.withAccessCredentials(session.userId) { (accessToken, refreshToken) =>
-            CampaignMonitor.getLists(accessToken, refreshToken)
-          }
-        } yield {
-          lists.toList
-        }
-      }
-
-      lists match {
-        case Full(cmLists) => cmLists
-
-        case Failure(msg, _, _) =>
-          NewRelic.noticeError("Campaign Monitor List List Error", Map(
-            "error message" -> msg
-          ).asJava)
-
-          Nil
-
-        case _ => Nil
       }
     }
 
