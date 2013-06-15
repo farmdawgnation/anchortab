@@ -52,6 +52,7 @@ object Api extends RestHelper with Loggable {
         } yield {
           val remoteIp = req.header("X-Forwarded-For") openOr req.remoteAddr
           val userAgent = req.userAgent openOr "unknown"
+          val domain = req.header("X-Embedded-Domain")
 
           Tab.update("_id" -> tab._id, "$inc" -> ("stats.views" -> 1))
 
@@ -70,7 +71,7 @@ object Api extends RestHelper with Loggable {
           )
 
           QuotasActor ! CheckQuotaCounts(user._id)
-          EventActor ! TrackEvent(Event.Types.TabView, remoteIp, userAgent, user._id, tab._id)
+          EventActor ! TrackEvent(Event.Types.TabView, remoteIp, userAgent, user._id, tab._id, domain = domain)
 
           val whitelabelTab = tab.appearance.whitelabel && plan.hasFeature_?(Plan.Features.WhitelabeledTabs)
           val colorScheme = {
@@ -105,6 +106,7 @@ object Api extends RestHelper with Loggable {
         } yield {
           val remoteIp = req.header("X-Forwarded-For") openOr req.remoteAddr
           val userAgent = req.userAgent openOr "unknown"
+          val domain = req.header("X-Embedded-Domain")
 
           // Ensure this new subscriber is unique.
           val submitResult =
@@ -146,7 +148,7 @@ object Api extends RestHelper with Loggable {
             }
 
           QuotasActor ! CheckQuotaCounts(user._id)
-          EventActor ! TrackEvent(Event.Types.TabSubmit, remoteIp, userAgent, user._id, tab._id)
+          EventActor ! TrackEvent(Event.Types.TabSubmit, remoteIp, userAgent, user._id, tab._id, domain = domain)
 
           Call(callbackFnName, submitResult)
         }

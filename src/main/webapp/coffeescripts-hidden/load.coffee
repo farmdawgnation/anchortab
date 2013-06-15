@@ -157,6 +157,8 @@ submitEmail = (event) ->
   $.ajax
     url: submissionUri
     dataType: 'jsonp'
+    headers:
+      'X-Embedded-Domain': location.host
     data:
       email: email
     success: (event) ->
@@ -329,6 +331,8 @@ loadAnchorTab = ->
     url: tabJson
     dataType: 'jsonp'
     success: displayTab
+    headers:
+      'X-Embedded-Domain': location.host
     error: (xhr, status, error) ->
       console.error(error)
 

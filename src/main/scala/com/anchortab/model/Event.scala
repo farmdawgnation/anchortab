@@ -38,7 +38,6 @@ object EventLog {
       userAgent:String,
       userId:ObjectId,
       tabId:ObjectId,
-      cookieId:Option[String],
       email:Option[String] = None,
       domain: Option[String] = None
   ) {
