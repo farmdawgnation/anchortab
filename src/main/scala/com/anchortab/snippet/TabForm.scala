@@ -25,6 +25,7 @@ class TabForm extends Loggable with MailChimpTabForm with ConstantContactTabForm
   var customColorSchemeBase = requestTab.map(_.appearance.colorScheme.baseColor) openOr ""
   var customColorSchemeSecondary = requestTab.map(_.appearance.colorScheme.secondaryColor) openOr ""
   var whitelabel = requestTab.map(_.appearance.whitelabel) openOr false
+  var collectName = requestTab.map(_.appearance.collectName) openOr false
   var customText = requestTab.map(_.appearance.customText) openOr ""
 
   var mailChimpApiKey = ""
@@ -174,7 +175,8 @@ class TabForm extends Loggable with MailChimpTabForm with ConstantContactTabForm
                     delay = appearanceDelay.toInt,
                     colorScheme = customizedColorScheme,
                     customText = customText,
-                    whitelabel = whitelabel
+                    whitelabel = whitelabel,
+                    collectName = collectName
                   ),
                   service = serviceWrapper
                 ).save
@@ -184,7 +186,7 @@ class TabForm extends Loggable with MailChimpTabForm with ConstantContactTabForm
 
               case _ =>
                 val tab = Tab(tabName, session.userId,
-                    TabAppearance(tryo(appearanceDelay.toInt) openOr 0, customizedColorScheme, customText, whitelabel),
+                    TabAppearance(tryo(appearanceDelay.toInt) openOr 0, customizedColorScheme, customText, whitelabel, collectName),
                     serviceWrapper)
                 tab.save
 
@@ -233,6 +235,7 @@ class TabForm extends Loggable with MailChimpTabForm with ConstantContactTabForm
       "#custom-color-scheme-secondary" #> text(customColorSchemeSecondary, customColorSchemeSecondary = _, ("type" -> "color")) &
       ".whitelabel-group" #> (hasWhitelabel_? ? PassThru | ClearNodes) andThen
       "#whitelabel" #> checkbox(whitelabel, whitelabel = _) &
+      "#collect-name" #> checkbox(collectName, collectName = _) &
       "#custom-text" #> text(customText, customText = _) &
       "#email-marketing-service-selection" #> idMemoize { renderer =>
         "#service" #> ajaxSelectObj[Tab.EmailServices.Value](
