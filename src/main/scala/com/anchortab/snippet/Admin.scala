@@ -43,6 +43,7 @@ object Admin {
     Menu.param[Plan]("Edit Plan", Text("Edit Plan"), Plan.find(_), _._id.toString) /
     "admin" / "plan" / * >>
     TemplateBox(() => Templates("admin" :: "plan" :: "form" :: Nil))
+  val affiliateReportMenu = Menu.i("Affiliate Report") / "admin" / "affiliate-report"
 
   val menus =
     usersListMenu ::
@@ -51,6 +52,7 @@ object Admin {
     plansListMenu ::
     plansNewMenu ::
     plansEditMenu ::
+    affiliateReportMenu ::
     Nil
 
   val shortDateFormatter = new SimpleDateFormat("MM/dd/yyyy")

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+    <title>Tab Manager</title>
+  </head>
+  <body class="lift:content_id=main">
+    <div id="main" class="lift:surround?with=tab-manager;at=content">
+      <lift:pwn-if-not-admin></lift:pwn-if-not-admin>
+      <h2>Affiliate Report</h2>
+
+      <p>
+        The following tables lists users who have referred other users. We list
+        the users they have referred by what plan they're subscribed to. We also
+        divide these numbers by total and new this month. (The total number does include
+        the new this month number.) We only count users will active subscriptions who
+        have credit card information on file.
+      </p>
+
+      <h3>Select Month for Report</h3>
+      <form class="affiliate-report-month-selection">
+        <div>
+          <label for="month-selection">Month</label>
+          <select id="month-selection">
+            <option>January</option>
+            <option>February</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="year-selection">Year</label>
+          <select id="year-selection">
+            <option>2012</option>
+            <option>2013</option>
+          </select>
+        </div>
+
+        <input type="submit" class="submit" value="Update Report" />
+      </form>
+
+      <table class="affiliate-report">
+        <tr class="header">
+          <th>User</th>
+          <th>New</th>
+          <th>Total</th>
+        </tr>
+        <tr class="affiliate-report-row">
+          <td class="affiliate">
+            Matt Farmer
+            <small>matt@frmr.me</small>
+          </td>
+          <td class="affiliate-new-subscription">
+            <ul class="subscribe-summary">
+              <li>The Influencer: <span class="subscribe-count">500</span></li>
+              <li>Casual Blogger: <span class="subscribe-count">500</span></li>
+              <li>Industry Leader: <span class="subscribe-count">500</span></li>
+            </ul>
+          </td>
+          <td class="affiliate-total-subscriptions">
+            <ul class="subscribe-summary">
+              <li>The Influencer: <span class="subscribe-count">500</span></li>
+              <li>Casual Blogger: <span class="subscribe-count">500</span></li>
+              <li>Industry Leader: <span class="subscribe-count">500</span></li>
+            </ul>
+          </td>
+        </tr>
+        <tr class="affiliate-report-row clearable">
+          <td class="affiliate">
+            Justin Westbrooks
+            <small>justin@ciriongroup.com</small>
+          </td>
+          <td class="affiliate-new-subscription">
+            <ul class="subscribe-summary">
+              <li>The Influencer: <span class="subscribe-count">500</span></li>
+              <li>Casual Blogger: <span class="subscribe-count">500</span></li>
+              <li>Industry Leader: <span class="subscribe-count">500</span></li>
+            </ul>
+          </td>
+          <td class="affiliate-total-subscriptions">
+            <ul class="subscribe-summary">
+              <li>The Influencer: <span class="subscribe-count">500</span></li>
+              <li>Casual Blogger: <span class="subscribe-count">500</span></li>
+              <li>Industry Leader: <span class="subscribe-count">500</span></li>
+            </ul>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>
