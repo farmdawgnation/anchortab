@@ -34,8 +34,24 @@ object ServiceWrapper {
   val typeHints = ShortTypeHints(List(
     classOf[MailChimpServiceWrapper],
     classOf[ConstantContactServiceWrapper],
-    classOf[CampaignMonitorServiceWrapper]
+    classOf[CampaignMonitorServiceWrapper],
+    classOf[LeadGenerationServiceWrapper]
   ))
+}
+
+case class LeadGenerationServiceWrapper(targetEmail: String) extends ServiceWrapper {
+  val credentialsValid_? = true
+  val wrapperIdentifier = "I don't show up on services screen."
+
+  def subscribeEmail(email: String) = {
+    // TODO
+    Full(true)
+  }
+
+  def unsubscribeEmail(email: String) = {
+    // TODO
+    Full(true)
+  }
 }
 
 case class CampaignMonitorServiceWrapper(userId: ObjectId, listId: String) extends ServiceWrapper
