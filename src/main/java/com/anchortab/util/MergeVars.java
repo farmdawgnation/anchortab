@@ -4,11 +4,11 @@ import com.ecwid.mailchimp.*;
 
 public class MergeVars extends MailChimpObject {
   @Field
-  public String INVITE;
+  public String FNAME;
 
   public MergeVars() { }
 
-  public MergeVars(String invite) {
-    this.INVITE = invite;
+  public MergeVars(String fname) {
+    this.FNAME = fname;
   }
 }

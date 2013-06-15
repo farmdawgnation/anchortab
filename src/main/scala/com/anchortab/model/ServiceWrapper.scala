@@ -10,6 +10,7 @@ import net.liftweb._
 
 import com.anchortab.campaignmonitor._
 import com.anchortab.actor._
+import com.anchortab.util._
 
 import org.joda.time._
 
@@ -26,7 +27,7 @@ import org.bson.types.ObjectId
 **/
 sealed trait ServiceWrapper {
   def credentialsValid_? : Boolean
-  def subscribeEmail(email:String) : Box[Boolean]
+  def subscribeEmail(email: String, name: Option[String] = None) : Box[Boolean]
   def unsubscribeEmail(email:String) : Box[Boolean]
 
   def wrapperIdentifier: String
@@ -44,7 +45,7 @@ case class LeadGenerationServiceWrapper(targetEmail: String) extends ServiceWrap
   val credentialsValid_? = true
   val wrapperIdentifier = "I don't show up on services screen."
 
-  def subscribeEmail(email: String) = {
+  def subscribeEmail(email: String, name: Option[String] = None) = {
     EmailActor ! SendLeadGenerationSubscriptionEmail(targetEmail, email)
     Full(true)
   }
@@ -60,9 +61,9 @@ case class CampaignMonitorServiceWrapper(userId: ObjectId, listId: String) exten
                                                                               with Loggable {
   val credentialsValid_? = true
 
-  def subscribeEmail(email: String) = {
+  def subscribeEmail(email: String, name: Option[String] = None) = {
     val result = withAccessCredentials(userId) { (accessToken, refreshToken) =>
-      CampaignMonitor.addSubscriber(accessToken, refreshToken, listId, email)
+      CampaignMonitor.addSubscriber(accessToken, refreshToken, listId, email, name)
     }
 
     result.map(thing => true)
@@ -88,8 +89,12 @@ case class ConstantContactServiceWrapper(username:String, implicit val accessTok
   // This is an OAuth-based API wrapper, making the checking of valid credentials unneeded for the moment
   val credentialsValid_? = true
 
-  def subscribeEmail(email:String) = {
-    val contact = Contact(EmailAddress(email) :: Nil, lists = Some(ContactList(listId.toString) :: Nil))
+  def subscribeEmail(email:String, name: Option[String] = None) = {
+    val contact = Contact(
+      EmailAddress(email) :: Nil,
+      name = name.map(name => ContactName(Some(name), None, None)),
+      lists = Some(ContactList(listId.toString) :: Nil)
+    )
 
     for {
       contact <- contact.save
@@ -132,7 +137,7 @@ case class MailChimpServiceWrapper(apiKey:String, listId:String) extends Service
     }
   }
 
-  def subscribeEmail(email:String) = {
+  def subscribeEmail(email:String, name: Option[String] = None) = {
     // Instantiate a MailChimpClient
     val mcClient = new MailChimpClient
 
@@ -142,6 +147,10 @@ case class MailChimpServiceWrapper(apiKey:String, listId:String) extends Service
     listSubscribeCall.id = listId
     listSubscribeCall.email_address = email
     listSubscribeCall.update_existing = true
+
+    name.foreach { name =>
+      listSubscribeCall.merge_vars = new MergeVars(name)
+    }
 
     // Execute the call against the remote server.
     tryo(mcClient.execute(listSubscribeCall))
