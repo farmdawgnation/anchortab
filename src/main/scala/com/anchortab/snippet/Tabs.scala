@@ -22,7 +22,6 @@ import net.liftweb._
   import mongodb.BsonDSL._
 
 import com.anchortab.model._
-import com.anchortab.constantcontact.model.ContactLists._
 
 import com.newrelic.api.agent.NewRelic
 
@@ -33,7 +32,7 @@ import org.joda.time._
 case class TabEmbedCodeReceived(embedCode: String) extends SimpleAnchorTabEvent("tab-embed-code-received")
 case class NewTabCreated(embedCode: String) extends SimpleAnchorTabEvent("new-tab-created")
 
-object Tabs extends Loggable with MailChimpTabForm {
+object Tabs extends Loggable with MailChimpTabForm with ConstantContactTabForm {
   val tabListMenu = Menu.i("Tabs") / "manager" / "tabs"
   val tabNewMenu = Menu.i("New Tab") / "manager" / "tabs" / "new" >>
     TemplateBox(() => Templates("manager" :: "tab" :: "form" :: Nil))
@@ -262,29 +261,6 @@ object Tabs extends Loggable with MailChimpTabForm {
       } openOr {
         GeneralError("Something went wrong. Please contact support by emailing hello@anchortab.com.")
       }
-    }
-
-    val constantContactLists = {
-      for {
-        session <- userSession.is
-        user <- User.find(session.userId)
-        credentials <- user.credentialsFor("Constant Contact")
-      } yield {
-        implicit val accessToken = credentials.serviceCredentials.get("token") getOrElse ""
-        ContactList.findAll match {
-          case Full(list) => list
-          case Failure(msg, _, _) =>
-            NewRelic.noticeError("Constant Contact List List Error", Map(
-              "error message" -> msg
-            ).asJava)
-
-            logger.error(msg)
-            Nil
-          case _ => Nil
-        }
-      }
-    } openOr {
-      Nil
     }
 
     val campaignMonitorAuthorized_? = {
