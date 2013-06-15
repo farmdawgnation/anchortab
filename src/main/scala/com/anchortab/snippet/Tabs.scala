@@ -33,7 +33,7 @@ import org.joda.time._
 case class TabEmbedCodeReceived(embedCode: String) extends SimpleAnchorTabEvent("tab-embed-code-received")
 case class NewTabCreated(embedCode: String) extends SimpleAnchorTabEvent("new-tab-created")
 
-object Tabs extends Loggable {
+object Tabs extends Loggable with MailChimpTabForm {
   val tabListMenu = Menu.i("Tabs") / "manager" / "tabs"
   val tabNewMenu = Menu.i("New Tab") / "manager" / "tabs" / "new" >>
     TemplateBox(() => Templates("manager" :: "tab" :: "form" :: Nil))
@@ -285,51 +285,6 @@ object Tabs extends Loggable {
       }
     } openOr {
       Nil
-    }
-
-    val mailChimpAuthorized_? = {
-      for {
-        session <- userSession.is
-        user <- User.find(session.userId)
-        credentials <- user.credentialsFor("Mailchimp")
-      } yield {
-        true
-      }
-    } openOr {
-      false
-    }
-
-    val mailchimpLists = {
-      import com.ecwid.mailchimp._
-        import method.list._
-
-      val lists = {
-        for {
-          session <- userSession.is
-          user <- User.find(session.userId)
-          credentials <- user.credentialsFor("Mailchimp")
-          token <- credentials.serviceCredentials.get("token")
-        } yield {
-          val mcClient = new MailChimpClient
-          val listsMethod = new ListsMethod
-          listsMethod.apikey = token
-
-          mcClient.execute(listsMethod)
-        }
-      } map(_.data.asScala.toList)
-
-      lists match {
-        case Full(mcLists) => mcLists
-
-        case Failure(msg, _, _) =>
-          NewRelic.noticeError("MailChimp List List Error", Map(
-            "error message" -> msg
-          ).asJava)
-
-          Nil
-
-        case _ => Nil
-      }
     }
 
     val campaignMonitorAuthorized_? = {
