@@ -51,7 +51,7 @@
       display: none
 
     &.success
-      .custom-message, .email-input, .email-submission
+      .custom-message, .first-name-input, .email-input, .email-submission
         display: none
 
       .success-message
@@ -67,7 +67,7 @@
 
       padding: 1em 0
 
-    .email-input
+    .email-input, .first-name-input
       display: block
       +border-radius(5px)
       border: 0
@@ -113,7 +113,7 @@
         font-size: 18px
         line-height: 20px
 
-      .email-input
+      .email-input, .first-name-input
         font-size: 20px
 
       .email-submission, .minimize
@@ -163,7 +163,7 @@
         bottom: 2px
 
     &.success
-      .custom-message, .email-input, .email-submission
+      .custom-message, .first-name-input, .email-input, .email-submission
         display: none
 
       .success-message
@@ -224,7 +224,7 @@
       padding: 0
       text-shadow: none
 
-    .email-input
+    .email-input, .first-name-input
       +border-radius(5px)
       border: 0
       padding: 7px
@@ -232,10 +232,19 @@
       font-size: 11px
       line-height: normal
 
-      width: 193px
       background-color: white
 
       margin: 0
+
+    .email-input
+      width: 193px
+
+    .first-name-input
+      width: 96px
+      margin-right: 7px
+
+      & + .email-input
+        width: 96px
 
     .email-submission
       color: white
