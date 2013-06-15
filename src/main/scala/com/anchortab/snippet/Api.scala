@@ -86,7 +86,8 @@ object Api extends RestHelper with Loggable {
             ("delay" -> tab.appearance.delay) ~
             ("colorScheme" -> decompose(colorScheme)) ~
             ("whitelabel" -> whitelabelTab) ~
-            ("customText" -> tab.appearance.customText)
+            ("customText" -> tab.appearance.customText) ~
+            ("collectName" -> tab.appearance.collectName)
 
           Call(callbackFnName, tabJson)
         }
