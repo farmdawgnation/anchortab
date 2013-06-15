@@ -39,7 +39,7 @@ case class SendNeighborhoodWatchEmail(
   multipleAccountsSameIpAndUserAgent: List[MultipleAccountsSameIp],
   similarEmailAddresses: List[SimilarEmailAddresses]
 ) extends EmailActorMessage
-case class SendLeadGenerationSubscriptionEmail(targetEmail: String, subscribedEmail: String) extends EmailActorMessage
+case class SendLeadGenerationSubscriptionEmail(targetEmail: String, subscribedEmail: String, subscriberName: Option[String]) extends EmailActorMessage
 
 trait WelcomeEmailHandling extends EmailHandlerChain {
   val welcomeEmailSubject = "Welcome to Anchor Tab!"
@@ -177,10 +177,13 @@ trait LeadGenerationSubscriptionEmailHandling extends EmailHandlerChain {
   val leadGenerationSubject = "New Lead from your Anchor Tab"
 
   addHandler {
-    case SendLeadGenerationSubscriptionEmail(targetEmail, subscribedEmail) =>
+    case SendLeadGenerationSubscriptionEmail(targetEmail, subscribedEmail, subscriberName) =>
       val transform =
         ".email-address [href]" #> ("mailto:" + subscribedEmail) &
-        ".email-address *" #> subscribedEmail
+        ".email-address *" #> subscribedEmail &
+        ".subscriber-name-line" #> subscriberName.map { name =>
+          ".subscriber-name *" #> name
+        }
 
       val message = transform.apply(leadGenerationTemplate)
 

@@ -46,7 +46,7 @@ case class LeadGenerationServiceWrapper(targetEmail: String) extends ServiceWrap
   val wrapperIdentifier = "I don't show up on services screen."
 
   def subscribeEmail(email: String, name: Option[String] = None) = {
-    EmailActor ! SendLeadGenerationSubscriptionEmail(targetEmail, email)
+    EmailActor ! SendLeadGenerationSubscriptionEmail(targetEmail, email, name)
     Full(true)
   }
 
