@@ -142,6 +142,8 @@ object Tabs extends Loggable {
     var constantContactListId: Box[String] = Empty
     var campaignMonitorListId: Box[String] = Empty
 
+    var leadGenerationTargetEmail: String = ""
+
     var service : Tab.EmailServices.Value = {
       requestTab.map(_.service).openOr(None) match {
         case Some(mcsw:MailChimpServiceWrapper) =>
@@ -158,6 +160,11 @@ object Tabs extends Loggable {
           campaignMonitorListId = Full(cmsw.listId)
 
           Tab.EmailServices.CampaignMonitor
+
+        case Some(lgsw: LeadGenerationServiceWrapper) =>
+          leadGenerationTargetEmail = lgsw.targetEmail
+
+          Tab.EmailServices.LeadGeneration
 
         case _ => Tab.EmailServices.None
       }
@@ -198,6 +205,9 @@ object Tabs extends Loggable {
               } yield {
                 CampaignMonitorServiceWrapper(session.userId, listId)
               }
+
+            case Tab.EmailServices.LeadGeneration =>
+              Some(LeadGenerationServiceWrapper(leadGenerationTargetEmail))
 
             case _ => None
           }
@@ -404,11 +414,12 @@ object Tabs extends Loggable {
 
     val validEmailServices = {
       val none = List(Tab.EmailServices.None)
+      val leadGeneration = List(Tab.EmailServices.LeadGeneration)
       val cc = (constantContactLists.nonEmpty ? List(Tab.EmailServices.ConstantContact) | List())
       val mc = (mailChimpAuthorized_? ? List(Tab.EmailServices.MailChimp) | List())
       val cm = (campaignMonitorAuthorized_? ? List(Tab.EmailServices.CampaignMonitor) | List())
 
-      none ++ cc ++ mc ++ cm
+      none ++ leadGeneration ++ cc ++ mc ++ cm
     }
 
     val bind =
@@ -447,6 +458,7 @@ object Tabs extends Loggable {
         Full(service),
         selected => service = selected
       ) &
+      "#lead-generation-target-email" #> text(leadGenerationTargetEmail, leadGenerationTargetEmail = _) &
       ".only-if-mailchimp-authorized" #> (mailChimpAuthorized_? ? PassThru | ClearNodes) andThen
       "#mailchimp-listid" #> select(
         mailchimpLists.map(l => (l.id, l.name)),
