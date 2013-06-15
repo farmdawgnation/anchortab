@@ -94,8 +94,11 @@ object NeighborhoodWatchActor extends LiftActor with Loggable {
     case NeighborhoodWatch =>
       logger.info("Running neighborhood watch.")
 
-      logger.info(accountsWithSimilarEmails)
-
+      EmailActor ! SendNeighborhoodWatchEmail(
+        domainsUsingMultipleAccounts,
+        accountsWithSameIp,
+        accountsWithSimilarEmails
+      )
       this ! ScheduleNeighborhoodWatch
   }
 }
