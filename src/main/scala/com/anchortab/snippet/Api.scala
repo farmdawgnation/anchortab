@@ -110,44 +110,40 @@ object Api extends RestHelper with Loggable {
           val userAgent = req.userAgent openOr "unknown"
           val domain = req.header("X-Embedded-Domain")
 
-          // Ensure this new subscriber is unique.
-          val submitResult =
-            if (! tab.hasSubscriber_?(email)) {
-              implicit val formats = Tab.formats
+          if (! tab.hasSubscriber_?(email)) {
+            implicit val formats = Tab.formats
 
-              val subscriberInformation = TabSubscriber(email, name)
+            val subscriberInformation = TabSubscriber(email, name)
 
-              User.update("_id" -> user._id,
-                "$inc" -> (
-                  ("quotaCounts." + Plan.Quotas.EmailSubscriptions) -> 1
-                )
+            User.update("_id" -> user._id,
+              "$inc" -> (
+                ("quotaCounts." + Plan.Quotas.EmailSubscriptions) -> 1
               )
+            )
 
-              Tab.update("_id" -> tab._id, (
-                ("$inc" -> ("stats.submissions" -> 1)) ~
-                ("$addToSet" -> ("subscribers" -> decompose(subscriberInformation)))
-              ))
+            Tab.update("_id" -> tab._id, (
+              ("$inc" -> ("stats.submissions" -> 1)) ~
+              ("$addToSet" -> ("subscribers" -> decompose(subscriberInformation)))
+            ))
+          }
 
-              val successMessage = {
-                for {
-                  serviceWrapper <- tab.service
-                } yield {
-                  ServiceWrapperSubmissionActor ! SubscribeEmailToServiceWrapper(serviceWrapper, email, name)
+          val submitResult = {
+            val successMessage = {
+              for {
+                serviceWrapper <- tab.service
+              } yield {
+                ServiceWrapperSubmissionActor ! SubscribeEmailToServiceWrapper(serviceWrapper, email, name)
 
-                  "Success! An email has been sent to confirm your subscription."
-                }
-              } getOrElse {
-                "Success! You're on the list. Expect to hear from us soon."
+                "Success! An email has been sent to confirm your subscription."
               }
-
-              ("success" -> 1) ~
-              ("email" -> email) ~
-              ("message" -> successMessage)
-            } else {
-              ("success" -> 0) ~
-              ("email" -> email) ~
-              ("message" -> "Your email is already subscribed to this list, it seems.")
+            } getOrElse {
+              "Success! You're on the list. Expect to hear from us soon."
             }
+
+            ("success" -> 1) ~
+            ("email" -> email) ~
+            ("message" -> successMessage)
+          }
 
           QuotasActor ! CheckQuotaCounts(user._id)
           EventActor ! TrackEvent(Event.Types.TabSubmit, remoteIp, userAgent, user._id, tab._id, domain = domain)
