@@ -87,9 +87,11 @@ object NeighborhoodWatchActor extends LiftActor with Loggable {
     case ScheduleNeighborhoodWatch =>
       val delay = timeSpanUntilNextNeighborhoodWatch
 
-      logger.info("Scheduling next neighborhood watch for " + delay)
+      if (Props.productionMode) {
+        logger.info("Scheduling next neighborhood watch for " + delay)
 
-      Schedule(() => this ! NeighborhoodWatch, delay)
+        Schedule(() => this ! NeighborhoodWatch, delay)
+      }
 
     case NeighborhoodWatch =>
       logger.info("Running neighborhood watch.")
