@@ -260,7 +260,8 @@ object Admin {
         var email = user.email
         var changePassword = ""
         var confirmPassword = ""
-        var isAdmin = false
+        var isAdmin = user.admin_?
+        var isAffiliate = user.affiliate_?
 
         def submit() = {
           implicit val formats = DefaultFormats
@@ -313,13 +314,31 @@ object Admin {
                 ("role" -> (isAdmin ? "admin" | ""))
               ))
 
+              if (isAffiliate && ! user.affiliate_?)
+                User.update("_id" -> user._id, "$set" -> ("affiliateCode" -> randomString(32)))
+              else if (! isAffiliate && user.affiliate_?)
+                User.update("_id" -> user._id, "$unset" -> ("affiliateCode" -> true))
+
               RedirectTo("/admin/users")
 
             case (Empty, email, Full(pw)) =>
-              if (isAdmin)
-                User(email, pw, Some(userProfile), role = Some("admin")).save
-              else
-                User(email, pw, Some(userProfile)).save
+              val user = User(email, pw, Some(userProfile))
+
+              val userWithRole = {
+                if (isAdmin)
+                  user.copy(role = Some("admin"))
+                else
+                  user
+              }
+
+              val userWithRoleAndAffiliateCode = {
+                if (isAffiliate)
+                  user.copy(affiliateCode = Some(randomString(32)))
+                else
+                  user
+              }
+
+              userWithRoleAndAffiliateCode.save
 
               RedirectTo("/admin/users")
 
@@ -335,7 +354,8 @@ object Admin {
           ".email" #> text(email, email = _) &
           ".change-password" #> password(changePassword, changePassword = _) &
           ".confirm-password" #> password(confirmPassword, confirmPassword = _) &
-          ".admin-checkbox" #> checkbox(user.admin_?, isAdmin = _) &
+          ".admin-checkbox" #> checkbox(isAdmin, isAdmin = _) &
+          ".affiliate-checkbox" #> checkbox(isAffiliate, isAffiliate = _) &
           ".submit" #> ajaxSubmit("Update Profile", submit _)
 
         "form" #> { ns:NodeSeq =>
