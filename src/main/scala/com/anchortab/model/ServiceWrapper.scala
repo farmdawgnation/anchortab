@@ -9,6 +9,7 @@ import net.liftweb._
     import Extraction._
 
 import com.anchortab.campaignmonitor._
+import com.anchortab.actor._
 
 import org.joda.time._
 
@@ -44,7 +45,7 @@ case class LeadGenerationServiceWrapper(targetEmail: String) extends ServiceWrap
   val wrapperIdentifier = "I don't show up on services screen."
 
   def subscribeEmail(email: String) = {
-    // TODO
+    EmailActor ! SendLeadGenerationSubscriptionEmail(targetEmail, email)
     Full(true)
   }
 
