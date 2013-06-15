@@ -54,6 +54,21 @@ object NeighborhoodWatchActor extends LiftActor with Loggable {
     }).toList
   }
 
+  private def accountsWithSimilarEmails: List[SimilarEmailAddresses] = {
+    implicit val formats = User.formats
+
+    val usersWithAPlusAddress = User.findAll("email" -> "\\w+\\+\\w+@\\w+\\.\\w+".r)
+
+    val usersWithMatchingFirstAndLastPiece = usersWithAPlusAddress.groupBy({ user =>
+      "(\\w+)\\+\\w+@(\\w+\\.\\w+)".r.findAllIn(user.email).matchData.map(_.subgroups).toList.flatten
+    })
+
+    usersWithMatchingFirstAndLastPiece.collect({
+      case (_, users) if users.size > 1 =>
+        SimilarEmailAddresses(users.map(_.email))
+    }).toList
+  }
+
   override def messageHandler = {
     case ScheduleNeighborhoodWatch =>
       val delay = timeSpanUntilNextNeighborhoodWatch
@@ -65,7 +80,7 @@ object NeighborhoodWatchActor extends LiftActor with Loggable {
     case NeighborhoodWatch =>
       logger.info("Running neighborhood watch.")
 
-      logger.info(accountsWithSameIp)
+      logger.info(accountsWithSimilarEmails)
 
       this ! ScheduleNeighborhoodWatch
   }
