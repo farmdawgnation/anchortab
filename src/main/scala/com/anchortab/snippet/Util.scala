@@ -224,6 +224,9 @@ object Util extends Loggable {
         case s if s.startsWith("/admin/miracle") =>
           Some(".miracles [class+]" #> "selected")
 
+        case s if s.startsWith("/amdin/affiliate-report") =>
+          Some(".affiliate-report [class +]" #> "selected")
+
         case _ => None
       }
     }
