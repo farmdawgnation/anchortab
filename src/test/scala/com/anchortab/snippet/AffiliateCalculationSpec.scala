@@ -131,7 +131,7 @@ class AffiliateCalculationSpec extends FunSpec with ShouldMatchers with BeforeAn
     val calculation = TestAffiliateCalculator.totalActiveReferralsAsOfTargetMonth(user._id, targetMonth)
 
     calculation.total should equal (0)
-    calculation.totalByPlan.get(testReferralPlan.name) should equal (Some(0))
+    calculation.totalByPlan.get(testReferralPlan.name) should equal (None)
   }
 
   def monthPlusOneTestForAffiliateUser(user: User) = {
@@ -145,11 +145,13 @@ class AffiliateCalculationSpec extends FunSpec with ShouldMatchers with BeforeAn
     val calculation = TestAffiliateCalculator.newReferralsForTargetMonth(user._id, targetMonth)
 
     calculation.total should equal (0)
-    calculation.totalByPlan.get(testReferralPlan.name) should equal (Some(0))
+    calculation.totalByPlan.get(testReferralPlan.name) should equal (None)
   }
 
   override def beforeAll() {
     bootstrap.liftweb.SetupDb.setup
+
+    testReferralPlan
 
     affiliateUserA
     referredUserA
@@ -171,6 +173,8 @@ class AffiliateCalculationSpec extends FunSpec with ShouldMatchers with BeforeAn
   }
 
   override def afterAll() {
+    testReferralPlan.delete
+
     affiliateUserA.delete
     referredUserA.delete
 
