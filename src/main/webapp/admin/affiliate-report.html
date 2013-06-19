@@ -17,80 +17,88 @@
         have credit card information on file.
       </p>
 
-      <h3>Select Month for Report</h3>
-      <form class="affiliate-report-month-selection">
-        <div>
-          <label for="month-selection">Month</label>
-          <select id="month-selection">
-            <option>January</option>
-            <option>February</option>
-          </select>
-        </div>
+      <div id="affiliate-report-container" data-lift="affiliate-report">
+        <h3>Select Month for Report</h3>
+        <form class="affiliate-report-month-selection">
+          <div>
+            <label for="month-selection">Month</label>
+            <select id="month-selection" class="dont-auto-custom-select">
+              <option>January</option>
+              <option>February</option>
+            </select>
+          </div>
 
-        <div>
-          <label for="year-selection">Year</label>
-          <select id="year-selection">
-            <option>2012</option>
-            <option>2013</option>
-          </select>
-        </div>
+          <div>
+            <label for="year-selection">Year</label>
+            <select id="year-selection" class="dont-auto-custom-select">
+              <option>2012</option>
+              <option>2013</option>
+            </select>
+          </div>
 
-        <input type="submit" class="submit" value="Update Report" />
-      </form>
+          <input type="button" class="submit" id="update-report" value="Update Report" />
+        </form>
 
-      <table class="affiliate-report">
-        <tr class="header">
-          <th>User</th>
-          <th>New</th>
-          <th>Total</th>
-        </tr>
-        <tr class="affiliate-report-row">
-          <td class="affiliate">
-            Matt Farmer
-            <small>matt@frmr.me</small>
-          </td>
-          <td class="affiliate-new-subscription">
-            <ul class="subscribe-summary">
-              <li>
-                <span class="plan-name">The Influencer</span>:
-                <span class="subscribe-count">500</span>
-              </li>
-              <li class="clearable">Casual Blogger: <span class="subscribe-count">500</span></li>
-              <li class="clearable">Industry Leader: <span class="subscribe-count">500</span></li>
-            </ul>
-          </td>
-          <td class="affiliate-total-subscriptions">
-            <ul class="subscribe-summary">
-              <li>
-                <span class="plan-name">The Influencer</span>:
-                <span class="subscribe-count">500</span>
-              </li>
-              <li class="clearable">Casual Blogger: <span class="subscribe-count">500</span></li>
-              <li class="clearable">Industry Leader: <span class="subscribe-count">500</span></li>
-            </ul>
-          </td>
-        </tr>
-        <tr class="affiliate-report-row clearable">
-          <td class="affiliate">
-            Justin Westbrooks
-            <small>justin@ciriongroup.com</small>
-          </td>
-          <td class="affiliate-new-subscription">
-            <ul class="subscribe-summary">
-              <li>The Influencer: <span class="subscribe-count">500</span></li>
-              <li>Casual Blogger: <span class="subscribe-count">500</span></li>
-              <li>Industry Leader: <span class="subscribe-count">500</span></li>
-            </ul>
-          </td>
-          <td class="affiliate-total-subscriptions">
-            <ul class="subscribe-summary">
-              <li>The Influencer: <span class="subscribe-count">500</span></li>
-              <li>Casual Blogger: <span class="subscribe-count">500</span></li>
-              <li>Industry Leader: <span class="subscribe-count">500</span></li>
-            </ul>
-          </td>
-        </tr>
-      </table>
+        <table class="affiliate-report">
+          <tr class="header">
+            <th>User</th>
+            <th>New</th>
+            <th>Total</th>
+          </tr>
+          <tr class="affiliate-report-row">
+            <td class="affiliate">
+              <span class="affiliate-email">matt@frmr.me</span>
+              <small class="affiliate-name">Matt Farmer</small>
+            </td>
+            <td class="affiliate-new-subscription">
+              <ul class="new-subscription-summary subscribe-summary">
+                <li class="new-subscription-summary-item">
+                  <span class="plan-name">The Influencer</span>:
+                  <span class="subscribe-count">500</span>
+                </li>
+                <li class="clearable">Casual Blogger: <span class="subscribe-count">500</span></li>
+                <li class="clearable">Industry Leader: <span class="subscribe-count">500</span></li>
+              </ul>
+            </td>
+            <td class="affiliate-total-subscriptions">
+              <ul class="total-subscription-summary subscribe-summary">
+                <li class="total-subscription-summary-item">
+                  <span class="plan-name">The Influencer</span>:
+                  <span class="subscribe-count">500</span>
+                </li>
+                <li class="clearable">Casual Blogger: <span class="subscribe-count">500</span></li>
+                <li class="clearable">Industry Leader: <span class="subscribe-count">500</span></li>
+              </ul>
+            </td>
+          </tr>
+          <tr class="affiliate-report-row clearable">
+            <td class="affiliate">
+              Justin Westbrooks
+              <small>justin@ciriongroup.com</small>
+            </td>
+            <td class="affiliate-new-subscription">
+              <ul class="subscribe-summary">
+                <li>The Influencer: <span class="subscribe-count">500</span></li>
+                <li>Casual Blogger: <span class="subscribe-count">500</span></li>
+                <li>Industry Leader: <span class="subscribe-count">500</span></li>
+              </ul>
+            </td>
+            <td class="affiliate-total-subscriptions">
+              <ul class="subscribe-summary">
+                <li>The Influencer: <span class="subscribe-count">500</span></li>
+                <li>Casual Blogger: <span class="subscribe-count">500</span></li>
+                <li>Industry Leader: <span class="subscribe-count">500</span></li>
+              </ul>
+            </td>
+          </tr>
+        </table>
+
+        <script type="text/javascript">
+          $(document).ready(function() {
+            $("select").customSelect();
+          });
+        </script>
+      </div>
     </div>
   </body>
 </html>

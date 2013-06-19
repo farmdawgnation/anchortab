@@ -22,7 +22,7 @@ $(document).ready ->
   unless Modernizr.inputtypes.color
     $("html").addClass("legacy-color-picker")
 
-  $("select").customSelect()
+  $("select:not(.dont-auto-custom-select)").customSelect()
 
   $(document).on 'login-failed', ->
     $('.email, .password').addClass('error')

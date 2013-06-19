@@ -1,6 +1,7 @@
 package com.anchortab.snippet
 
 import scala.xml._
+import scala.collection.immutable.Range._
 
 import java.text.SimpleDateFormat
 import java.util.UUID
@@ -26,9 +27,11 @@ import com.anchortab.model._
 
 import com.stripe
 
+import org.joda.time._
+
 import org.bson.types.ObjectId
 
-object Admin {
+object Admin extends AffiliateCalculation {
   val usersListMenu = Menu.i("Users") / "admin" / "users"
   val usersNewMenu = Menu.i("New User") / "admin" / "users" / "new" >>
     TemplateBox(() => Templates("admin" :: "user" :: "form" :: Nil))
@@ -64,6 +67,8 @@ object Admin {
 
     case "admin-plans-list" :: Nil => adminPlansList _
     case "edit-plan-form" :: Nil => editPlanForm
+
+    case "affiliate-report" :: Nil => affiliateReport
   }
 
   def editPlanForm = {
@@ -393,5 +398,73 @@ object Admin {
       }
 
     userListTransform.map(_.apply(xhtml)) openOr NodeSeq.Empty
+  }
+
+  def renderAffiliateReport(targetMonth: YearMonth, plans: List[Plan]) = {
+    val affiliates = User.find("affiliateCode" -> ("$exists" -> true)).map { user =>
+      val allActiveSubs = totalActiveReferralsAsOfTargetMonth(user._id, targetMonth)
+      val newActiveSubs = newReferralsForTargetMonth(user._id, targetMonth)
+
+      (user, allActiveSubs.totalByPlan, newActiveSubs.totalByPlan)
+    }
+
+    ".affiliate-report-row" #> affiliates.map {
+      case (affiliate, allActiveSubs, newActiveSubs) =>
+        ".affiliate-email *" #> affiliate.email &
+        ".affiliate-name *" #> affiliate.name &
+        ".new-subscription-summary-item" #> plans.map { plan =>
+          ".plan-name *" #> plan.name &
+          ".subscribe-count *" #> (newActiveSubs.get(plan.name).getOrElse(0))
+        } &
+        ".total-subscription-summary-item" #> plans.map { plan =>
+          ".plan-name *" #> plan.name &
+          ".subscribe-count *" #> (newActiveSubs.get(plan.name).getOrElse(0))
+        }
+    }
+  }
+
+  def affiliateReport = {
+    var targetMonth: YearMonth = new YearMonth(DateTime.now.getYear(), DateTime.now.getMonthOfYear())
+
+    val months = Seq(
+      (1, "January"),
+      (2, "February"),
+      (3, "March"),
+      (4, "April"),
+      (5, "May"),
+      (6, "June"),
+      (7, "July"),
+      (8, "August"),
+      (9, "September"),
+      (10, "October"),
+      (11, "November"),
+      (12, "December")
+    )
+
+    val currentYear = (new DateTime()).getYear()
+    val years = (new Inclusive(2013, currentYear, 1)).toList.map(year => (year, year.toString))
+    val plans = Plan.findAll(JObject(Nil))
+
+    "#affiliate-report-container" #> idMemoize { renderer =>
+      ClearClearable andThen
+      "#month-selection" #> SHtml.ajaxSelectObj[Int](
+        months,
+        Full(targetMonth.getMonthOfYear()),
+        { month: Int =>
+          targetMonth = targetMonth.withMonthOfYear(month)
+          Noop
+        }
+      ) &
+      "#year-selection" #> SHtml.ajaxSelectObj[Int](
+        years,
+        Full(targetMonth.getYear()),
+        { year: Int =>
+          targetMonth = targetMonth.withYear(year)
+          Noop
+        }
+      ) &
+      "#update-report [onclick]" #> ajaxInvoke(() => renderer.setHtml) &
+      renderAffiliateReport(targetMonth, plans)
+    }
   }
 }
