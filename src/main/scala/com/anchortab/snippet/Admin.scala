@@ -418,7 +418,7 @@ object Admin extends AffiliateCalculation {
         } &
         ".total-subscription-summary-item" #> plans.map { plan =>
           ".plan-name *" #> plan.name &
-          ".subscribe-count *" #> (newActiveSubs.get(plan.name).getOrElse(0))
+          ".subscribe-count *" #> (allActiveSubs.get(plan.name).getOrElse(0))
         }
     }
   }

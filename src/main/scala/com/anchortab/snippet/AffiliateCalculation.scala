@@ -50,8 +50,7 @@ trait AffiliateCalculation extends Loggable {
         (
           subscription.begins.getMonthOfYear() == targetMonth.getMonthOfYear() &&
           subscription.begins.getYear() == targetMonth.getYear()
-        ) ||
-        (subscription.begins isBefore startOfTargetMonth)
+        )
       ) &&
       (
         (! subscription.ends.isDefined) ||
