@@ -407,11 +407,19 @@ object Authentication extends Loggable {
                 UserActiveCard(card.last4, card.`type`, card.expMonth, card.expYear)
               }
 
+              def referringAffiliateId = {
+                S.cookieValue(Affiliate.cookieName).flatMap { code =>
+                  User.find("affiliateCode" -> code).map(_._id)
+                }
+              }
+
               User(emailAddress, User.hashPassword(requestedPassword),
                    None,
                    subscriptions = List(subscription), firstSteps = firstSteps,
                    stripeCustomerId = Some(customer.id),
-                   activeCard = userActiveCard)
+                   activeCard = userActiveCard,
+                   referringAffiliateId = referringAffiliateId
+              )
             }
 
           user.foreach(_.save)
