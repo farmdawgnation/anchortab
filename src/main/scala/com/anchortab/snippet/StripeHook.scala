@@ -230,12 +230,26 @@ object StripeHook extends RestHelper with Loggable {
     }
   }
 
+  /**
+   * Filters IDs that have already been processed.
+   *
+   * TODO: Implement.
+  **/
+  private def validStripeEventId(id: String): Option[String] = {
+    RecordedStripeEvent.find("stripeEventId" -> id) match {
+      case None => Some(id)
+      case _ => None
+    }
+  }
+
   serve {
     case req @ Req("stripe-hook" :: Nil, _, PostRequest) =>
       {
         for {
           requestBody <- req.body
           requestJson <- tryo(Serialization.read[JValue](new String(requestBody)))
+          id <- (requestJson \ "id").extractOpt[String]
+          validStripeId <- validStripeEventId(id)
           eventType <- (requestJson \ "type").extractOpt[String]
           dataJson = (requestJson \ "data")
           objectJson = (dataJson \ "object")
@@ -253,6 +267,10 @@ object StripeHook extends RestHelper with Loggable {
           }
 
           result match {
+            case Full(resp) if resp.isInstanceOf[OkResponse] =>
+              RecordedStripeEvent(validStripeId).save
+              resp
+
             case Full(resp) => resp
 
             case Empty => NotFoundResponse()

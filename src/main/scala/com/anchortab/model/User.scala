@@ -102,6 +102,8 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
                 role:Option[String] = None, createdAt:DateTime = new DateTime,
                 stripeCustomerId:Option[String] = None,
                 activeCard:Option[UserActiveCard] = None,
+                referringAffiliateId: Option[ObjectId] = None,
+                affiliateCode: Option[String] = None,
                 _id:ObjectId = ObjectId.get) extends MongoDocument[User] {
   val meta = User
 
@@ -112,6 +114,7 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
   lazy val onSpecialPlan_? = plan.isSpecial
 
   lazy val admin_? = role == Some(User.Roles.Admin)
+  lazy val affiliate_? = affiliateCode.isDefined
 
   lazy val name = {
     val firstName =

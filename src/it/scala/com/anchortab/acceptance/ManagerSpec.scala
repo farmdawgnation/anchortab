@@ -359,7 +359,7 @@ trait ManagerSpecImpl extends AcceptanceSpec {
       pressKeys(mailChimpTestPassword)
 
       And("click login")
-      click on cssSelector("fieldset > input")
+      click on cssSelector("fieldset > .line > input")
 
       Then("I should be redirected back to the Connected Services page")
       eventually {

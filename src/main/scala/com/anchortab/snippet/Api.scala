@@ -52,6 +52,7 @@ object Api extends RestHelper with Loggable {
         } yield {
           val remoteIp = req.header("X-Forwarded-For") openOr req.remoteAddr
           val userAgent = req.userAgent openOr "unknown"
+          val domain = req.header("X-Embedded-Domain")
 
           Tab.update("_id" -> tab._id, "$inc" -> ("stats.views" -> 1))
 
@@ -70,7 +71,7 @@ object Api extends RestHelper with Loggable {
           )
 
           QuotasActor ! CheckQuotaCounts(user._id)
-          EventActor ! TrackEvent(Event.Types.TabView, remoteIp, userAgent, user._id, tab._id)
+          EventActor ! TrackEvent(Event.Types.TabView, remoteIp, userAgent, user._id, tab._id, domain = domain)
 
           val whitelabelTab = tab.appearance.whitelabel && plan.hasFeature_?(Plan.Features.WhitelabeledTabs)
           val colorScheme = {
@@ -85,7 +86,8 @@ object Api extends RestHelper with Loggable {
             ("delay" -> tab.appearance.delay) ~
             ("colorScheme" -> decompose(colorScheme)) ~
             ("whitelabel" -> whitelabelTab) ~
-            ("customText" -> tab.appearance.customText)
+            ("customText" -> tab.appearance.customText) ~
+            ("collectName" -> tab.appearance.collectName)
 
           Call(callbackFnName, tabJson)
         }
@@ -102,51 +104,49 @@ object Api extends RestHelper with Loggable {
           user <- tab.user.filter(_.tabsActive_?) ?~! "This tab has been disabled." ~> 403
           callbackFnName <- req.param("callback") ?~! "Callback not specified." ~> 400
           email <- req.param("email").filter(_.trim.nonEmpty) ?~! "Email was not specified." ~> 400
+          name = req.param("name").map(_.trim).filter(_.nonEmpty)
         } yield {
           val remoteIp = req.header("X-Forwarded-For") openOr req.remoteAddr
           val userAgent = req.userAgent openOr "unknown"
+          val domain = req.header("X-Embedded-Domain")
 
-          // Ensure this new subscriber is unique.
-          val submitResult =
-            if (! tab.hasSubscriber_?(email)) {
-              implicit val formats = Tab.formats
+          if (! tab.hasSubscriber_?(email)) {
+            implicit val formats = Tab.formats
 
-              val subscriberInformation = TabSubscriber(email)
+            val subscriberInformation = TabSubscriber(email, name)
 
-              User.update("_id" -> user._id,
-                "$inc" -> (
-                  ("quotaCounts." + Plan.Quotas.EmailSubscriptions) -> 1
-                )
+            User.update("_id" -> user._id,
+              "$inc" -> (
+                ("quotaCounts." + Plan.Quotas.EmailSubscriptions) -> 1
               )
+            )
 
-              Tab.update("_id" -> tab._id, (
-                ("$inc" -> ("stats.submissions" -> 1)) ~
-                ("$addToSet" -> ("subscribers" -> decompose(subscriberInformation)))
-              ))
+            Tab.update("_id" -> tab._id, (
+              ("$inc" -> ("stats.submissions" -> 1)) ~
+              ("$addToSet" -> ("subscribers" -> decompose(subscriberInformation)))
+            ))
+          }
 
-              val successMessage = {
-                for {
-                  serviceWrapper <- tab.service
-                } yield {
-                  ServiceWrapperSubmissionActor ! SubscribeEmailToServiceWrapper(serviceWrapper, email)
+          val submitResult = {
+            val successMessage = {
+              for {
+                serviceWrapper <- tab.service
+              } yield {
+                ServiceWrapperSubmissionActor ! SubscribeEmailToServiceWrapper(serviceWrapper, email, name)
 
-                  "Success! An email has been sent to confirm your subscription."
-                }
-              } getOrElse {
-                "Success! You're on the list. Expect to hear from us soon."
+                "Success! An email has been sent to confirm your subscription."
               }
-
-              ("success" -> 1) ~
-              ("email" -> email) ~
-              ("message" -> successMessage)
-            } else {
-              ("success" -> 0) ~
-              ("email" -> email) ~
-              ("message" -> "Your email is already subscribed to this list, it seems.")
+            } getOrElse {
+              "Success! You're on the list. Expect to hear from us soon."
             }
 
+            ("success" -> 1) ~
+            ("email" -> email) ~
+            ("message" -> successMessage)
+          }
+
           QuotasActor ! CheckQuotaCounts(user._id)
-          EventActor ! TrackEvent(Event.Types.TabSubmit, remoteIp, userAgent, user._id, tab._id)
+          EventActor ! TrackEvent(Event.Types.TabSubmit, remoteIp, userAgent, user._id, tab._id, domain = domain)
 
           Call(callbackFnName, submitResult)
         }
