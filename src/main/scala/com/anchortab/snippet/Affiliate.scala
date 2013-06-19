@@ -7,6 +7,7 @@ import net.liftweb._
   import sitemap._
     import Loc._
   import http._
+    import provider._
     import js._
       import JsCmds._
     import SHtml._
@@ -23,12 +24,28 @@ import com.anchortab.model._
 import org.joda.time._
 
 object Affiliate extends Loggable with AffiliateCalculation {
+  val cookieName = "referral-code"
+
   val menu = Menu.i("Affiliate Info") / "manager" / "affiliate"
   val referralMenu = Menu.param[String]("Referral", Text("Referral"), Full(_), _.toString) /
-    "referral" / *
+    "referral" / * >>
+    EarlyResponse(referralRedirect _)
+
+  def referralRedirect: Box[LiftResponse] = {
+    {
+      for {
+        referralCode <- referralMenu.currentValue
+      } yield {
+        RedirectResponse("/", HTTPCookie(cookieName, referralCode).setPath("/"))
+      }
+    } or {
+      Full(RedirectResponse("/"))
+    }
+  }
 
   val menus =
     menu ::
+    referralMenu ::
     Nil
 
   def snippetHandlers: SnippetPF = {
