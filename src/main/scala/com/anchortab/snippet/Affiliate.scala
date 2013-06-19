@@ -1,6 +1,7 @@
 package com.anchortab.snippet
 
 import scala.xml._
+import scala.collection.immutable.Range._
 
 import net.liftweb._
   import sitemap._
@@ -19,7 +20,9 @@ import net.liftweb._
 
 import com.anchortab.model._
 
-object Affiliate extends Loggable {
+import org.joda.time._
+
+object Affiliate extends Loggable with AffiliateCalculation {
   val menu = Menu.i("Affiliate Info") / "manager" / "affiliate"
   val referralMenu = Menu.param[String]("Referral", Text("Referral"), Full(_), _.toString) /
     "referral" / *
@@ -30,6 +33,7 @@ object Affiliate extends Loggable {
 
   def snippetHandlers: SnippetPF = {
     case "referral-url" :: Nil => referralUrl
+    case "referral-performance" :: Nil => referralPerformance
   }
 
   def referralUrl = {
@@ -44,5 +48,28 @@ object Affiliate extends Loggable {
     }
 
     ".referral-url *" #> url
+  }
+
+  def referralPerformance = {
+    val months = (new Inclusive(0, 6, 1)).map { monthsToSubtract =>
+      val date = (new DateTime()).minusMonths(monthsToSubtract)
+
+      new YearMonth(date.getYear(), date.getMonthOfYear())
+    }
+
+    {
+      for {
+        session <- userSession.is
+      } yield {
+        ClearClearable andThen
+        ".referral-performance-row" #> months.map { month =>
+          ".month *" #> month.toDateTime(new DateMidnight()).toString("MMMM yyyy") &
+          ".new *" #> newReferralsForTargetMonth(session.userId, month).total &
+          ".total *" #> totalActiveReferralsAsOfTargetMonth(session.userId, month).total
+        }
+      }
+    } openOr {
+      ClearNodes
+    }
   }
 }
