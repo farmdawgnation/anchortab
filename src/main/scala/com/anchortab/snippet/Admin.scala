@@ -401,7 +401,7 @@ object Admin extends AffiliateCalculation {
   }
 
   def renderAffiliateReport(targetMonth: YearMonth, plans: List[Plan]) = {
-    val affiliates = User.find("affiliateCode" -> ("$exists" -> true)).map { user =>
+    val affiliates = User.findAll("affiliateCode" -> ("$exists" -> true)).map { user =>
       val allActiveSubs = totalActiveReferralsAsOfTargetMonth(user._id, targetMonth)
       val newActiveSubs = newReferralsForTargetMonth(user._id, targetMonth)
 
@@ -463,7 +463,7 @@ object Admin extends AffiliateCalculation {
           Noop
         }
       ) &
-      "#update-report [onclick]" #> ajaxInvoke(() => renderer.setHtml) &
+      "#update-report [onclick]" #> ajaxInvoke(() => renderer.setHtml) andThen
       renderAffiliateReport(targetMonth, plans)
     }
   }
