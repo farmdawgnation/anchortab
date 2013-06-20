@@ -44,7 +44,6 @@ class EventSummaryComet extends CometActor {
       userIdStr = name.replace("event-summary-comet-", "")
       userId = new ObjectId(userIdStr)
     } {
-      EventActor ! EventSummaryRequested(this, userId, Event.Types.TabView)
       EventActor ! EventSummaryRequested(this, userId, Event.Types.TabSubmit)
     }
 

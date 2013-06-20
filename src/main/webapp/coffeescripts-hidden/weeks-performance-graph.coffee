@@ -1,24 +1,19 @@
 $(document).ready ->
   ctx = $("#weeks-performance-graph").get(0).getContext('2d')
-  viewData = []
   submitData = []
 
   requestEventSummary()
 
   $(document).on 'event-summary-updated', (event) ->
-    if event.eventSummary.name == "tab-view"
-      viewData = event.eventSummary.data
-    else if event.eventSummary.name == "tab-submit"
+    if event.eventSummary.name == "tab-submit"
       submitData = event.eventSummary.data
 
-    labels = $.map(viewData, (elem) -> elem.name)
-    viewDataset = $.map(viewData, (elem) -> elem.y)
+    labels = $.map(submitData, (elem) -> elem.name)
     submitDataset = $.map(submitData, (elem) -> elem.y)
 
-    maxOfViews = Math.max.apply(null, viewDataset)
     maxOfSubmits = Math.max.apply(null, submitDataset)
     minimumMaxValue = 50
-    maxValue = Math.max(maxOfViews, maxOfSubmits, minimumMaxValue)
+    maxValue = Math.max(maxOfSubmits, minimumMaxValue)
     maxValueRemainder = maxValue % 10
     maxValueAdd = if maxValueRemainder > 0
       10 - maxValueRemainder
@@ -38,12 +33,6 @@ $(document).ready ->
     chartData = {
         labels: labels,
         datasets: [
-            {
-                data: viewDataset,
-                fillColor: "rgba(0, 0, 0, 0)",
-                strokeColor: "#3f3f3e",
-                pointColor: "#3f3f3e"
-            },
             {
                 data: submitDataset,
                 fillColor: "rgba(0, 0, 0, 0)",
