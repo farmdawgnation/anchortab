@@ -113,7 +113,6 @@ object Tabs extends Loggable {
     ".subscriber" #> tabs.map { tab =>
       ".subscriber [data-tab-id]" #> tab._id.toString &
       ".tab-name *" #> tab.name &
-      ".view-count *" #> tab.stats.views &
       ".subscription-count *" #> tab.stats.submissions &
       ".get-code [onclick]" #> ajaxInvoke(getCode(tab) _) &
       ".subscribers [onclick]" #> ajaxInvoke(subscribers(tab._id) _) &
