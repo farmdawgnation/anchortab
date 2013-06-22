@@ -22,6 +22,7 @@ import com.ning.http.client.{Request, RequestBuilder, Response}
 import org.joda.time._
 
 import com.anchortab.model._
+import com.anchortab.lib._
 
 import org.bson.types.ObjectId
 
@@ -33,102 +34,31 @@ case class SendQuotaErrorEmail(userEmail: String) extends EmailActorMessage
 case class SendTrialEndingEmail(userEmail: String, billingInfoPresent: Boolean, planName: String, trialEnd: DateTime) extends EmailActorMessage
 case class SendInvoicePaymentFailedEmail(userEmail: String, amount: Double, nextPaymentAttempt: Option[DateTime]) extends EmailActorMessage
 case class SendInvoicePaymentSucceededEmail(userEmail: String, amount: Double) extends EmailActorMessage
+case class SendNeighborhoodWatchEmail(
+  sameSiteMultipleAccount: List[SameSiteMultipleAccount],
+  multipleAccountsSameIpAndUserAgent: List[MultipleAccountsSameIp],
+  similarEmailAddresses: List[SimilarEmailAddresses]
+) extends EmailActorMessage
+case class SendLeadGenerationSubscriptionEmail(targetEmail: String, subscribedEmail: String, subscriberName: Option[String]) extends EmailActorMessage
 
-object EmailActor extends LiftActor with Loggable {
-  implicit val formats = DefaultFormats
-
-  protected object Mandrill {
-    private val key = "cpy4Hbh3VICrlVA5cpq_cw"
-    private val endpointHost = "mandrillapp.com"
-    private val endpointVersion = "1.0"
-
-    case class MandrillTo(email: String, name: Option[String] = None)
-    case class MandrillMessage(subject: String, from_email: String, to: List[MandrillTo],
-      from_name: Option[String] = None, html: Option[String] = None,
-      text: Option[String] = None)
-
-    trait MandrillApiCall {
-      def uri(requestBuilder: RequestBuilder): RequestBuilder
-    }
-    case class SendMandrillMessage(message: MandrillMessage, async: Boolean = false) extends MandrillApiCall {
-      def uri(requestBuilder: RequestBuilder) = requestBuilder / "messages" / "send.json"
-    }
-
-    case class CodeResponse(code: Int)
-    protected object AsCodeResponse extends (Response => CodeResponse) {
-      def apply(r:Response) = {
-        CodeResponse(
-          r.getStatusCode()
-        )
-      }
-    }
-
-    case class MandrillResponse(status: String)
-
-    def run(apiCall: MandrillApiCall) = {
-      val postJson = decompose(apiCall) match {
-        case obj:JObject =>
-          obj ~
-          ("key" -> key)
-
-        case _ => JObject(Nil)
-      }
-
-      val requestBody = compact(render(postJson))
-      val request = (apiCall.uri(host(endpointHost) / "api" / endpointVersion)).secure <<
-        requestBody
-
-      val response = Http(request > AsCodeResponse).either
-
-      response() match {
-        case Right(CodeResponse(200)) => // All good.
-        case Right(CodeResponse(code)) => logger.error("Mandrill returned code: " + code)
-        case Left(dispatchError) => logger.error("Dispatch error: " + dispatchError)
-      }
-    }
-  }
-
-  val fromEmail = "hello@anchortab.com"
-  val fromName = "Anchor Tab"
-
-  def sendEmail(subject: String, to: List[String], nodes: NodeSeq) = {
-    val sendMandrillMessage = Mandrill.SendMandrillMessage(
-      Mandrill.MandrillMessage(subject, fromEmail,
-        to.map(Mandrill.MandrillTo(_)),
-        Some(fromName),
-        html = Some(nodes.toString))
-    )
-
-    Mandrill.run(sendMandrillMessage)
-  }
-
+trait WelcomeEmailHandling extends EmailHandlerChain {
   val welcomeEmailSubject = "Welcome to Anchor Tab!"
   val welcomeEmailTemplate = 
     Templates("emails-hidden" :: "welcome-email" :: Nil) openOr NodeSeq.Empty
 
+  addHandler {
+    case SendWelcomeEmail(userEmail) =>
+      sendEmail(welcomeEmailSubject, userEmail :: Nil, welcomeEmailTemplate)
+  }
+}
+
+trait ForgotPasswordEmailHandling extends EmailHandlerChain {
   val forgotPasswordEmailTemplate =
     Templates("emails-hidden" :: "forgot-password-email" :: Nil) openOr NodeSeq.Empty
 
-  val quotaWarningEmailTemplate =
-    Templates("emails-hidden" :: "quota-warning-email" :: Nil) openOr NodeSeq.Empty
-
-  val quotaErrorEmailTemplate =
-    Templates("emails-hidden" :: "quota-error-email" :: Nil) openOr NodeSeq.Empty
-
-  val trialEndingEmailTemplate =
-    Templates("emails-hidden" :: "trial-ending-email" :: Nil) openOr NodeSeq.Empty
-
-  val invoicePaymentFailedEmailTemplate =
-    Templates("emails-hidden" :: "invoice-payment-failed-email" :: Nil) openOr NodeSeq.Empty
-
-  val invoicePaymentSucceededEmailTemplate =
-    Templates("emails-hidden" :: "invoice-payment-succeeded-email" :: Nil) openOr NodeSeq.Empty
-
-  def messageHandler = {
-    case SendWelcomeEmail(userEmail) =>
-      sendEmail(welcomeEmailSubject, userEmail :: Nil, welcomeEmailTemplate)
-
+  addHandler {
     case SendForgotPasswordEmail(userEmail, resetLink) =>
+      println("I FOTGOT A PASSWURD? WUT?")
       val subject = "Anchor Tab Password Reset"
 
       val forgotPasswordMessage = (
@@ -137,17 +67,38 @@ object EmailActor extends LiftActor with Loggable {
       ).apply(forgotPasswordEmailTemplate)
 
       sendEmail(subject, userEmail :: Nil, forgotPasswordMessage)
+  }
+}
 
+trait QuotaWarningEmailHandling extends EmailHandlerChain {
+  val quotaWarningEmailTemplate =
+    Templates("emails-hidden" :: "quota-warning-email" :: Nil) openOr NodeSeq.Empty
+
+  addHandler {
     case SendQuotaWarningEmail(userEmail) =>
       val subject = "Anchor Tab Quota Warning"
 
       sendEmail(subject, userEmail :: Nil, quotaWarningEmailTemplate)
+  }
+}
 
+trait QuotaErrorEmailHandling extends EmailHandlerChain {
+  val quotaErrorEmailTemplate =
+    Templates("emails-hidden" :: "quota-error-email" :: Nil) openOr NodeSeq.Empty
+
+  addHandler {
     case SendQuotaErrorEmail(userEmail) =>
       val subject = "Anchor Tab Quota Error"
 
       sendEmail(subject, userEmail :: Nil, quotaErrorEmailTemplate)
+  }
+}
 
+trait TrialEndingEmailHandling extends EmailHandlerChain {
+  val trialEndingEmailTemplate =
+    Templates("emails-hidden" :: "trial-ending-email" :: Nil) openOr NodeSeq.Empty
+
+  addHandler {
     case SendTrialEndingEmail(userEmail, billingInfoPresent, planName, trialEnd) =>
       val subject = "Anchor Tab Trial Ending Soon"
 
@@ -159,7 +110,14 @@ object EmailActor extends LiftActor with Loggable {
       ).apply(trialEndingEmailTemplate)
 
       sendEmail(subject, userEmail :: Nil, trialEndingSoonMessage)
+  }
+}
 
+trait InvoicePaymentFailedEmailHandling extends EmailHandlerChain {
+  val invoicePaymentFailedEmailTemplate =
+    Templates("emails-hidden" :: "invoice-payment-failed-email" :: Nil) openOr NodeSeq.Empty
+
+  addHandler {
     case SendInvoicePaymentFailedEmail(userEmail, amount, nextPaymentAttempt) =>
       val subject = "Problem Billing your Credit Card"
       val dateFormatter = new SimpleDateFormat("MMM dd")
@@ -174,7 +132,87 @@ object EmailActor extends LiftActor with Loggable {
       ).apply(invoicePaymentFailedEmailTemplate)
 
       sendEmail(subject, userEmail :: Nil, invoicePaymentFailedMessage)
+  }
+}
 
-    case _ =>
+trait NeighborhoodWatchEmailHandling extends EmailHandlerChain {
+  val template =
+    Templates("emails-hidden" :: "neighborhood-watch-email" :: Nil) openOr NodeSeq.Empty
+  val subject = "Anchor Tab Neighborhood Watch"
+  val to = "main+neighborhoodwatch@anchortab.flowdock.com"
+
+  addHandler {
+    case SendNeighborhoodWatchEmail(sameSiteMultipleAccount, multipleAccountsSameIpAndUserAgent, similarEmailAddresses) =>
+      val allClear =
+        sameSiteMultipleAccount.isEmpty &&
+        multipleAccountsSameIpAndUserAgent.isEmpty &&
+        similarEmailAddresses.isEmpty
+
+      val neighborhoodWatchMessage = (
+        ".all-clear" #> (allClear ? PassThru | ClearNodes) andThen
+        ".intro" #> (allClear ? ClearNodes | PassThru) andThen
+        ".same-site-multiple-account" #> (sameSiteMultipleAccount.nonEmpty ? PassThru | ClearNodes) andThen
+        ".same-site-multiple-account-item" #> sameSiteMultipleAccount.map { result =>
+          ".domain *" #> result.domain &
+          ".accounts *" #> result.accounts.mkString(", ")
+        } &
+        ".multiple-accounts-same-ip-and-user-agent" #> (multipleAccountsSameIpAndUserAgent.nonEmpty ? PassThru | ClearNodes) andThen
+        ".multiple-accounts-same-ip-and-user-agent-item" #> multipleAccountsSameIpAndUserAgent.map { result =>
+          ".accounts *" #> result.accounts.mkString(", ") &
+          ".ip-address *" #> result.ip
+        } &
+        ".similar-email-registration" #> (similarEmailAddresses.nonEmpty ? PassThru | ClearNodes) andThen
+        ".similar-email-address-item" #> similarEmailAddresses.map { result =>
+          ".accounts *" #> result.accounts.mkString(", ")
+        }
+      ).apply(template)
+
+      sendEmail(subject, to :: Nil, neighborhoodWatchMessage)
+  }
+}
+
+trait LeadGenerationSubscriptionEmailHandling extends EmailHandlerChain {
+  val leadGenerationTemplate =
+    Templates("emails-hidden" :: "lead-generation-subscription-email" :: Nil) openOr NodeSeq.Empty
+  val leadGenerationSubject = "New Lead from your Anchor Tab"
+
+  addHandler {
+    case SendLeadGenerationSubscriptionEmail(targetEmail, subscribedEmail, subscriberName) =>
+      val transform =
+        ".email-address [href]" #> ("mailto:" + subscribedEmail) &
+        ".email-address *" #> subscribedEmail &
+        ".subscriber-name-line" #> subscriberName.map { name =>
+          ".subscriber-name *" #> name
+        }
+
+      val message = transform.apply(leadGenerationTemplate)
+
+      sendEmail(leadGenerationSubject, targetEmail :: Nil, message)
+  }
+}
+
+object EmailActor extends EmailHandlerChain
+                  with WelcomeEmailHandling
+                  with ForgotPasswordEmailHandling
+                  with QuotaWarningEmailHandling
+                  with QuotaErrorEmailHandling
+                  with TrialEndingEmailHandling
+                  with InvoicePaymentFailedEmailHandling
+                  with NeighborhoodWatchEmailHandling
+                  with LeadGenerationSubscriptionEmailHandling {
+  implicit val formats = DefaultFormats
+
+  val fromEmail = "hello@anchortab.com"
+  val fromName = "Anchor Tab"
+
+  def sendEmail(subject: String, to: List[String], nodes: NodeSeq) = {
+    val sendMandrillMessage = Mandrill.SendMandrillMessage(
+      Mandrill.MandrillMessage(subject, fromEmail,
+        to.map(Mandrill.MandrillTo(_)),
+        Some(fromName),
+        html = Some(nodes.toString))
+    )
+
+    Mandrill.run(sendMandrillMessage)
   }
 }

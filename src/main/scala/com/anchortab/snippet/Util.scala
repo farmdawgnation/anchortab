@@ -212,6 +212,9 @@ object Util extends Loggable {
         case "/manager/services" =>
           Some(".connected-services [class+]" #> "selected")
 
+        case "/manager/affiliate" =>
+          Some(".affiliate [class+]" #> "selected")
+
         case s if s.startsWith("/admin/user") =>
           Some(".users [class+]" #> "selected")
 
@@ -223,6 +226,9 @@ object Util extends Loggable {
 
         case s if s.startsWith("/admin/miracle") =>
           Some(".miracles [class+]" #> "selected")
+
+        case s if s.startsWith("/admin/affiliate-report") =>
+          Some(".affiliate-report [class+]" #> "selected")
 
         case _ => None
       }

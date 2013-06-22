@@ -191,10 +191,12 @@ object Authentication extends Loggable {
     case "show-if-logged-in" :: Nil => showIfLoggedIn
     case "pwn-if-not-admin" :: Nil => pwnIfNotAdmin
     case "show-if-admin" :: Nil => showIfAdmin
+    case "show-if-affiliate" :: Nil => showIfAffiliate
 
     case "register-casual-blogger" :: Nil => registerButton("Casual Blogger")
     case "register-influencer" :: Nil => registerButton("The Influencer")
     case "register-industry-leader" :: Nil => registerButton("Industry Leader")
+    case "register-free-edition" :: Nil => registerButton("Free Edition")
   }
 
   def registerButton(planName: String) = {
@@ -227,6 +229,19 @@ object Authentication extends Loggable {
       // Let's be clever here and trigger a 404 so that someone doing random
       // probes on our app will believe there simply is no /admin url.
       throw new ResponseShortcutException(NotFoundResponse())
+    }
+  }
+
+  def showIfAffiliate(ns: NodeSeq) = {
+    {
+      for {
+        session <- userSession
+        user <- User.find(session.userId) if user.affiliate_?
+      } yield {
+        ns
+      }
+    } openOr {
+      NodeSeq.Empty
     }
   }
 
@@ -321,7 +336,7 @@ object Authentication extends Loggable {
     }
 
     val planSelections = plans.map { plan =>
-      (plan.hasTrial_?.toString, plan._id.toString, plan.registrationTitle)
+      ((plan.hasTrial_? || plan.free_?).toString, plan._id.toString, plan.registrationTitle)
     }
 
     def createStripeCustomer(plan: Plan) = {
@@ -392,11 +407,19 @@ object Authentication extends Loggable {
                 UserActiveCard(card.last4, card.`type`, card.expMonth, card.expYear)
               }
 
+              def referringAffiliateId = {
+                S.cookieValue(Affiliate.cookieName).flatMap { code =>
+                  User.find("affiliateCode" -> code).map(_._id)
+                }
+              }
+
               User(emailAddress, User.hashPassword(requestedPassword),
                    None,
                    subscriptions = List(subscription), firstSteps = firstSteps,
                    stripeCustomerId = Some(customer.id),
-                   activeCard = userActiveCard)
+                   activeCard = userActiveCard,
+                   referringAffiliateId = referringAffiliateId
+              )
             }
 
           user.foreach(_.save)

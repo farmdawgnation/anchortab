@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+    <title>Tab Manager</title>
+  </head>
+  <body class="lift:content_id=main">
+    <div id="main" class="lift:surround?with=tab-manager;at=content">
+      <lift:pwn-if-not-logged-in />
+      <h2>Referral Instructions</h2>
+
+      <p>
+        Below is your affiliate link. When users follow this link they will be
+        directed to the Anchor Tab homepage and flagged with a special cookie that
+        indicates you were their referrer. When they register for an account that converts
+        to an active subscription, your affiliate account will be credited.
+      </p>
+
+      <p data-lift="referral-url" class="referral-url">
+        https://anchortab.com/referral/ABC123
+      </p>
+
+      <p>
+        You should have details as to how your affiliate agreement will credit referrals
+        and how payouts will occur. If you're able to see this panel and you don't have
+        those details, please <a href="mailto: hello@anchortab.com">email us</a>.
+      </p>
+
+      <h2>Referral Performance</h2>
+
+      <p>
+        Below we've summarized your referral performance for the current and previous
+        six months. These numbers represent active subscriptions during
+        the target period. Please note that the actual dollar amount you will recieve will
+        depend on which plans were subscribed to and your affiliate agreement.
+      </p>
+
+      <table class="referral-performance" data-lift="referral-performance">
+        <tr class="header">
+          <th>Month</th>
+          <th>New</th>
+          <th>Total</th>
+        </tr>
+        <tr class="referral-performance-row">
+          <td class="month">June 2013</td>
+          <td class="new">23</td>
+          <td class="total">134</td>
+        </tr>
+        <tr class="clearable">
+          <td class="month">May 2013</td>
+          <td class="new">12</td>
+          <td class="total">111</td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>

@@ -131,9 +131,11 @@ submitEmail = (event) ->
   tabId = $("#anchortab-loader").data('tab-id')
 
   $target = $(event.target)
-  $input = $target.closest("#anchor-tab").find(".email-input")
+  $emailInput = $target.closest("#anchor-tab").find(".email-input")
+  $firstNameInput = $target.closest("#anchor-tab").find(".first-name-input")
 
-  email = $input.val()
+  email = $emailInput.val()
+  name = $firstNameInput.val()
 
   unless email.match(/.+@.+\..+/)
     $("#anchor-tab")
@@ -150,15 +152,19 @@ submitEmail = (event) ->
     return
 
   $target.attr('disabled', 'disabled')
-  $input.attr('disabled', 'disabled')
+  $emailInput.attr('disabled', 'disabled')
+  $firstNameInput.attr('disabled', 'disabled')
 
   submissionUri = "//" + apiDomain + "/api/v1/embed/" + tabId + "/submit"
 
   $.ajax
     url: submissionUri
     dataType: 'jsonp'
+    headers:
+      'X-Embedded-Domain': location.host
     data:
       email: email
+      name: name
     success: (event) ->
       $("#anchor-tab")
         .find(".success-message")
@@ -198,6 +204,7 @@ displayTab = (tabJson) ->
   displayDelay = tabJson.delay * 1000
   colorScheme = tabJson.colorScheme
   customMessage = tabJson.customText
+  collectName = tabJson.collectName
 
   # Load the Anchor Tab stylesheet.
   atStyleSheet =
@@ -282,6 +289,14 @@ displayTab = (tabJson) ->
           .text("Success!")
       )
 
+  if collectName
+    anchorTab.find(".custom-message").after(
+      $("<input />")
+        .addClass("first-name-input")
+        .attr("type", "text")
+        .attr("placeholder", "first name")
+    )
+
   if isBrowserIe()
     if isBrowserIe8OrLess()
       return # Bail, we don't work in IE <= 8.
@@ -329,6 +344,8 @@ loadAnchorTab = ->
     url: tabJson
     dataType: 'jsonp'
     success: displayTab
+    headers:
+      'X-Embedded-Domain': location.host
     error: (xhr, status, error) ->
       console.error(error)
 

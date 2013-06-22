@@ -106,6 +106,7 @@ object RequestHandling {
     LiftRules.snippets.append(Invites.snippetHandlers)
     LiftRules.snippets.append(Tabs.snippetHandlers)
     LiftRules.snippets.append(Subscription.snippetHandlers)
+    LiftRules.snippets.append(Affiliate.snippetHandlers)
   }
 
   def setupSiteMap = {
@@ -133,6 +134,7 @@ object RequestHandling {
       Accounts.menus ++
       Subscription.menus ++
       Invites.menus ++
+      Affiliate.menus ++
       Admin.menus
 
     LiftRules.setSiteMap(SiteMap(menus: _*))

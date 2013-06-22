@@ -141,6 +141,9 @@ body
   font-size: 12px
   line-height: 1.5em
 
+  .tipsy
+    font-size: 0.8rem
+
   #update-billing-modal > form
     +pretty-form
 
@@ -471,6 +474,14 @@ body
           .connect-service, .disconnect-service
             +pretty-button
 
+        .referral-url
+          font-weight: semibold
+          font-size: 16px
+          font-size: 1rem
+
+        .referral-performance
+          +pretty-table
+
         .user-table
           +pretty-table
 
@@ -518,6 +529,26 @@ body
 
         .invite-form
           +pretty-form
+
+        .affiliate-report-month-selection
+          +pretty-form
+
+        .affiliate-report
+          +pretty-table
+
+          .affiliate-report-row
+            .affiliate
+              vertical-align: top
+
+              > small
+                display: block
+                font-weight: normal
+
+            .subscribe-summary > li
+              font-weight: bold
+
+              > .subscribe-count
+                font-weight: normal
 
   .modal
     > h1

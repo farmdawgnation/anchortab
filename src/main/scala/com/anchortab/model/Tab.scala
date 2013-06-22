@@ -29,14 +29,14 @@ object TabColorScheme {
   val advanced = basic ++ (Custom :: Nil)
 }
 
-case class TabAppearance(delay:Int, colorScheme:TabColorScheme, customText:String, whitelabel:Boolean)
+case class TabAppearance(delay:Int, colorScheme:TabColorScheme, customText:String, whitelabel:Boolean, collectName: Boolean)
 object TabAppearance {
-  val defaults = TabAppearance(30, TabColorScheme.Red, "", false)
+  val defaults = TabAppearance(30, TabColorScheme.Red, "", false, false)
 }
 
 case class TabStats(views:Long = 0, submissions:Long = 0)
 
-case class TabSubscriber(email:String, verified:Boolean = false, createdAt:DateTime = new DateTime(),
+case class TabSubscriber(email:String, name:Option[String] = None, verified:Boolean = false, createdAt:DateTime = new DateTime(),
                          _id:ObjectId = ObjectId.get)
 
 case class Tab(name:String, userId:ObjectId, appearance:TabAppearance, service:Option[ServiceWrapper] = Empty,
@@ -80,6 +80,7 @@ object Tab extends MongoDocumentMeta[Tab] {
     val MailChimp = Value("MailChimp")
     val ConstantContact = Value("Constant Contact")
     val CampaignMonitor = Value("Campaign Monitor")
+    val LeadGeneration = Value("Lead Generation")
   }
 
   private def validParameter(options:Enumeration, value:String) = {

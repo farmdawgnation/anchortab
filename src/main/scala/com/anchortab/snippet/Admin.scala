@@ -1,6 +1,7 @@
 package com.anchortab.snippet
 
 import scala.xml._
+import scala.collection.immutable.Range._
 
 import java.text.SimpleDateFormat
 import java.util.UUID
@@ -26,9 +27,11 @@ import com.anchortab.model._
 
 import com.stripe
 
+import org.joda.time._
+
 import org.bson.types.ObjectId
 
-object Admin {
+object Admin extends AffiliateCalculation {
   val usersListMenu = Menu.i("Users") / "admin" / "users"
   val usersNewMenu = Menu.i("New User") / "admin" / "users" / "new" >>
     TemplateBox(() => Templates("admin" :: "user" :: "form" :: Nil))
@@ -43,6 +46,7 @@ object Admin {
     Menu.param[Plan]("Edit Plan", Text("Edit Plan"), Plan.find(_), _._id.toString) /
     "admin" / "plan" / * >>
     TemplateBox(() => Templates("admin" :: "plan" :: "form" :: Nil))
+  val affiliateReportMenu = Menu.i("Affiliate Report") / "admin" / "affiliate-report"
 
   val menus =
     usersListMenu ::
@@ -51,6 +55,7 @@ object Admin {
     plansListMenu ::
     plansNewMenu ::
     plansEditMenu ::
+    affiliateReportMenu ::
     Nil
 
   val shortDateFormatter = new SimpleDateFormat("MM/dd/yyyy")
@@ -62,6 +67,8 @@ object Admin {
 
     case "admin-plans-list" :: Nil => adminPlansList _
     case "edit-plan-form" :: Nil => editPlanForm
+
+    case "affiliate-report" :: Nil => affiliateReport
   }
 
   def editPlanForm = {
@@ -258,7 +265,8 @@ object Admin {
         var email = user.email
         var changePassword = ""
         var confirmPassword = ""
-        var isAdmin = false
+        var isAdmin = user.admin_?
+        var isAffiliate = user.affiliate_?
 
         def submit() = {
           implicit val formats = DefaultFormats
@@ -311,13 +319,31 @@ object Admin {
                 ("role" -> (isAdmin ? "admin" | ""))
               ))
 
+              if (isAffiliate && ! user.affiliate_?)
+                User.update("_id" -> user._id, "$set" -> ("affiliateCode" -> randomString(32)))
+              else if (! isAffiliate && user.affiliate_?)
+                User.update("_id" -> user._id, "$unset" -> ("affiliateCode" -> true))
+
               RedirectTo("/admin/users")
 
             case (Empty, email, Full(pw)) =>
-              if (isAdmin)
-                User(email, pw, Some(userProfile), role = Some("admin")).save
-              else
-                User(email, pw, Some(userProfile)).save
+              val user = User(email, pw, Some(userProfile))
+
+              val userWithRole = {
+                if (isAdmin)
+                  user.copy(role = Some("admin"))
+                else
+                  user
+              }
+
+              val userWithRoleAndAffiliateCode = {
+                if (isAffiliate)
+                  user.copy(affiliateCode = Some(randomString(32)))
+                else
+                  user
+              }
+
+              userWithRoleAndAffiliateCode.save
 
               RedirectTo("/admin/users")
 
@@ -333,7 +359,8 @@ object Admin {
           ".email" #> text(email, email = _) &
           ".change-password" #> password(changePassword, changePassword = _) &
           ".confirm-password" #> password(confirmPassword, confirmPassword = _) &
-          ".admin-checkbox" #> checkbox(user.admin_?, isAdmin = _) &
+          ".admin-checkbox" #> checkbox(isAdmin, isAdmin = _) &
+          ".affiliate-checkbox" #> checkbox(isAffiliate, isAffiliate = _) &
           ".submit" #> ajaxSubmit("Update Profile", submit _)
 
         "form" #> { ns:NodeSeq =>
@@ -371,5 +398,73 @@ object Admin {
       }
 
     userListTransform.map(_.apply(xhtml)) openOr NodeSeq.Empty
+  }
+
+  def renderAffiliateReport(targetMonth: YearMonth, plans: List[Plan]) = {
+    val affiliates = User.findAll("affiliateCode" -> ("$exists" -> true)).map { user =>
+      val allActiveSubs = totalActiveReferralsAsOfTargetMonth(user._id, targetMonth)
+      val newActiveSubs = newReferralsForTargetMonth(user._id, targetMonth)
+
+      (user, allActiveSubs.totalByPlan, newActiveSubs.totalByPlan)
+    }
+
+    ".affiliate-report-row" #> affiliates.map {
+      case (affiliate, allActiveSubs, newActiveSubs) =>
+        ".affiliate-email *" #> affiliate.email &
+        ".affiliate-name *" #> affiliate.name &
+        ".new-subscription-summary-item" #> plans.map { plan =>
+          ".plan-name *" #> plan.name &
+          ".subscribe-count *" #> (newActiveSubs.get(plan.name).getOrElse(0))
+        } &
+        ".total-subscription-summary-item" #> plans.map { plan =>
+          ".plan-name *" #> plan.name &
+          ".subscribe-count *" #> (allActiveSubs.get(plan.name).getOrElse(0))
+        }
+    }
+  }
+
+  def affiliateReport = {
+    var targetMonth: YearMonth = new YearMonth(DateTime.now.getYear(), DateTime.now.getMonthOfYear())
+
+    val months = Seq(
+      (1, "January"),
+      (2, "February"),
+      (3, "March"),
+      (4, "April"),
+      (5, "May"),
+      (6, "June"),
+      (7, "July"),
+      (8, "August"),
+      (9, "September"),
+      (10, "October"),
+      (11, "November"),
+      (12, "December")
+    )
+
+    val currentYear = (new DateTime()).getYear()
+    val years = (new Inclusive(2013, currentYear, 1)).toList.map(year => (year, year.toString))
+    val plans = Plan.findAll(JObject(Nil))
+
+    "#affiliate-report-container" #> idMemoize { renderer =>
+      ClearClearable andThen
+      "#month-selection" #> SHtml.ajaxSelectObj[Int](
+        months,
+        Full(targetMonth.getMonthOfYear()),
+        { month: Int =>
+          targetMonth = targetMonth.withMonthOfYear(month)
+          Noop
+        }
+      ) &
+      "#year-selection" #> SHtml.ajaxSelectObj[Int](
+        years,
+        Full(targetMonth.getYear()),
+        { year: Int =>
+          targetMonth = targetMonth.withYear(year)
+          Noop
+        }
+      ) &
+      "#update-report [onclick]" #> ajaxInvoke(() => renderer.setHtml) andThen
+      renderAffiliateReport(targetMonth, plans)
+    }
   }
 }

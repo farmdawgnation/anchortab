@@ -15,7 +15,7 @@ import org.bson.types.ObjectId
 
 case class Event(eventType:String, ip:String, userAgent:String, userId:ObjectId,
                  tabId:ObjectId, email:Option[String] = None,
-                 uniqueEventActorId:Option[ObjectId] = None,
+                 domain: Option[String] = None,
                  createdAt:DateTime = new DateTime, _id:ObjectId = ObjectId.get)
     extends MongoDocument[Event] {
   val meta = Event
@@ -32,7 +32,15 @@ object Event extends MongoDocumentMeta[Event] {
 }
 
 object EventLog {
-  def track(eventType:String, ip:String, userAgent:String, userId:ObjectId, tabId:ObjectId, cookieId:Option[String], email:Option[String] = None) {
-    Event(eventType, ip, userAgent, userId, tabId, email).save
+  def track(
+      eventType:String,
+      ip:String,
+      userAgent:String,
+      userId:ObjectId,
+      tabId:ObjectId,
+      email:Option[String] = None,
+      domain: Option[String] = None
+  ) {
+    Event(eventType, ip, userAgent, userId, tabId, email, domain).save
   }
 }

@@ -94,13 +94,17 @@ object CampaignMonitor {
     }
   }
 
-  def addSubscriber(accessToken: String, refreshToken: String, listId: String, email: String): Box[String] = {
+  def addSubscriber(accessToken: String, refreshToken: String, listId: String, email: String, name: Option[String]): Box[String] = {
     val auth = new OAuthAuthenticationDetails(accessToken, refreshToken)
     val cmSubscribers = new Subscribers(auth, listId)
 
     val subscriber = new SubscriberToAdd()
     subscriber.EmailAddress = email
     subscriber.ListID = listId
+
+    name.foreach { name =>
+      subscriber.Name = name
+    }
 
     for {
       result <- tryo(cmSubscribers.add(subscriber))
