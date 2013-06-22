@@ -24,6 +24,8 @@ $(document).ready ->
 
   $("select:not(.dont-auto-custom-select)").customSelect()
 
+  $("[rel=tipsy]").tipsy()
+
   $(document).on 'login-failed', ->
     $('.email, .password').addClass('error')
 

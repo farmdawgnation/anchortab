@@ -77,7 +77,23 @@ object Tabs extends Loggable {
     "span *" #> (tabEditMenu.currentValue or tabSubscribersMenu.currentValue).map(_.name)
 
   def newTabButton = {
-    "button [onclick]" #> onEvent(_ => RedirectTo("/manager/tabs/new"))
+    {
+      for {
+        session <- userSession.is
+        user <- User.find(session.userId)
+        userTabCount = Tab.count("userId" -> user._id)
+      } yield {
+        if (user.plan.quotas.get(Plan.Quotas.NumberOfTabs).map(_ > userTabCount) getOrElse true) {
+          "button [onclick]" #> onEvent(_ => RedirectTo("/manager/tabs/new"))
+        } else {
+          "button [class+]" #> "disabled" &
+          "button [title]" #> "You've reached the maximum number of tabs allowed for your plan. Please upgrade to add more." &
+          "button [rel]" #> "tipsy"
+        }
+      }
+    } openOr {
+      ClearNodes
+    }
   }
 
   def tabList = {
