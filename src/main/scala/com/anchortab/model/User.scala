@@ -174,7 +174,7 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
     subscription.isDefined &&
     withinQuotaFor_?(Plan.Quotas.EmailSubscriptions) &&
     withinQuotaFor_?(Plan.Quotas.Views) &&
-    plan.quotas.get(Plan.Quotas.NumberOfTabs).map(_ >= Tab.count("userId" -> _id))
+    plan.quotas.get(Plan.Quotas.NumberOfTabs).map(_ >= Tab.count("userId" -> _id)).getOrElse(true)
   )
 
   lazy val asJson = {
