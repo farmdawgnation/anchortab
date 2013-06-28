@@ -78,8 +78,8 @@ object NeighborhoodWatchActor extends LiftActor with Loggable {
     )
 
     recentEventsWithDomain.groupBy(_.domain).mapValues(_.map(_.userId.toString)).collect({
-      case (Some(domain), userIds) if userIds.size > 1 =>
-        SameSiteMultipleAccount(domain, userIds)
+      case (Some(domain), userIds) if userIds.distinct.size > 1 =>
+        SameSiteMultipleAccount(domain, userIds.distinct)
     }).toList
   }
 
