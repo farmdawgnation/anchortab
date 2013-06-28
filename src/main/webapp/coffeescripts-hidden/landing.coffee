@@ -52,10 +52,6 @@ $(document).ready ->
   $(document).on 'login-failed', ->
     $(".login input").addClass("error")
 
-  $(".enterprise-action-button").on 'click', (event) ->
-    mixpanel.track("Click Enrprise Signup Button")
-    document.location.href = "mailto:hello@anchortab.com?subject=Enterprise Edition"
-
   $(".register-button").on 'click', (event) ->
     document.location.href = "/register#" + $(event.target).data("plan-id")
 
