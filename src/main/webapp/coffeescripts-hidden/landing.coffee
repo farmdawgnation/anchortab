@@ -16,6 +16,8 @@ scrollableElement = (els) ->
   return [];
 
 $(document).ready ->
+  mixpanel.track("Viewed Landing Page")
+
   $('span[rel=tipsy]').tipsy({fade: true})
 
   window.liftAjax.lift_actualAjaxCall = (data, version, onSuccess, onFailure) ->
@@ -43,6 +45,16 @@ $(document).ready ->
 
     $(scrollableElem).animate({scrollTop: targetTop}, 600)
 
+  plansAndPricingHasBeenViewed = false
+  $(window).on 'scroll', ->
+    unless plansAndPricingHasBeenViewed
+      heightOfElemsAbovePricing = $(".im-on-a-boat").outerHeight() + $(".how-it-works").outerHeight() + $(".features").outerHeight()
+      currentBottomScrollIndex = $(window).scrollTop() + $(window).innerHeight()
+
+      if (currentBottomScrollIndex >= heightOfElemsAbovePricing)
+        plansAndPricingHasBeenViewed = true
+        mixpanel.track("Viewed Plans & Pricing")
+
   $(".go-to-manager").on 'click', ->
     document.location = "/manager/dashboard"
 
@@ -51,10 +63,6 @@ $(document).ready ->
 
   $(document).on 'login-failed', ->
     $(".login input").addClass("error")
-
-  $(".enterprise-action-button").on 'click', (event) ->
-    mixpanel.track("Click Enrprise Signup Button")
-    document.location.href = "mailto:hello@anchortab.com?subject=Enterprise Edition"
 
   $(".register-button").on 'click', (event) ->
     document.location.href = "/register#" + $(event.target).data("plan-id")
