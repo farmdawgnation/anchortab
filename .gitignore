@@ -4,3 +4,5 @@ src/main/webapp/.sass-cache
 .DS_Store
 console.devmode.log
 newrelic.jar
+
+*.log
