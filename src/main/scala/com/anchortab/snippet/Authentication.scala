@@ -440,9 +440,9 @@ object Authentication extends Loggable {
 
               loginResult
 
-            case m =>
-              logger.error("While registering account got: " + m)
-              Alert("Something went wrong during account creation.")
+            case Failure(message, _, _) =>
+              logger.warn("While registering account got: " + message)
+              GeneralError("An error occured while creating your account: " + message + " If you continue receiving this error for no apparant reason, please contact us at hello@anchortab.com.")
           }
 
         case errors =>
