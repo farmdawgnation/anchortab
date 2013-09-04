@@ -20,7 +20,7 @@ $(document).ready ->
       if $target.is '.stripe-button'
         $(".stripe-button").attr("disabled", "disabled").addClass("disabled")
 
-  $(document).on 'form-validation-error', (event) ->
+  $(document).on 'form-validation-error, general-error', (event) ->
     setTimeout ->
       $(".stripe-ajax-loader").remove()
       $(".submit").removeClass("disabled").removeAttr("disabled")
