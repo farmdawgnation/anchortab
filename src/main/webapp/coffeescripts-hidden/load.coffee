@@ -289,6 +289,10 @@ displayTab = (tabJson) ->
           .text("Success!")
       )
 
+  # We need a style tag to give the maximize button the
+  # correct color.
+  maximizeColorStyle = "#anchor-tab.desktop .maximize:before, #anchor-tab.desktop .maximize:after { background-color: #{colorScheme.secondaryColor} !important; }"
+
   if collectName
     anchorTab.find(".custom-message").after(
       $("<input />")
@@ -316,6 +320,13 @@ displayTab = (tabJson) ->
     anchorTab.find(".minimize").text("Close")
   else
     anchorTab.addClass "desktop"
+
+  stylesheet = document.styleSheets[0]
+
+  if stylesheet.insertRule?
+    stylesheet.insertRule(maximizeColorStyle)
+  else if stylesheet.addRule?
+    stylesheet.addRule(maximizeColorStyle)
 
   $("body").append anchorTab
 
