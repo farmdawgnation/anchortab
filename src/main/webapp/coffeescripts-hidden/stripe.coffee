@@ -29,7 +29,6 @@ $(document).on 'stripe-form-ready', (event) ->
   $('#card-number').payment('formatCardNumber')
   $('#card-expiry').payment('formatCardExpiry')
   $("#card-cvc").payment('formatCardCVC')
-  $("#card-billing-zip").payment('restrictNumeric')
 
 $(document).on "validate-stripe-form", (event) ->
   $(".validation-error").remove()
@@ -49,10 +48,6 @@ $(document).on "validate-stripe-form", (event) ->
 
   unless $.payment.validateCardExpiry(cardExpiry.month, cardExpiry.year)
     anchortabSite.validationError("#card-expiry", "Invalid card expiration.")
-    validationError = true
-
-  unless $("#card-billing-zip").val().length == 5
-    anchortabSite.validationError("#card-billing-zip", "ZIP codes are five digits.")
     validationError = true
 
   unless validationError
