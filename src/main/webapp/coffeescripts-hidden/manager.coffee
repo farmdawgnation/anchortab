@@ -156,7 +156,7 @@ $(document).ready ->
         .append(
           $("<label />")
             .attr("for", "card-billing-zip")
-            .text("Billing ZIP:")
+            .text("ZIP/Postal Code:")
         )
         .append(
           $("<input />")
