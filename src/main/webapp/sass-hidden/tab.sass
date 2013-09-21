@@ -186,7 +186,7 @@
 
     .minimize
       position: absolute
-      right: 10px
+      right: 14px
       bottom: 14px
       border: 0
       color: transparent
@@ -194,19 +194,39 @@
       width: 18px
       height: 13px
 
-      background: image-url('tab-minimize.png')
-      text-align: left
+      background: transparent
 
       cursor: pointer
 
       padding: 0
       text-shadow: none
 
+      &:before, &:after
+        content: ''
+        display: block
+
+        width: 13px
+        height: 6px
+
+        position: absolute
+        background-color: white
+
+      &:before
+        right: 9px
+        bottom: 4px
+        +transform(rotate(45deg))
+
+      &:after
+        right: 3px
+        bottom: 4px
+        +transform(rotate(-45deg))
+
+
     .maximize
       +transition(bottom 800ms)
 
       position: absolute
-      right: 10px
+      right: 14px
       bottom: -200px
       border: 0
       color: transparent
@@ -214,13 +234,32 @@
       width: 18px
       height: 13px
 
-      background: image-url('tab-maximize.png')
-      test-align: left
+      background: transparent
 
       cursor: pointer
 
       padding: 0
       text-shadow: none
+
+      &:before, &:after
+        content: ''
+        display: block
+
+        width: 13px
+        height: 6px
+
+        position: absolute
+        background-color: white
+
+      &:before
+        right: 9px
+        bottom: 4px
+        +transform(rotate(-45deg))
+
+      &:after
+        right: 3px
+        bottom: 4px
+        +transform(rotate(45deg))
 
     .email-input, .first-name-input
       +border-radius(5px)

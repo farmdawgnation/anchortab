@@ -100,7 +100,7 @@ trait ManagerSpecImpl extends AcceptanceSpec {
       }
 
       And("my new tab is displayed on the tabs list")
-      val tabNames: List[String] =
+      def tabNames: List[String] =
         cssSelector(".tab-list .tab-name").findAllElements.map(_.text).toList
 
       eventually {
