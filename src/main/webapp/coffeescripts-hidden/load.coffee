@@ -324,7 +324,11 @@ displayTab = (tabJson) ->
 
   stylesheet = document.createElement("style")
   document.head.appendChild(stylesheet)
-  stylesheet.sheet.addRule?(maximizeColorSelector, maximizeColorStyle)
+
+  if stylesheet.sheet.addRule?
+    stylesheet.sheet.addRule?(maximizeColorSelector, maximizeColorStyle)
+  else
+    stylesheet.sheet.insertRule(maximizeColorSelector + " {" + maximizeColorStyle + "}", 0)
 
   $("body").append anchorTab
 
