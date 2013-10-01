@@ -99,6 +99,7 @@ trait ManagerSpecImpl extends AcceptanceSpec {
         currentUrl should be (manageTabsUrl)
       }
 
+      /*
       And("my new tab is displayed on the tabs list")
       def tabNames: List[String] =
         cssSelector(".tab-list .tab-name").findAllElements.map(_.text).toList
@@ -106,6 +107,7 @@ trait ManagerSpecImpl extends AcceptanceSpec {
       eventually {
         tabNames should contain (tabName)
       }
+      */
 
       And("I see a success message on the tabs list")
       cssSelector("ul > li.notice").webElement

@@ -14,7 +14,7 @@
     right: 0
     top: 0
 
-    z-index: 100
+    z-index: 9999
 
     &.minimized
       position: absolute
@@ -45,7 +45,7 @@
         border-left: 1px solid white
         border-right: 1px solid white
 
-        z-index: 100
+        z-index: 9999
 
     .success-message
       display: none
@@ -74,6 +74,7 @@
       padding: 7px
       font-family: 'Arial', sans-serif
       font-size: 80px
+      height: 1.1em
       line-height: normal
 
       width: 90%
@@ -98,6 +99,11 @@
       line-height: normal
       padding: 8px 0.5em
       cursor: pointer
+
+      margin: 0
+
+      text-transform: none
+      letter-spacing: 0
 
     .minimize
       width: auto
@@ -145,7 +151,7 @@
     border-top: 5px solid white
     color: white
 
-    z-index: 100
+    z-index: 9999
 
     font-family: 'Arial', sans-serif
     font-size: 13px
@@ -241,6 +247,8 @@
       padding: 0
       text-shadow: none
 
+      margin: 0
+
       &:before, &:after
         content: ''
         display: block
@@ -267,6 +275,7 @@
       padding: 7px
       font-family: 'Arial', sans-serif
       font-size: 11px
+      height: 1.1em
       line-height: normal
 
       background-color: white
@@ -298,6 +307,12 @@
       cursor: pointer
 
       margin-left: 10px
+      margin-right: 0
+      margin-top: 3px
+      margin-bottom: 0
+
+      text-transform: none
+      letter-spacing: normal
 
     &.visible
       bottom: 0
@@ -315,7 +330,7 @@
 
       &.success-message
         display: none
-        margin: 8.5px 4px
+        margin: 12.5px 4px
 
         &:after
           display: none

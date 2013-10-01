@@ -19,7 +19,7 @@ constantcontact.clientSecret=VBESPRGFCNhtbTHBsnfNvjHy
 constantcontact.redirectUrl=https://anchortab.com/oauth2/constant-contact
 
 # Set the url for the embed code.
-anchortab.embedscript=http://embed.anchortab.com/javascripts/load.js
+anchortab.embedscript=//s3.amazonaws.com/embed.anchortab.com/javascripts/load.js
 anchortab.analyticsid=UA-35269224-1
 
 # Production jQuery
