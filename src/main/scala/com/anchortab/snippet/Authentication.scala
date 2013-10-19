@@ -443,6 +443,10 @@ object Authentication extends Loggable {
             case Failure(message, _, _) =>
               logger.warn("While registering account got: " + message)
               GeneralError("An error occured while creating your account: " + message + " If you continue receiving this error for no apparant reason, please contact us at hello@anchortab.com.")
+
+            case Empty =>
+              logger.warn("Got empty while registering account.")
+              GeneralError("An error occured while creating your account. If you continue receiving this error for no apparant reason, please contact us at hello@anchortab.com.")
           }
 
         case errors =>
