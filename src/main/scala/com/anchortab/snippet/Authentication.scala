@@ -472,7 +472,10 @@ object Authentication extends Loggable {
     def processForgotPassword = {
       {
         for {
-          user <- User.findAll("email" -> recoveryEmailAddress).headOption
+          user <- User.find("email" -> (
+            ("$regex" -> ("^" + recoveryEmailAddress + "$")) ~
+            ("$options" -> "i")
+          ))
           request <- S.request
         } yield {
           val resetKey = UserPasswordResetKey()
