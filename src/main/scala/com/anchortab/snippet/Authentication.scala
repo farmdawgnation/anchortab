@@ -362,7 +362,7 @@ object Authentication extends Loggable {
       val validators = Map(
         "input.email-address" -> (() =>
           if (".+@.+\\..+".r.findAllIn(emailAddress).nonEmpty)
-            if (User.count("email" -> emailAddress) > 0) {
+            if (User.countOfUsersWithEmail(emailAddress) > 0) {
               Notices.error("Your email is already registered. Log in below.")
               S.redirectTo(managerMenu.loc.calcDefaultHref)
             } else {

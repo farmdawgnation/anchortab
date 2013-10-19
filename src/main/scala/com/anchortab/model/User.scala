@@ -204,6 +204,13 @@ object User extends MongoDocumentMeta[User] {
     BCrypt.checkpw(candidatePassword, hashedPassword)
   }
 
+  def countOfUsersWithEmail(email: String) = {
+    User.count("email" -> (
+      ("$regex" -> ("^" + email + "$")) ~
+      ("$options" -> "i")
+    ))
+  }
+
   def attemptLogin(email:String, password:String) = {
     for {
       user <- User.find("email" -> (
