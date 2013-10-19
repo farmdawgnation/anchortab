@@ -206,7 +206,10 @@ object User extends MongoDocumentMeta[User] {
 
   def attemptLogin(email:String, password:String) = {
     for {
-      user <- User.find("email" -> email):Box[User]
+      user <- User.find("email" -> (
+        ("$regex" -> ("^" + email + "$")) ~
+        ("$options" -> "i")
+      )):Box[User]
       passwordMatches = User.checkPassword(password, user.password)
         if passwordMatches
     } yield {
