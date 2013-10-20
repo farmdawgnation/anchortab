@@ -22,7 +22,7 @@ case class AffiliateCalculationResult(affiliateId: ObjectId, targetMonth: YearMo
 
 trait AffiliateCalculation extends Loggable {
   private def subscriptionsDuringTargetMonth(targetMonth: YearMonth, user: User) = {
-    val startOfTargetMonth = targetMonth.toDateTime(new DateMidnight()).withDayOfMonth(1)
+    val startOfTargetMonth = targetMonth.toDateTime((new DateTime()).withTimeAtStartOfDay()).withDayOfMonth(1)
     val startOfNextMonth = startOfTargetMonth.plusMonths(1)
 
     user.subscriptions.sortWith(_.begins isBefore _.begins).filter { subscription =>
@@ -42,7 +42,7 @@ trait AffiliateCalculation extends Loggable {
   }
 
   private def firstSubscriptionDuringTargetMonth(targetMonth: YearMonth, user: User) = {
-    val startOfTargetMonth = targetMonth.toDateTime(new DateMidnight()).withDayOfMonth(1)
+    val startOfTargetMonth = targetMonth.toDateTime((new DateTime()).withTimeAtStartOfDay()).withDayOfMonth(1)
     val startOfNextMonth = startOfTargetMonth.plusMonths(1)
 
     user.subscriptions.sortWith(_.begins isBefore _.begins).headOption.filter { subscription =>

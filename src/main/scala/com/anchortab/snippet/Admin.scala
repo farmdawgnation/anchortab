@@ -310,6 +310,9 @@ object Admin extends AffiliateCalculation {
             case (_, _, Failure(msg, _, _)) =>
               Alert(msg)
 
+            case (Failure(msg, _, _), _, _) =>
+              Alert(msg)
+
             case (Full(_), _, pw) =>
               User.update("_id" -> user._id, "$set" -> (
                 ("email" -> email) ~

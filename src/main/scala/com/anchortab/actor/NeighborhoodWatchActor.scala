@@ -26,7 +26,7 @@ object NeighborhoodWatchActor extends LiftActor with Loggable {
   private def timeSpanUntilNextNeighborhoodWatch = {
     val beginningOfNextMonth = Props.mode match {
       case Props.RunModes.Development => (new DateTime()).plusMinutes(1).getMillis
-      case _ => (new DateTime()).toDateMidnight.plusWeeks(1).withDayOfWeek(1).getMillis
+      case _ => (new DateTime()).withTimeAtStartOfDay().plusWeeks(1).withDayOfWeek(1).getMillis
     }
     val now = new DateTime().getMillis
 
@@ -37,7 +37,7 @@ object NeighborhoodWatchActor extends LiftActor with Loggable {
     implicit val formats = UserSession.formats
 
     val recentSessions = UserSession.findAll(
-      ("createdAt" -> ("$gt" -> decompose(DateMidnight.now().minusWeeks(1))))
+      ("createdAt" -> ("$gt" -> decompose((new DateTime()).withTimeAtStartOfDay().minusWeeks(1))))
     )
 
     // A list of IPs mapped to a tuple3 of userID, ip, and agent.
@@ -73,7 +73,7 @@ object NeighborhoodWatchActor extends LiftActor with Loggable {
     implicit val formats = Event.formats
 
     val recentEventsWithDomain = Event.findAll(
-      ("createdAt" -> ("$gt" -> decompose(DateMidnight.now().minusMonths(1)))) ~
+      ("createdAt" -> ("$gt" -> decompose((new DateTime()).withTimeAtStartOfDay().minusMonths(1)))) ~
       ("domain" -> ("$exists" -> true))
     )
 

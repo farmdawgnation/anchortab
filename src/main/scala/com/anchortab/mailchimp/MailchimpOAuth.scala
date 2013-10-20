@@ -19,7 +19,7 @@ object MailchimpOAuth {
   def oAuthAuthorizeUrl = {
     (host(oauthHost) / "oauth2" / "authorize" <<?
       Map("response_type" -> "code", "client_id" -> clientId, "redirect_uri" -> redirectUrl)
-    ).secure.build.getRawUrl
+    ).secure.toRequest.getRawUrl
   }
 
   case class MailChimpOAuthToken(access_token: String, expires_in: Int, scope: String)

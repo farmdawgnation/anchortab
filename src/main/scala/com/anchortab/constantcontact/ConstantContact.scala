@@ -36,7 +36,7 @@ object ConstantContact {
 
   def oauthAuthorizeUrl = {
     (host(oauthBase) / "oauth2" / "oauth" / "siteowner" / "authorize" <<?
-      Map("response_type" -> "code", "client_id" -> clientId, "redirect_uri" -> redirectUrl)).secure.build.getRawUrl
+      Map("response_type" -> "code", "client_id" -> clientId, "redirect_uri" -> redirectUrl)).secure.toRequest.getRawUrl
   }
 
   def retrieveAccessTokenForCode(code:String) = {
