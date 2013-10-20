@@ -15,7 +15,6 @@ import net.liftweb._
   import util._
     import Helpers._
   import json._
-    import JsonDSL._
   import mongodb.BsonDSL._
 
 import com.mongodb.WriteConcern

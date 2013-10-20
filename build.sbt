@@ -8,7 +8,7 @@ version := "1.2.5-SNAPSHOT"
 
 organization := "com.anchortab"
 
-scalaVersion := "2.9.2"
+scalaVersion := "2.10.3"
 
 awsAccessKey := Some("AKIAIIUM6RAXWVRN4NNQ")
 
@@ -43,8 +43,8 @@ libraryDependencies ++= {
     "joda-time"         % "joda-time"           % "2.2",
     "org.joda"          % "joda-convert"        % "1.3.1",
     "org.mindrot"       % "jbcrypt"             % "0.3m",
-    "net.databinder.dispatch" %% "dispatch-core" % "0.9.5",
-    "net.databinder.dispatch" %% "dispatch-lift-json" % "0.9.5" intransitive(),
+    "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
+    "net.databinder.dispatch" %% "dispatch-lift-json" % "0.11.0",
     "com.stripe"        %% "stripe-scala"       % "1.1.2",
     "com.ecwid"         % "ecwid-mailchimp"     % "1.3.0.6",
     "org.scalatest"     %% "scalatest"          % "2.0.M5b" % "it,test",

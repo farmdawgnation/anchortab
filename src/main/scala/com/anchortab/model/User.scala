@@ -9,7 +9,6 @@ import net.liftweb._
   import util.Helpers._
   import json._
     import ext._
-    import JsonDSL._
     import Extraction._
 
 import org.joda.time.DateTime

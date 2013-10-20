@@ -6,7 +6,7 @@ import net.liftweb._
   import util._
     import Helpers._
 
-import dispatch._
+import dispatch._, Defaults._
 import com.ning.http.client.{Request, RequestBuilder, Response}
 
 object MailchimpOAuth {

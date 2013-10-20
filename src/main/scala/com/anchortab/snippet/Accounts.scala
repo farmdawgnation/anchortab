@@ -17,7 +17,6 @@ import net.liftweb._
   import util._
     import Helpers._
   import json._
-    import JsonDSL._
     import Extraction._
   import mongodb.BsonDSL._
 

@@ -13,7 +13,6 @@ import net.liftweb._
       import JsCmds._
     import LiftRules._
   import json._
-    import JsonDSL._
     import Extraction._
   import util._
     import Helpers._

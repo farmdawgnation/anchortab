@@ -11,7 +11,6 @@ import net.liftweb._
   import util._
     import Helpers._
   import json._
-    import JsonDSL._
     import Extraction._
   import mongodb._
     import BsonDSL._
@@ -74,9 +73,7 @@ object StripeHook extends RestHelper with Loggable {
     } yield {
       if (user.activeCard.isDefined) {
         val nextPaymentAttemptSecs: Option[Long] =
-          tryo((objectJson \ "next_payment_attempt").extract[Option[Long]])
-          .flatten
-          .headOption
+          tryo((objectJson \ "next_payment_attempt").extract[Option[Long]]).openOr(None)
 
         val nextPaymentAttempt = nextPaymentAttemptSecs.map { nextPaymentAttemptInSecs =>
           new DateTime(nextPaymentAttemptInSecs * 1000)
