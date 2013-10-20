@@ -10,18 +10,18 @@ organization := "com.anchortab"
 
 scalaVersion := "2.9.2"
 
-awsAccessKey := "AKIAIIUM6RAXWVRN4NNQ"
+awsAccessKey := Some("AKIAIIUM6RAXWVRN4NNQ")
 
-awsSecretKey := "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"
+awsSecretKey := Some("je5eTIWzMApiS60Q/B72ZdggKFjlBCZUFgExjpu/")
 
-awsS3Bucket := "assets.anchortab.com"
+awsS3Bucket := Some("assets.anchortab.com")
 
 resolvers ++= Seq("snapshots"     at "http://oss.sonatype.org/content/repositories/snapshots",
                 "releases"        at "http://oss.sonatype.org/content/repositories/releases",
                 "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
                 )
 
-seq(com.github.siasia.WebPlugin.webSettings :_*)
+seq(webSettings :_*)
 
 seq(resourceManagementSettings :_*)
 
@@ -59,7 +59,7 @@ parallelExecution in Test := false
 
 parallelExecution in IntegrationTest := false
 
-test in IntegrationTest <<= (test in IntegrationTest) dependsOn(com.github.siasia.PluginKeys.start in com.github.siasia.WebPlugin.container.Configuration)
+test in IntegrationTest <<= (test in IntegrationTest) dependsOn(com.earldouglas.xsbtwebplugin.PluginKeys.start in com.earldouglas.xsbtwebplugin.WebPlugin.container.Configuration)
 
 mainClass in assembly := Some("bootstrap.Start")
 
