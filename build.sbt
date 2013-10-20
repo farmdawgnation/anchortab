@@ -30,28 +30,27 @@ net.virtualvoid.sbt.graph.Plugin.graphSettings
 scalacOptions ++= Seq("-deprecation", "-unchecked")
 
 libraryDependencies ++= {
-  val liftVersion = "2.5"
+  val liftVersion = "2.5.1"
   Seq(
     "net.liftweb"       %% "lift-webkit"        % liftVersion        % "compile",
     "net.liftweb"       %% "lift-testkit"       % liftVersion        % "test",
     "net.liftweb"       %% "lift-mongodb"       % liftVersion        % "compile",
     "net.liftmodules"   %% "lift-jquery-module_2.5" % "2.3",
     "javax.servlet"     %  "servlet-api"        % "2.5" % "provided",
-    "org.eclipse.jetty" % "jetty-webapp"        % "8.1.11.v20130520"  % "compile,container",
+    "org.eclipse.jetty" % "jetty-webapp"        % "8.1.13.v20130916"  % "compile,container",
     "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016" % "provided,compile,container" artifacts Artifact("javax.servlet", "jar", "jar"),
     "ch.qos.logback"    % "logback-classic"     % "1.0.13",
-    "joda-time"         % "joda-time"           % "2.2",
-    "org.joda"          % "joda-convert"        % "1.3.1",
-    "org.mindrot"       % "jbcrypt"             % "0.3m",
+    "joda-time"         % "joda-time"           % "2.3",
+    "org.joda"          % "joda-convert"        % "1.5",
     "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
     "net.databinder.dispatch" %% "dispatch-lift-json" % "0.11.0",
     "com.stripe"        %% "stripe-scala"       % "1.1.2",
     "com.ecwid"         % "ecwid-mailchimp"     % "1.3.0.6",
-    "org.scalatest"     %% "scalatest"          % "2.0.M5b" % "it,test",
+    "org.scalatest"     %% "scalatest"          % "2.0.RC2" % "it,test",
     "org.seleniumhq.selenium" % "selenium-java" % "2.37.0" % "it",
     "com.newrelic.agent.java" % "newrelic-api"  % "2.19.1",
     "me.frmr.newrelic"  %% "lift-newrelic"      % "1.0.0",
-    "com.createsend"    % "createsend-java"     % "3.1.2"
+    "com.createsend"    % "createsend-java"     % "3.1.3"
   )
 }
 

@@ -6,7 +6,8 @@ import net.liftweb._
   import common._
   import mongodb._
     import BsonDSL._
-  import util.Helpers._
+  import util._
+    import Helpers._
   import json._
     import ext._
     import Extraction._
@@ -14,8 +15,6 @@ import net.liftweb._
 import org.joda.time.DateTime
 
 import org.bson.types.ObjectId
-
-import org.mindrot.jbcrypt.BCrypt
 
 /**
  * Model representing a user session. A user session is sored in a
