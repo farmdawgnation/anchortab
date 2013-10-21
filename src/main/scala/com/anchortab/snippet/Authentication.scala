@@ -15,7 +15,6 @@ import net.liftweb._
   import util._
     import Helpers._
   import json._
-    import JsonDSL._
   import mongodb.BsonDSL._
 
 import com.mongodb.WriteConcern
@@ -362,7 +361,7 @@ object Authentication extends Loggable {
       val validators = Map(
         "input.email-address" -> (() =>
           if (".+@.+\\..+".r.findAllIn(emailAddress).nonEmpty)
-            if (User.count("email" -> emailAddress) > 0) {
+            if (User.countOfUsersWithEmail(emailAddress) > 0) {
               Notices.error("Your email is already registered. Log in below.")
               S.redirectTo(managerMenu.loc.calcDefaultHref)
             } else {
@@ -443,6 +442,10 @@ object Authentication extends Loggable {
             case Failure(message, _, _) =>
               logger.warn("While registering account got: " + message)
               GeneralError("An error occured while creating your account: " + message + " If you continue receiving this error for no apparant reason, please contact us at hello@anchortab.com.")
+
+            case Empty =>
+              logger.warn("Got empty while registering account.")
+              GeneralError("An error occured while creating your account. If you continue receiving this error for no apparant reason, please contact us at hello@anchortab.com.")
           }
 
         case errors =>
@@ -468,7 +471,10 @@ object Authentication extends Loggable {
     def processForgotPassword = {
       {
         for {
-          user <- User.findAll("email" -> recoveryEmailAddress).headOption
+          user <- User.find("email" -> (
+            ("$regex" -> ("^" + recoveryEmailAddress + "$")) ~
+            ("$options" -> "i")
+          ))
           request <- S.request
         } yield {
           val resetKey = UserPasswordResetKey()

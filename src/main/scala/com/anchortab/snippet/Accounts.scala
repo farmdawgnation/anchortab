@@ -17,7 +17,6 @@ import net.liftweb._
   import util._
     import Helpers._
   import json._
-    import JsonDSL._
     import Extraction._
   import mongodb.BsonDSL._
 
@@ -226,6 +225,7 @@ object Accounts extends Loggable {
 
           val emailChange = {
             for {
+              noOtherUsersHaveEmail <- Full(User.countOfUsersWithEmail(email)).filter(_ == 0 || email == user.email) ?~ "Another user already has this email."
               stripeCustomerId <- (user.stripeCustomerId: Box[String]) ?~ "Stripe token missing."
                 if user.email != email && email != ""
               stripeCustomer <- tryo(stripe.Customer.retrieve(stripeCustomerId))
@@ -237,7 +237,10 @@ object Accounts extends Loggable {
             }
           }
 
-          emailChange match {
+          val fatalEmailChangeError = emailChange match {
+            case Failure(msg, _, _) if msg == "Another user already has this email." =>
+              true
+
             case Failure(msg, _, _) =>
               NewRelic.noticeError("Email Change Stripe Error", Map(
                 "user" -> user._id.toString,
@@ -246,20 +249,26 @@ object Accounts extends Loggable {
 
               Notices.warning(msg)
 
+              false
+
             case _ =>
+              false
           }
 
           val userProfile = UserProfile(firstNameOpt, lastNameOpt, organizationOpt)
 
-          (email, passwordChange) match {
-            case ("", _) =>
+          (fatalEmailChangeError, email, passwordChange) match {
+            case (true, _, _) =>
+              FormValidationError(".email", "Another user already has this email.")
+
+            case (_, "", _) =>
               FormValidationError(".email", "Email is a required field.")
 
-            case (_, Failure(msg, _, _)) =>
+            case (_, _, Failure(msg, _, _)) =>
               FormValidationError(".change-password", "") &
               FormValidationError(".confirm-password", msg)
 
-            case (_, Empty) =>
+            case (_, _, Empty) =>
               User.update("_id" -> user._id, "$set" -> (
                 ("email" -> email) ~
                 ("profile" -> decompose(userProfile))
@@ -268,7 +277,7 @@ object Accounts extends Loggable {
               Notices.notice("Your profile was updated successfully. Jolly good fun.")
               Reload
 
-            case (_, Full(pw)) =>
+            case (_, _, Full(pw)) =>
               User.update("_id" -> user._id, "$set" -> (
                 ("email" -> email) ~
                 ("profile" -> decompose(userProfile)) ~

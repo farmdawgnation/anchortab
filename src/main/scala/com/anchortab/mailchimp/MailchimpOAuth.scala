@@ -6,7 +6,7 @@ import net.liftweb._
   import util._
     import Helpers._
 
-import dispatch._
+import dispatch._, Defaults._
 import com.ning.http.client.{Request, RequestBuilder, Response}
 
 object MailchimpOAuth {
@@ -19,7 +19,7 @@ object MailchimpOAuth {
   def oAuthAuthorizeUrl = {
     (host(oauthHost) / "oauth2" / "authorize" <<?
       Map("response_type" -> "code", "client_id" -> clientId, "redirect_uri" -> redirectUrl)
-    ).secure.build.getRawUrl
+    ).secure.toRequest.getRawUrl
   }
 
   case class MailChimpOAuthToken(access_token: String, expires_in: Int, scope: String)

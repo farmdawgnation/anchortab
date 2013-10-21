@@ -26,7 +26,7 @@ import net.liftweb.json._
 import com.anchortab._
   import model._
 
-import dispatch._
+import dispatch._, Defaults._
 
 object AcceptanceTest extends Tag("com.anchortab.acceptance.AcceptanceTest")
 

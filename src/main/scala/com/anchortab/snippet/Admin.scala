@@ -19,7 +19,6 @@ import net.liftweb._
     import Helpers._
   import json._
     import ext._
-    import JsonDSL._
     import Extraction._
   import mongodb.BsonDSL._
 
@@ -309,6 +308,9 @@ object Admin extends AffiliateCalculation {
               Alert("Email is a required field. It must have a value.")
 
             case (_, _, Failure(msg, _, _)) =>
+              Alert(msg)
+
+            case (Failure(msg, _, _), _, _) =>
               Alert(msg)
 
             case (Full(_), _, pw) =>

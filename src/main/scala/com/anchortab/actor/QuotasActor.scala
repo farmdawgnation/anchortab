@@ -30,7 +30,7 @@ object QuotasActor extends LiftActor with Loggable {
   private def timeSpanUntilNextQuotaReset = {
     val beginningOfNextMonth = Props.mode match {
       case Props.RunModes.Development => (new DateTime()).plusMinutes(5).getMillis
-      case _ => (new DateTime()).toDateMidnight.withDayOfMonth(1).plusMonths(1).getMillis
+      case _ => (new DateTime()).withTimeAtStartOfDay().withDayOfMonth(1).plusMonths(1).getMillis
     }
     val now = new DateTime().getMillis
 

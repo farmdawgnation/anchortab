@@ -6,7 +6,7 @@ import net.liftweb._
   import util._
     import Helpers._
 
-import dispatch._
+import dispatch._, Defaults._
 import com.ning.http.client.{Request, RequestBuilder, Response}
 
 object ConstantContact {
@@ -36,7 +36,7 @@ object ConstantContact {
 
   def oauthAuthorizeUrl = {
     (host(oauthBase) / "oauth2" / "oauth" / "siteowner" / "authorize" <<?
-      Map("response_type" -> "code", "client_id" -> clientId, "redirect_uri" -> redirectUrl)).secure.build.getRawUrl
+      Map("response_type" -> "code", "client_id" -> clientId, "redirect_uri" -> redirectUrl)).secure.toRequest.getRawUrl
   }
 
   def retrieveAccessTokenForCode(code:String) = {
@@ -57,7 +57,7 @@ object ConstantContact {
     }
   }
 
-  private def runRequest(request:RequestBuilder)(implicit accessToken:String) : Box[JValue] = {
+  private def runRequest(request: dispatch.Req)(implicit accessToken:String) : Box[JValue] = {
     val response = Http(request.secure > AsCodeJsonResponse).either
 
     // For the promise to materialize and generate a result based on what we got

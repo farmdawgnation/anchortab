@@ -6,17 +6,15 @@ import net.liftweb._
   import common._
   import mongodb._
     import BsonDSL._
-  import util.Helpers._
+  import util._
+    import Helpers._
   import json._
     import ext._
-    import JsonDSL._
     import Extraction._
 
 import org.joda.time.DateTime
 
 import org.bson.types.ObjectId
-
-import org.mindrot.jbcrypt.BCrypt
 
 /**
  * Model representing a user session. A user session is sored in a
@@ -204,9 +202,19 @@ object User extends MongoDocumentMeta[User] {
     BCrypt.checkpw(candidatePassword, hashedPassword)
   }
 
+  def countOfUsersWithEmail(email: String) = {
+    User.count("email" -> (
+      ("$regex" -> ("^" + email + "$")) ~
+      ("$options" -> "i")
+    ))
+  }
+
   def attemptLogin(email:String, password:String) = {
     for {
-      user <- User.find("email" -> email):Box[User]
+      user <- User.find("email" -> (
+        ("$regex" -> ("^" + email + "$")) ~
+        ("$options" -> "i")
+      )):Box[User]
       passwordMatches = User.checkPassword(password, user.password)
         if passwordMatches
     } yield {

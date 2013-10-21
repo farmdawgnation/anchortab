@@ -80,7 +80,7 @@ object Affiliate extends Loggable with AffiliateCalculation {
       } yield {
         ClearClearable andThen
         ".referral-performance-row" #> months.map { month =>
-          ".month *" #> month.toDateTime(new DateMidnight()).toString("MMMM yyyy") &
+          ".month *" #> month.toDateTime((new DateTime()).withTimeAtStartOfDay()).toString("MMMM yyyy") &
           ".new *" #> newReferralsForTargetMonth(session.userId, month).total &
           ".total *" #> totalActiveReferralsAsOfTargetMonth(session.userId, month).total
         }

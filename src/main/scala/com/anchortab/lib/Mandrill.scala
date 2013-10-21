@@ -12,7 +12,7 @@ import net.liftweb._
   import util._
   import http._
 
-import dispatch._
+import dispatch._, Defaults._
 import com.ning.http.client.{Request, RequestBuilder, Response}
 
 object Mandrill extends Loggable {
@@ -28,10 +28,10 @@ object Mandrill extends Loggable {
     text: Option[String] = None)
 
   trait MandrillApiCall {
-    def uri(requestBuilder: RequestBuilder): RequestBuilder
+    def uri(requestBuilder: dispatch.Req): dispatch.Req
   }
   case class SendMandrillMessage(message: MandrillMessage, async: Boolean = false) extends MandrillApiCall {
-    def uri(requestBuilder: RequestBuilder) = requestBuilder / "messages" / "send.json"
+    def uri(requestBuilder: dispatch.Req) = requestBuilder / "messages" / "send.json"
   }
 
   case class CodeResponse(code: Int)
