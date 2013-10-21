@@ -4,7 +4,7 @@ assemblySettings
 
 name := "Anchor Tab"
 
-version := "1.2.5-SNAPSHOT"
+version := "1.2.5"
 
 organization := "com.anchortab"
 
