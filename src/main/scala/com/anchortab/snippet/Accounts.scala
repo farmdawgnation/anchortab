@@ -230,7 +230,7 @@ object Accounts extends Loggable {
                 if user.email != email && email != ""
               stripeCustomer <- tryo(stripe.Customer.retrieve(stripeCustomerId))
               updateResult <- tryo(stripeCustomer.update(Map(
-                "email" -> email
+                "email" -> email.toLowerCase
               )))
             } yield {
               true
@@ -270,7 +270,7 @@ object Accounts extends Loggable {
 
             case (_, _, Empty) =>
               User.update("_id" -> user._id, "$set" -> (
-                ("email" -> email) ~
+                ("email" -> email.toLowerCase) ~
                 ("profile" -> decompose(userProfile))
               ))
 
@@ -279,7 +279,7 @@ object Accounts extends Loggable {
 
             case (_, _, Full(pw)) =>
               User.update("_id" -> user._id, "$set" -> (
-                ("email" -> email) ~
+                ("email" -> email.toLowerCase) ~
                 ("profile" -> decompose(userProfile)) ~
                 pw
               ))

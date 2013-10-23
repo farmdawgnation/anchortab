@@ -105,6 +105,10 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
                 _id:ObjectId = ObjectId.get) extends MongoDocument[User] {
   val meta = User
 
+  override def save = {
+    meta.save(this.copy(email = this.email.toLowerCase))
+  }
+
   lazy val subscription = subscriptions.filter(_.valid_?).lastOption
   lazy val validSubscription_? = subscription.isDefined
 
