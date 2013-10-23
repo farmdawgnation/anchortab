@@ -203,22 +203,23 @@ object User extends MongoDocumentMeta[User] {
   }
 
   def countOfUsersWithEmail(email: String) = {
-    User.count("email" -> (
-      ("$regex" -> ("^" + email + "$")) ~
-      ("$options" -> "i")
-    ))
+    User.count("email" -> email.toLowerCase)
   }
 
   def attemptLogin(email:String, password:String) = {
     for {
-      user <- User.find("email" -> (
-        ("$regex" -> ("^" + email + "$")) ~
-        ("$options" -> "i")
-      )):Box[User]
-      passwordMatches = User.checkPassword(password, user.password)
-        if passwordMatches
+      user <- User.forEmail(email):Box[User]
+        if User.checkPassword(password, user.password)
     } yield {
       user
     }
+  }
+
+  def forEmail(email: String) =
+    User.find("email" -> email.toLowerCase)
+
+  override def save(user: User) = {
+    user.copy(email = user.email.toLowerCase)
+    super.save(user)
   }
 }
