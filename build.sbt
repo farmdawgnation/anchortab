@@ -27,7 +27,7 @@ seq(resourceManagementSettings :_*)
 
 net.virtualvoid.sbt.graph.Plugin.graphSettings
 
-scalacOptions ++= Seq("-deprecation", "-unchecked")
+scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-language:postfixOps")
 
 libraryDependencies ++= {
   val liftVersion = "2.5.1"
