@@ -223,7 +223,8 @@ object Subscription extends Loggable {
           customerId <- (user.stripeCustomerId: Box[String]) ?~! "We couldn't find your Stripe ID."
           customer <- tryo(stripe.Customer.retrieve(customerId)) ?~! "We couldn't retrieve your customer data."
           updatedCustomer <- tryo(customer.update(Map("card" -> token)))
-          card <- (updatedCustomer.activeCard: Box[stripe.Card]) ?~! "Could not find active card."
+          cardId <- (updatedCustomer.defaultCard: Box[String]) ?~! "Could not find active card id after update."
+          card <- (updatedCustomer.cards.data.find(_.id == cardId): Box[stripe.Card]) ?~! "Could not find card in cards list after update."
         } yield {
           User.update("_id" -> user._id, "$set" -> (
             "activeCard" -> decompose(
