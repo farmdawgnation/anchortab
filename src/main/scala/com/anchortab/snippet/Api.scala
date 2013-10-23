@@ -86,7 +86,20 @@ object Api extends RestHelper with Loggable {
             ("colorScheme" -> decompose(colorScheme)) ~
             ("whitelabel" -> whitelabelTab) ~
             ("customText" -> tab.appearance.customText) ~
-            ("collectName" -> tab.appearance.collectName)
+            ("collectName" -> tab.appearance.collectName) ~
+            ("i18n" ->(
+              List(
+                "tab-firstName",
+                "tab-emailAddress",
+                "tab-submit",
+                "tab-minimizeAnchorTab",
+                "tab-maximizeAnchorTab",
+                "tab-somethingWentWrong",
+                "tab-invalidEmail"
+              ).map({ localizationKey =>
+                (localizationKey -> S.?(localizationKey))
+              }).foldLeft(JObject(Nil))(_ ~ _)
+            ))
 
           Call(callbackFnName, tabJson)
         }
@@ -133,15 +146,15 @@ object Api extends RestHelper with Loggable {
               } yield {
                 ServiceWrapperSubmissionActor ! SubscribeEmailToServiceWrapper(serviceWrapper, email, name)
 
-                "Success! An email has been sent to confirm your subscription."
+                "tab-successConfirm"
               }
             } getOrElse {
-              "Success! You're on the list. Expect to hear from us soon."
+              "tab-successNoConfirm"
             }
 
             ("success" -> 1) ~
             ("email" -> email) ~
-            ("message" -> successMessage)
+            ("message" -> S.?(successMessage))
           }
 
           QuotasActor ! CheckQuotaCounts(user._id)
