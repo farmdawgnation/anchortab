@@ -85,6 +85,8 @@ case class UserPasswordResetKey(key: String = randomString(32),
 
 case class UserActiveCard(last4: String, cardType: String, expMonth: Int, expYear: Int)
 
+case class UserNotificationSettings(alertEmails: Boolean = true, announcementEmails: Boolean = true)
+
 /**
  * User model. This class represnts a distinct user on the system.
 **/
@@ -96,6 +98,7 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
                 quotaCounts:Map[String, Long] = Map.empty,
                 quotasLastReset:Option[DateTime] = None,
                 firstSteps: Map[String, UserFirstStep] = Map.empty,
+                notificationSettings: UserNotificationSettings = UserNotificationSettings(),
                 passwordResetKey: Option[UserPasswordResetKey] = None,
                 role:Option[String] = None, createdAt:DateTime = new DateTime,
                 stripeCustomerId:Option[String] = None,
