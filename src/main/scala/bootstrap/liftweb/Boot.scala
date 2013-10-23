@@ -39,6 +39,9 @@ class Boot {
     RequestHandling.setupSnippetHandlers
     RequestHandling.setupSiteMap
 
+    // Set up i18n resources.
+    LiftRules.resourceNames = "i18n/tab" :: Nil
+
     // Bootstrap NewRelic
     NewRelicTransactionNaming.setup
 
