@@ -92,6 +92,7 @@ object Api extends RestHelper with Loggable {
                 "tab-firstName",
                 "tab-emailAddress",
                 "tab-submit",
+                "tab-subscribe",
                 "tab-minimizeAnchorTab",
                 "tab-maximizeAnchorTab",
                 "tab-somethingWentWrong",

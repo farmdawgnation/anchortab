@@ -319,7 +319,7 @@ displayTab = (tabJson) ->
     if $("meta[name=viewport]").length > 0
       anchorTab.addClass("mobile-optimized-page")
 
-    anchorTab.find(".maximize").text("Subscribe")
+    anchorTab.find(".maximize").text(anchortab.i18n["tab-subscribe"])
     anchorTab.find(".maximize").attr("style", colorSchemeStyle)
 
     anchorTab.find(".minimize").text("Close")
