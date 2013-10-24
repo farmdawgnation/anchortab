@@ -7,9 +7,10 @@
   <body class="lift:content_id=main">
     <div id="main" class="lift:surround?with=tab-manager;at=content">
       <lift:pwn-if-not-logged-in />
-      <h2>Profile Details</h2>
 
       <form class="l:profile-form profile-form stripe-form">
+        <h2>Profile Details</h2>
+
         <div>
           <label>First Name</label>
           <input type="text" class="first-name">
@@ -39,6 +40,27 @@
           <label>Confirm Password</label>
           <input type="password" class="confirm-password">
         </div>
+
+        <h2>Email Settings</h2>
+
+        <div>
+          <label>Announcement Emails</label>
+          <input type="checkbox" id="announcement-emails">
+        </div>
+
+        <p>
+          Announcement Emails are announcements about new features and things of that sort.
+          No spam.
+        </p>
+
+        <div>
+          <label>Alert Emails</label>
+          <input type="checkbox" id="alert-emails">
+        </div>
+
+        <p>
+          If you don't want to recieve non-billing related alerts, disable this setting.
+        </p>
 
         <div>
           <input type="submit" class="submit" value="Update Profile">

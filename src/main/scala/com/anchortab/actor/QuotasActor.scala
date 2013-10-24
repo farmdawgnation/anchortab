@@ -67,7 +67,7 @@ object QuotasActor extends LiftActor with Loggable {
     case CheckQuotaCounts(userId) =>
       for {
         user <- User.find(userId)
-          if ! user.admin_?
+          if ! user.admin_? && user.notificationSettings.alertEmails
       } {
         logger.info("Checking quota for " + user.email)
         if (! user.withinQuotaFor_?(Plan.Quotas.Views) ||

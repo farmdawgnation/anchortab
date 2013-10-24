@@ -402,7 +402,10 @@ object Authentication extends Loggable {
                 UserFirstStep.Keys.EmbedYourTab -> UserFirstStep.Steps.EmbedYourTab
               )
 
-              val userActiveCard = customer.activeCard.map { card =>
+              val userActiveCard = for {
+                defaultCardId <- customer.defaultCard
+                card <- customer.cards.data.find(_.id == defaultCardId)
+              } yield {
                 UserActiveCard(card.last4, card.`type`, card.expMonth, card.expYear)
               }
 
@@ -471,10 +474,7 @@ object Authentication extends Loggable {
     def processForgotPassword = {
       {
         for {
-          user <- User.find("email" -> (
-            ("$regex" -> ("^" + recoveryEmailAddress + "$")) ~
-            ("$options" -> "i")
-          ))
+          user <- User.forEmail(recoveryEmailAddress)
           request <- S.request
         } yield {
           val resetKey = UserPasswordResetKey()

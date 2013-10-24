@@ -21,6 +21,9 @@ resourcesDomain = anchortab?.resourcesDomain || parser.hostname
 secureResourcesDomain = anchortab?.secureResourcesDomain || parser.hostname
 jqVersion = "1.9.1"
 
+window.anchortab = window.anchortab || {}
+window.anchortab.i18n = {}
+
 ##
 ## LIB FUNCTIONS
 ##
@@ -140,7 +143,7 @@ submitEmail = (event) ->
   unless email.match(/.+@.+\..+/)
     $("#anchor-tab")
       .find(".success-message")
-        .text("That doesn't look like a valid email address. Please check for typos and try again.")
+        .text(anchortab.i18n["tab-invalidEmail"])
       .end()
       .addClass("success")
 
@@ -190,7 +193,7 @@ submitEmail = (event) ->
 
     error: (xhr, status, error) ->
       $("#anchor-tab [disabled]").removeAttr("disabled")
-      alert("Something went wrong submitting your email. Please contact us if you continue to see this error.")
+      alert(anchortab.i18n["tab-somethingWentWrong"])
 
       gaqInfo = "Domain: " + document.domain + " Response Status: " + status
       _gaq.push ["at._trackEvent", "Submission", "Submission Error", gaqInfo]
@@ -205,6 +208,7 @@ displayTab = (tabJson) ->
   colorScheme = tabJson.colorScheme
   customMessage = tabJson.customText
   collectName = tabJson.collectName
+  window.anchortab.i18n = tabJson.i18n
 
   # Load the Anchor Tab stylesheet.
   atStyleSheet =
@@ -251,18 +255,18 @@ displayTab = (tabJson) ->
         $("<input />")
           .addClass('email-input')
           .attr('type', 'text')
-          .attr('placeholder', "email address")
+          .attr('placeholder', anchortab.i18n["tab-emailAddress"])
       )
       .append(
         $("<button />")
           .addClass('email-submission')
-          .text("Submit")
+          .text(anchortab.i18n["tab-submit"])
           .click(submitEmail)
       )
       .append(
         $("<button />")
           .addClass('minimize')
-          .text("Minimize Anchor Tab")
+          .text(anchortab.i18n["tab-minimizeAnchorTab"])
           .click(->
               $("#anchor-tab").removeClass("visible").addClass("minimized")
               setStateCookie 'minimized'
@@ -274,7 +278,7 @@ displayTab = (tabJson) ->
       .append(
         $("<button />")
           .addClass("maximize")
-          .text("Maximize Anchor Tab")
+          .text(anchortab.i18n["tab-maximizeAnchorTab"])
           .click(->
               $("#anchor-tab").removeClass("minimized").addClass("visible")
               setStateCookie 'visible'
@@ -299,7 +303,7 @@ displayTab = (tabJson) ->
       $("<input />")
         .addClass("first-name-input")
         .attr("type", "text")
-        .attr("placeholder", "first name")
+        .attr("placeholder", anchortab.i18n["tab-firstName"])
     )
 
   if isBrowserIe()
@@ -315,7 +319,7 @@ displayTab = (tabJson) ->
     if $("meta[name=viewport]").length > 0
       anchorTab.addClass("mobile-optimized-page")
 
-    anchorTab.find(".maximize").text("Subscribe")
+    anchorTab.find(".maximize").text(anchortab.i18n["tab-subscribe"])
     anchorTab.find(".maximize").attr("style", colorSchemeStyle)
 
     anchorTab.find(".minimize").text("Close")

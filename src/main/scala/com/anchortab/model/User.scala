@@ -85,6 +85,8 @@ case class UserPasswordResetKey(key: String = randomString(32),
 
 case class UserActiveCard(last4: String, cardType: String, expMonth: Int, expYear: Int)
 
+case class UserNotificationSettings(alertEmails: Boolean = true, announcementEmails: Boolean = true)
+
 /**
  * User model. This class represnts a distinct user on the system.
 **/
@@ -96,6 +98,7 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
                 quotaCounts:Map[String, Long] = Map.empty,
                 quotasLastReset:Option[DateTime] = None,
                 firstSteps: Map[String, UserFirstStep] = Map.empty,
+                notificationSettings: UserNotificationSettings = UserNotificationSettings(),
                 passwordResetKey: Option[UserPasswordResetKey] = None,
                 role:Option[String] = None, createdAt:DateTime = new DateTime,
                 stripeCustomerId:Option[String] = None,
@@ -104,6 +107,10 @@ case class User(email:String, password:String, profile:Option[UserProfile] = Non
                 affiliateCode: Option[String] = None,
                 _id:ObjectId = ObjectId.get) extends MongoDocument[User] {
   val meta = User
+
+  override def save = {
+    meta.save(this.copy(email = this.email.toLowerCase))
+  }
 
   lazy val subscription = subscriptions.filter(_.valid_?).lastOption
   lazy val validSubscription_? = subscription.isDefined
@@ -203,22 +210,23 @@ object User extends MongoDocumentMeta[User] {
   }
 
   def countOfUsersWithEmail(email: String) = {
-    User.count("email" -> (
-      ("$regex" -> ("^" + email + "$")) ~
-      ("$options" -> "i")
-    ))
+    User.count("email" -> email.toLowerCase)
   }
 
   def attemptLogin(email:String, password:String) = {
     for {
-      user <- User.find("email" -> (
-        ("$regex" -> ("^" + email + "$")) ~
-        ("$options" -> "i")
-      )):Box[User]
-      passwordMatches = User.checkPassword(password, user.password)
-        if passwordMatches
+      user <- User.forEmail(email):Box[User]
+        if User.checkPassword(password, user.password)
     } yield {
       user
     }
+  }
+
+  def forEmail(email: String) =
+    User.find("email" -> email.toLowerCase)
+
+  override def save(user: User) = {
+    user.copy(email = user.email.toLowerCase)
+    super.save(user)
   }
 }

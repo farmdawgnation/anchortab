@@ -188,6 +188,8 @@ object Accounts extends Loggable {
         var email = user.email
         var changePassword = ""
         var confirmPassword = ""
+        var announcementEmails = user.notificationSettings.announcementEmails
+        var alertEmails = user.notificationSettings.alertEmails
 
         def submit() = {
           implicit val formats = DefaultFormats
@@ -230,7 +232,7 @@ object Accounts extends Loggable {
                 if user.email != email && email != ""
               stripeCustomer <- tryo(stripe.Customer.retrieve(stripeCustomerId))
               updateResult <- tryo(stripeCustomer.update(Map(
-                "email" -> email
+                "email" -> email.toLowerCase
               )))
             } yield {
               true
@@ -270,8 +272,10 @@ object Accounts extends Loggable {
 
             case (_, _, Empty) =>
               User.update("_id" -> user._id, "$set" -> (
-                ("email" -> email) ~
-                ("profile" -> decompose(userProfile))
+                ("email" -> email.toLowerCase) ~
+                ("profile" -> decompose(userProfile)) ~
+                ("notificationSettings.alertEmails" -> alertEmails) ~
+                ("notificationSettings.announcementEmails" -> announcementEmails)
               ))
 
               Notices.notice("Your profile was updated successfully. Jolly good fun.")
@@ -279,8 +283,10 @@ object Accounts extends Loggable {
 
             case (_, _, Full(pw)) =>
               User.update("_id" -> user._id, "$set" -> (
-                ("email" -> email) ~
+                ("email" -> email.toLowerCase) ~
                 ("profile" -> decompose(userProfile)) ~
+                ("notificationSettings.alertEmails" -> alertEmails) ~
+                ("notificationSettings.announcementEmails" -> announcementEmails) ~
                 pw
               ))
 
@@ -296,6 +302,8 @@ object Accounts extends Loggable {
           ".email" #> text(email, newEmail => email = newEmail.trim) &
           ".change-password" #> password(changePassword, changePassword = _) &
           ".confirm-password" #> password(confirmPassword, confirmPassword = _) &
+          "#announcement-emails" #> checkbox(announcementEmails, announcementEmails = _) &
+          "#alert-emails" #> checkbox(alertEmails, alertEmails = _) &
           ".submit" #> ajaxSubmit("Update Profile", submit _)
 
         "form" #> { ns:NodeSeq =>
