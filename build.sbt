@@ -2,6 +2,10 @@ import AssemblyKeys._
 
 assemblySettings
 
+seq(webSettings :_*)
+
+seq(resourceManagementSettings :_*)
+
 name := "Anchor Tab"
 
 version := "1.2.6"
@@ -20,10 +24,6 @@ resolvers ++= Seq("snapshots"     at "http://oss.sonatype.org/content/repositori
                 "releases"        at "http://oss.sonatype.org/content/repositories/releases",
                 "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
                 )
-
-seq(webSettings :_*)
-
-seq(resourceManagementSettings :_*)
 
 net.virtualvoid.sbt.graph.Plugin.graphSettings
 
