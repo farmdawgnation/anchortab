@@ -14,9 +14,6 @@ public class MergeVars extends MailChimpObject {
   @Field
   public String FNAME;
 
-  @Field
-  public String GROUPINGS;
-
   public MergeVars() { }
 
   public MergeVars(String fname) {
