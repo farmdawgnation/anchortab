@@ -65,32 +65,11 @@ object Authentication extends Loggable {
   **/
   val managerMenu = Menu.i("Manager") / "manager"
   val registrationMenu = Menu.i("Register") / "register"
-  val resetPasswordMenu =
-    Menu.param[User]("Reset Password", Text("Reset Password"), userForReset(_), resetForUser(_)) /
-    "lost-sticky-note" / * >>
-    TemplateBox(() => Templates("lost-sticky-note" :: Nil))
 
   val menus =
     managerMenu ::
     registrationMenu ::
-    resetPasswordMenu ::
     Nil
-
-  /**
-   * Sitemap menu helpers.
-  **/
-  protected def userForReset(passwordResetKey: String): Box[User] = {
-    for {
-      user <- User.findAll("passwordResetKey.key" -> passwordResetKey).headOption
-        if user.passwordResetKey.map(_.expires isAfterNow).getOrElse(false)
-    } yield {
-      user
-    }
-  }
-
-  protected def resetForUser(user: User) = {
-    user.passwordResetKey.filter(_.expires isAfterNow).map(_.key) getOrElse ""
-  }
 
   /**
    * This method sets various sticky notices when a user logs in if their
@@ -179,7 +158,6 @@ object Authentication extends Loggable {
   def snippetHandlers : SnippetPF = {
     case "login-form" :: Nil => loginForm
     case "registration-form" :: Nil => registrationForm
-    case "reset-password-form" :: Nil => resetPasswordForm
     case "redirect-to-dashboard-if-logged-in" :: Nil => redirectToDashboardIfLoggedIn
     case "pwn-if-not-logged-in" :: Nil => pwnIfNotLoggedIn
     case "show-if-logged-in" :: Nil => showIfLoggedIn
@@ -460,45 +438,6 @@ object Authentication extends Loggable {
 
     "form" #> { ns:NodeSeq =>
       ajaxForm(bind(ns))
-    }
-  }
-
-  def resetPasswordForm = {
-    var newPassword = ""
-    var confirmPassword = ""
-
-    def processResetPassword(user: User)() = {
-      if (newPassword.trim.length == 0 || confirmPassword.trim.length == 0) {
-        FormValidationError(".password", "") &
-        FormValidationError(".password-confirmation", "Please choose a password with characters.")
-      } else if(newPassword != confirmPassword) {
-        FormValidationError(".password", "") &
-        FormValidationError(".password-confirmation" ,"Your passwords do not match.")
-      } else {
-        user.copy(
-          password = User.hashPassword(newPassword),
-          passwordResetKey = None
-        ).save
-
-        RedirectTo(managerMenu.loc.calcDefaultHref)
-      }
-    }
-
-    {
-      for {
-        user <- resetPasswordMenu.currentValue
-      } yield {
-        val bind =
-          ".password" #> password(newPassword, newPassword = _) &
-          ".password-confirmation" #> password(confirmPassword, confirmPassword = _) &
-          ".submit" #> ajaxSubmit("Reset Password", processResetPassword(user) _)
-
-        "form" #> { ns:NodeSeq =>
-          ajaxForm(bind(ns))
-        }
-      }
-    } openOr {
-      S.redirectTo(ForgotPassword.menu.loc.calcDefaultHref)
     }
   }
 }

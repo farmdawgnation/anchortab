@@ -136,8 +136,11 @@ object RequestHandling {
       Invites.menus ++
       Affiliate.menus ++
       Admin.menus ++
-      (ForgotPassword.menu :: Nil) ++
-      (ForgotPasswordComplete.menu :: Nil)
+      List(
+        ForgotPassword.menu,
+        ForgotPasswordComplete.menu,
+        ResetPassword.menu
+      )
 
     LiftRules.setSiteMap(SiteMap(menus: _*))
   }

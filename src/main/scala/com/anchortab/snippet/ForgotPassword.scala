@@ -31,7 +31,7 @@ class ForgotPassword extends Loggable {
         val userWithReset = user.copy(passwordResetKey = Some(resetKey))
         userWithReset.save
 
-        val resetLink = "http://" + request.hostName + "/lost-sticky-note/" + resetKey.key
+        val resetLink = "http://" + request.hostName + ResetPassword.menu.toLoc.calcHref(userWithReset)
 
         EmailActor ! SendForgotPasswordEmail(userWithReset.email, resetLink)
 
