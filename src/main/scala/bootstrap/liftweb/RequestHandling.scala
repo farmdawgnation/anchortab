@@ -136,7 +136,8 @@ object RequestHandling {
       Invites.menus ++
       Affiliate.menus ++
       Admin.menus ++
-      (ForgotPassword.menu :: Nil)
+      (ForgotPassword.menu :: Nil) ++
+      (ForgotPasswordComplete.menu :: Nil)
 
     LiftRules.setSiteMap(SiteMap(menus: _*))
   }

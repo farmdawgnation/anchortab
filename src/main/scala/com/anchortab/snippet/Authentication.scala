@@ -65,7 +65,6 @@ object Authentication extends Loggable {
   **/
   val managerMenu = Menu.i("Manager") / "manager"
   val registrationMenu = Menu.i("Register") / "register"
-  val forgotPasswordCompleteMenu = Menu.i("Reset Email Sent") / "amnesia-complete"
   val resetPasswordMenu =
     Menu.param[User]("Reset Password", Text("Reset Password"), userForReset(_), resetForUser(_)) /
     "lost-sticky-note" / * >>
@@ -74,7 +73,6 @@ object Authentication extends Loggable {
   val menus =
     managerMenu ::
     registrationMenu ::
-    forgotPasswordCompleteMenu ::
     resetPasswordMenu ::
     Nil
 

@@ -35,7 +35,7 @@ class ForgotPassword extends Loggable {
 
         EmailActor ! SendForgotPasswordEmail(userWithReset.email, resetLink)
 
-        RedirectTo(ForgotPassword.menu.loc.calcDefaultHref)
+        RedirectTo(ForgotPasswordComplete.menu.loc.calcDefaultHref)
       }
     } getOrElse {
       FormValidationError(".email-address", "We don't have an account with that email.")
