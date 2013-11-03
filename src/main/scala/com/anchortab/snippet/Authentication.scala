@@ -65,7 +65,6 @@ object Authentication extends Loggable {
   **/
   val managerMenu = Menu.i("Manager") / "manager"
   val registrationMenu = Menu.i("Register") / "register"
-  val forgotPasswordMenu = Menu.i("Forgot Password") / "amnesia"
   val forgotPasswordCompleteMenu = Menu.i("Reset Email Sent") / "amnesia-complete"
   val resetPasswordMenu =
     Menu.param[User]("Reset Password", Text("Reset Password"), userForReset(_), resetForUser(_)) /
@@ -75,7 +74,6 @@ object Authentication extends Loggable {
   val menus =
     managerMenu ::
     registrationMenu ::
-    forgotPasswordMenu ::
     forgotPasswordCompleteMenu ::
     resetPasswordMenu ::
     Nil
@@ -183,7 +181,6 @@ object Authentication extends Loggable {
   def snippetHandlers : SnippetPF = {
     case "login-form" :: Nil => loginForm
     case "registration-form" :: Nil => registrationForm
-    case "forgot-password-form" :: Nil => forgotPasswordForm
     case "reset-password-form" :: Nil => resetPasswordForm
     case "redirect-to-dashboard-if-logged-in" :: Nil => redirectToDashboardIfLoggedIn
     case "pwn-if-not-logged-in" :: Nil => pwnIfNotLoggedIn
@@ -468,39 +465,6 @@ object Authentication extends Loggable {
     }
   }
 
-  def forgotPasswordForm = {
-    var recoveryEmailAddress = ""
-
-    def processForgotPassword = {
-      {
-        for {
-          user <- User.forEmail(recoveryEmailAddress)
-          request <- S.request
-        } yield {
-          val resetKey = UserPasswordResetKey()
-          val userWithReset = user.copy(passwordResetKey = Some(resetKey))
-          userWithReset.save
-
-          val resetLink = "http://" + request.hostName + "/lost-sticky-note/" + resetKey.key
-
-          EmailActor ! SendForgotPasswordEmail(userWithReset.email, resetLink)
-
-          RedirectTo(forgotPasswordCompleteMenu.loc.calcDefaultHref)
-        }
-      } getOrElse {
-        FormValidationError(".email-address", "We don't have an account with that email.")
-      }
-    }
-
-    val bind =
-      ".email-address" #> text(recoveryEmailAddress, recoveryEmailAddress = _) &
-      ".submit" #> ajaxSubmit("Send Password Reset", processForgotPassword _)
-
-    "form" #> { ns:NodeSeq =>
-      ajaxForm(bind(ns))
-    }
-  }
-
   def resetPasswordForm = {
     var newPassword = ""
     var confirmPassword = ""
@@ -536,7 +500,7 @@ object Authentication extends Loggable {
         }
       }
     } openOr {
-      S.redirectTo(forgotPasswordMenu.loc.calcDefaultHref)
+      S.redirectTo(ForgotPassword.menu.loc.calcDefaultHref)
     }
   }
 }
