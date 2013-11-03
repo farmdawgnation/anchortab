@@ -139,7 +139,8 @@ object RequestHandling {
       List(
         ForgotPassword.menu,
         ForgotPasswordComplete.menu,
-        ResetPassword.menu
+        ResetPassword.menu,
+        Register.menu
       )
 
     LiftRules.setSiteMap(SiteMap(menus: _*))
