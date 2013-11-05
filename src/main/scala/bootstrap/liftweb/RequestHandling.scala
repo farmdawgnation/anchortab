@@ -135,7 +135,13 @@ object RequestHandling {
       Subscription.menus ++
       Invites.menus ++
       Affiliate.menus ++
-      Admin.menus
+      Admin.menus ++
+      List(
+        ForgotPassword.menu,
+        ForgotPasswordComplete.menu,
+        ResetPassword.menu,
+        Register.menu
+      )
 
     LiftRules.setSiteMap(SiteMap(menus: _*))
   }

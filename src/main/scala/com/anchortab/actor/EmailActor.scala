@@ -58,7 +58,6 @@ trait ForgotPasswordEmailHandling extends EmailHandlerChain {
 
   addHandler {
     case SendForgotPasswordEmail(userEmail, resetLink) =>
-      println("I FOTGOT A PASSWURD? WUT?")
       val subject = "Anchor Tab Password Reset"
 
       val forgotPasswordMessage = (

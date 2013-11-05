@@ -5,14 +5,14 @@
     <title>Register</title>
   </head>
   <body class="lift:content_id=main">
-    <div id="main" class="lift:surround?with=tab-manager-narrow;at=content">
+    <div id="main" data-lift="surround?with=tab-manager-narrow;at=content">
       <!-- Stripe code. -->
-      <head>
+      <tail>
         <script src="https://js.stripe.com/v1/"></script>
         <lift:script-bundle name="register"></lift:script-bundle>
-      </head>
+      </tail>
 
-      <form id="registration-form" class="registration-form stripe-form" data-lift="registration-form">
+      <form id="registration-form" class="registration-form stripe-form" data-lift="Register.render">
         <input type="hidden" id="stripe-token">
         <h3 data-lift="redirect-to-dashboard-if-logged-in">Create Your Account</h3>
 
