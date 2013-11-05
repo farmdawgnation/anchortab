@@ -43,8 +43,14 @@ object Api extends RestHelper with Loggable {
         NewRelic.addCustomParameter("tabId", tabId)
 
         for {
-          tab <- (Tab.find(tabId):Box[Tab]) ?~ "Unknown tab." ~> 404
-          user <- tab.user.filter(_.tabsActive_?) ?~ "This tab has been disabled." ~> 403
+          tab <- (Tab.find(tabId):Box[Tab]) ?~ {
+            NewRelic.ignoreTransaction
+            "Unknown tab."
+          } ~> 404
+          user <- tab.user.filter(_.tabsActive_?) ?~ {
+            NewRelic.ignoreTransaction
+            "This tab has been disabled."
+          } ~> 403
           subscription <- (user.subscription: Box[UserSubscription]) ?~ "No subscription found." ~> 500
           plan <- (subscription.plan: Box[Plan]) ?~ "No plan found." ~> 500
           callbackFnName <- req.param("callback") ?~ "Callback not specified." ~> 400
@@ -113,8 +119,14 @@ object Api extends RestHelper with Loggable {
         NewRelic.addCustomParameter("tabId", tabId)
 
         for {
-          tab <- (Tab.find(tabId):Box[Tab]) ?~ "Unknown tab." ~> 404
-          user <- tab.user.filter(_.tabsActive_?) ?~! "This tab has been disabled." ~> 403
+          tab <- (Tab.find(tabId):Box[Tab]) ?~ {
+            NewRelic.ignoreTransaction
+            "Unknown tab."
+          } ~> 404
+          user <- tab.user.filter(_.tabsActive_?) ?~ {
+            NewRelic.ignoreTransaction
+            "This tab has been disabled."
+          } ~> 403
           callbackFnName <- req.param("callback") ?~! "Callback not specified." ~> 400
           email <- req.param("email").filter(_.trim.nonEmpty) ?~! "Email was not specified." ~> 400
           name = req.param("name").map(_.trim).filter(_.nonEmpty)
