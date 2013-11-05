@@ -135,7 +135,7 @@ object Authentication extends Loggable {
         if (impersonatorSession.is.isDefined) {
           userSession(impersonatorSession.is)
           impersonatorSession(Empty)
-          Full(RedirectResponse("/admin/users"))
+          Full(RedirectResponse(Admin.usersListMenu.loc.calcDefaultHref))
         } else {
           userSession(Empty)
           S.session.foreach(_.destroySession)
@@ -148,7 +148,7 @@ object Authentication extends Loggable {
         for {
           session <- userSession.is
         } yield {
-          RedirectResponse("/manager/dashboard", HTTPCookie("session", session._id.toString).setPath("/"))
+          RedirectResponse(Dashboard.dashboardMenu.loc.calcDefaultHref, HTTPCookie("session", session._id.toString).setPath("/"))
         }
       }
   }
@@ -174,7 +174,7 @@ object Authentication extends Loggable {
 
   def redirectToDashboardIfLoggedIn(ns:NodeSeq) = {
     if (userSession.isDefined)
-      S.redirectTo("/manager/dashboard")
+      S.redirectTo(Dashboard.dashboardMenu.loc.calcDefaultHref)
 
     ns
   }
@@ -285,7 +285,7 @@ object Authentication extends Loggable {
         // outlive the Lift session.
         userSession(Full(UserSession(user._id, remoteIp, userAgent)))
 
-        RedirectTo("/manager/dashboard")
+        RedirectTo(Dashboard.dashboardMenu.loc.calcDefaultHref)
 
       case _ =>
         Alert("Something went wrong with impersonation.")
