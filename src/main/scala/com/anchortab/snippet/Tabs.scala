@@ -29,7 +29,6 @@ case class TabEmbedCodeReceived(embedCode: String) extends SimpleAnchorTabEvent(
 case class NewTabCreated(embedCode: String) extends SimpleAnchorTabEvent("new-tab-created")
 
 object Tabs extends Loggable {
-  val tabListMenu = Menu.i("Tabs") / "manager" / "tabs"
   val tabNewMenu = Menu.i("New Tab") / "manager" / "tabs" / "new" >>
     TemplateBox(() => Templates("manager" :: "tab" :: "form" :: Nil))
   val tabEditMenu =
@@ -42,7 +41,6 @@ object Tabs extends Loggable {
     TemplateBox(() => Templates("manager" :: "tab" :: "subscribers" :: Nil))
 
   val menus =
-    tabListMenu ::
     tabNewMenu ::
     tabEditMenu ::
     tabSubscribersMenu ::
@@ -75,66 +73,6 @@ object Tabs extends Loggable {
   def tabName =
     "span *" #> (tabEditMenu.currentValue or tabSubscribersMenu.currentValue).map(_.name)
 
-  def newTabButton = {
-    {
-      for {
-        session <- userSession.is
-        user <- User.find(session.userId)
-        userTabCount = Tab.count("userId" -> user._id)
-      } yield {
-        if (user.plan.quotas.get(Plan.Quotas.NumberOfTabs).map(_ > userTabCount) getOrElse true) {
-          "button [onclick]" #> onEvent(_ => RedirectTo("/manager/tabs/new"))
-        } else {
-          "button [class+]" #> "disabled" &
-          "button [title]" #> "You've reached the maximum number of tabs allowed for your plan. Please upgrade to add more." &
-          "button [rel]" #> "tipsy"
-        }
-      }
-    } openOr {
-      ClearNodes
-    }
-  }
-
-  def tabList = {
-    val tabs = {
-      for {
-        session <- userSession.is
-        userId = session.userId
-      } yield {
-        Tab.findAll("userId" -> userId)
-      }
-    } openOr {
-      List()
-    }
-
-    def getCode(tab:Tab)() =
-      TabEmbedCodeReceived(tab.embedCode)
-
-    def subscribers(tabId:ObjectId)() =
-      RedirectTo("/manager/tab/" + tabId.toString + "/subscribers")
-
-    def edit(tabId:ObjectId)() =
-      RedirectTo("/manager/tab/" + tabId.toString)
-
-    def delete(tabId:ObjectId)() = {
-      Tab.delete("_id" -> tabId)
-
-      Notices.notice("Tab deleted.")
-      Reload
-    }
-
-    ".empty-list" #> (tabs.isEmpty ? PassThru | ClearNodes) andThen
-    ".subscriber" #> (tabs.isEmpty ? ClearNodes | PassThru) andThen
-    ".subscriber" #> tabs.map { tab =>
-      ".subscriber [data-tab-id]" #> tab._id.toString &
-      ".tab-name *" #> tab.name &
-      ".subscription-count *" #> tab.stats.submissions &
-      ".get-code [onclick]" #> ajaxInvoke(getCode(tab) _) &
-      ".subscribers [onclick]" #> ajaxInvoke(subscribers(tab._id) _) &
-      ".edit-tab [onclick]" #> ajaxInvoke(edit(tab._id) _) &
-      ".delete-tab [onclick]" #> ajaxInvoke(delete(tab._id) _)
-    }
-  }
 
   def subscriberExportLink(ns:NodeSeq) = {
     val transform =

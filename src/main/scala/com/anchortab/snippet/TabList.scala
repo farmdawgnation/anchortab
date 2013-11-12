@@ -1,0 +1,76 @@
+package com.anchortab.snippet
+
+import net.liftweb._
+  import sitemap._
+  import http._
+    import js.JsCmds._
+    import SHtml._
+  import common._
+  import util._
+    import Helpers._
+  import mongodb.BsonDSL._
+
+import com.anchortab.model.{User, Tab, Plan}
+
+import org.bson.types.ObjectId
+
+object TabList {
+  val menu = Menu.i("My Tabs") / "manager" / "tabs"
+}
+class TabList {
+  def render = {
+    val tabs = {
+      for {
+        session <- userSession.is
+        userId = session.userId
+      } yield {
+        Tab.findAll("userId" -> userId)
+      }
+    } openOr {
+      Nil
+    }
+
+    ".empty-list" #> (tabs.isEmpty ? PassThru | ClearNodes) andThen
+    ".tab" #> (tabs.isEmpty ? ClearNodes | PassThru) andThen
+    ".tab" #> tabs.map { tab =>
+      ".tab [data-tab-id]" #> tab._id.toString &
+      ".tab-name *" #> tab.name &
+      ".subscription-count *" #> tab.stats.submissions &
+      ".get-code [onclick]" #> ajaxInvoke(() => {
+        TabEmbedCodeReceived(tab.embedCode) 
+      }) &
+      ".subscribers [onclick]" #> ajaxInvoke(() => {
+        RedirectTo(Tabs.tabSubscribersMenu.toLoc.calcHref(tab))
+      }) &
+      ".edit-tab [onclick]" #> ajaxInvoke(() => {
+        RedirectTo(Tabs.tabEditMenu.toLoc.calcHref(tab))
+      }) &
+      ".delete-tab [onclick]" #> ajaxInvoke(() => {
+        Tab.delete("_id" -> tab._id)
+
+        Notices.notice("Tab deleted.")
+        Reload
+      })
+    }
+  }
+
+  def newTabButton = {
+    {
+      for {
+        session <- userSession.is
+        user <- User.find(session.userId)
+        userTabCount = Tab.count("userId" -> user._id)
+      } yield {
+        if (user.plan.quotas.get(Plan.Quotas.NumberOfTabs).map(_ > userTabCount) getOrElse true) {
+          "button [onclick]" #> onEvent(_ => RedirectTo("/manager/tabs/new"))
+        } else {
+          "button [class+]" #> "disabled" &
+          "button [title]" #> "You've reached the maximum number of tabs allowed for your plan. Please upgrade to add more." &
+          "button [rel]" #> "tipsy"
+        }
+      }
+    } openOr {
+      ClearNodes
+    }
+  }
+}

@@ -17,10 +17,10 @@
       </p>
 
       <p>
-        <button data-lift="Tabs.newTabButton" class="new-tab-button">New Tab</button>
+        <button data-lift="TabList.newTabButton" class="new-tab-button">New Tab</button>
       </p>
 
-      <table class="l:Tabs.tabList tab-list">
+      <table class="tab-list" data-lift="TabList.render">
         <tr class="header">
           <th>Tab Name</th>
           <th>Subscriptions</th>
@@ -29,7 +29,7 @@
         <tr class="empty-list">
           <td colspan="4">You currently have no tabs.</td>
         </tr>
-        <tr class="subscriber">
+        <tr class="tab">
           <td class="tab-name">The Awesome Tab</td>
           <td class="subscription-count">99999999</td>
           <td>
