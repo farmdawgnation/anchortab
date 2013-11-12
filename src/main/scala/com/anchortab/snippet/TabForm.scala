@@ -76,35 +76,21 @@ class TabForm(requestTab: Tab) extends Loggable
     }
   }
 
-  val hasWhitelabel_? = {
+  val (hasWhitelabel_?, hasCustomColorSchemes_?) = {
     {
       for {
         session <- userSession.is
         user <- User.find(session.userId)
         subscription <- user.subscription
         plan <- subscription.plan
-          if plan.hasFeature_?(Plan.Features.WhitelabeledTabs)
       } yield {
-        true
+        (
+          plan.hasFeature_?(Plan.Features.WhitelabeledTabs),
+          plan.hasFeature_?(Plan.Features.CustomColorSchemes)
+        )
       }
     } openOr {
-      false
-    }
-  }
-
-  val hasCustomColorSchemes_? = {
-    {
-      for {
-        session <- userSession.is
-        user <- User.find(session.userId)
-        subscription <- user.subscription
-        plan <- subscription.plan
-          if plan.hasFeature_?(Plan.Features.CustomColorSchemes)
-      } yield {
-        true
-      }
-    } openOr {
-      false
+      (false, false)
     }
   }
 
