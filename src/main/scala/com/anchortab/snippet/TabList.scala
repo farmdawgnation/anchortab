@@ -40,7 +40,7 @@ class TabList {
         TabEmbedCodeReceived(tab.embedCode) 
       }) &
       ".subscribers [onclick]" #> ajaxInvoke(() => {
-        RedirectTo(Tabs.tabSubscribersMenu.toLoc.calcHref(tab))
+        RedirectTo(TabSubscribersList.menu.toLoc.calcHref(tab))
       }) &
       ".edit-tab [onclick]" #> ajaxInvoke(() => {
         RedirectTo(Tabs.tabEditMenu.toLoc.calcHref(tab))
