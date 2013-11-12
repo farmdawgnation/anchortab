@@ -2,26 +2,18 @@
 <html>
   <head>
     <script data-lift="newrelic-browser-timing-header"></script>
+
     <title>Anchor Tab</title>
+    <meta name="description" content="Anchor Tab is an elegant email marketing opt-in tool that can be added to your website to grow your email list.">
 
-    <l:head>
-      <script class="l:jquery" src="/javascripts/jquery-1.8.2.js"></script>
-      <l:ie-conditional version="lte IE 8" eager_eval="true">
-        <l:script-bundle name="ie8-lah-de-dah"></l:script-bundle>
-      </l:ie-conditional>
-      <l:ie-conditional version="lte IE 9" eager_eval="true">
-        <l:script-bundle name="ie-lte9"></l:script-bundle>
-        <l:style-bundle name="landing-ie9"></l:style-bundle>
-      </l:ie-conditional>
-      <link href="/fonts/ss-standard/ss-standard.css" rel="stylesheet" type="text/css">
-      <link href='//fonts.googleapis.com/css?family=Open+Sans:400,800,700,600|Damion' rel='stylesheet' type='text/css'>
-      <l:style-bundle name="landing"></l:style-bundle>
-      <l:script-bundle name="landing"></l:script-bundle>
-      <link rel="shortcut icon" type="image/png" href="/images/favicon.png">
-      <script id="anchortab-loader" type="text/javascript" data-tab-id="50cceb48e4b07a7ee692dc99" src="//s3.amazonaws.com/embed.anchortab.com/javascripts/load.js"></script>
+    <link href="/fonts/ss-standard/ss-standard.css" rel="stylesheet" type="text/css">
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:400,800,600|Damion' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" data-lift="style-bundle?name=landing">
+    <link rel="shortcut icon" type="image/png" href="/images/favicon.png">
 
-      <meta name="description" content="Anchor Tab is an elegant email marketing opt-in tool that can be added to your website to grow your email list.">
-    </l:head>
+    <l:ie-conditional version="lte IE 9" eager_eval="true">
+      <link rel="stylesheet" data-lift="style-bundle?name=landing-ie9">
+    </l:ie-conditional>
   </head>
   <body id="landing">
     <section class="im-on-a-boat">
@@ -331,7 +323,17 @@
         <p class="love">Brewed with love in The Classic City and ATL.</p>
       </div>
     </footer>
-    <script class="l:google-analytics"></script>
+
+    <script data-lift="jquery" src="/javascripts/jquery-1.8.2.js"></script>
+    <script data-lift="script-bundle?name=landing"></script>
+    <script id="anchortab-loader" type="text/javascript" data-tab-id="50cceb48e4b07a7ee692dc99" src="//s3.amazonaws.com/embed.anchortab.com/javascripts/load.js"></script>
+    <l:ie-conditional version="lte IE 8" eager_eval="true">
+      <script data-lift="script-bundle?name=ie8-lah-de-dah"></script>
+    </l:ie-conditional>
+    <l:ie-conditional version="lte IE 9" eager_eval="true">
+      <script data-lift="script-bundle?name=ie-lte9"></script>
+    </l:ie-conditional>
+    <script data-lift="google-analytics"></script>
     <script data-lift="uservoice"></script>
     <script data-lift="mixpanel"></script>
     <script data-lift="newrelic-browser-timing-footer"></script>
