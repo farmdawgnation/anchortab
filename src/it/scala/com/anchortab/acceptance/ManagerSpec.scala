@@ -118,7 +118,7 @@ trait ManagerSpecImpl extends AcceptanceSpec {
       go to (manageTabsUrl)
 
       When("I click the edit button for a tab")
-      val tabId = cssSelector(".subscriber").element.attribute("data-tab-id") getOrElse ""
+      val tabId = cssSelector(".tab").element.attribute("data-tab-id") getOrElse ""
       val tabName = cssSelector(".tab-name").element.text
       click on cssSelector(".edit-tab")
 
@@ -154,7 +154,7 @@ trait ManagerSpecImpl extends AcceptanceSpec {
       go to (manageTabsUrl)
 
       When("I click the embed code button")
-      val tabId = cssSelector(".subscriber").element.attribute("data-tab-id") getOrElse ""
+      val tabId = cssSelector(".tab").element.attribute("data-tab-id") getOrElse ""
       click on cssSelector(".get-code")
 
       Then("I should be presented with a modal that has the embed code for that tab")
@@ -171,7 +171,7 @@ trait ManagerSpecImpl extends AcceptanceSpec {
       go to (manageTabsUrl)
 
       When("I delete a tab")
-      val tabId = cssSelector(".subscriber").element.attribute("data-tab-id") getOrElse ""
+      val tabId = cssSelector(".tab").element.attribute("data-tab-id") getOrElse ""
       click on cssSelector(".delete-tab")
 
       Then("the tab should disappear from the tabs list")
