@@ -110,49 +110,47 @@ class TabForm(requestTab: Tab) extends Loggable
     none ++ leadGeneration ++ cc ++ mc ++ cm
   }
 
+  def serviceWrapper : Option[ServiceWrapper] = {
+    service match {
+      case Tab.EmailServices.MailChimp =>
+        for {
+          session <- userSession.is
+          user <- User.find(session.userId)
+          credentials <- user.credentialsFor("Mailchimp")
+          token <- credentials.serviceCredentials.get("token")
+          mailChimpListId <- mailChimpListId
+        } yield {
+          MailChimpServiceWrapper(token, mailChimpListId)
+        }
+
+      case Tab.EmailServices.ConstantContact =>
+        for {
+          session <- userSession.is
+          user <- User.find(session.userId)
+          credentials <- user.credentialsFor("Constant Contact")
+          token <- credentials.serviceCredentials.get("token")
+          constantContactListId <- constantContactListId
+        } yield {
+          ConstantContactServiceWrapper(credentials.userIdentifier, token, constantContactListId.toLong)
+        }
+
+      case Tab.EmailServices.CampaignMonitor =>
+        for {
+          session <- userSession.is
+          listId <- campaignMonitorListId
+        } yield {
+          CampaignMonitorServiceWrapper(session.userId, listId)
+        }
+
+      case Tab.EmailServices.LeadGeneration =>
+        Some(LeadGenerationServiceWrapper(leadGenerationTargetEmail))
+
+      case _ => None
+    }
+  }
+
   def submit = {
     {
-      // Build the object that will represent the association between this
-      // tab and a remote service.
-      val serviceWrapper : Option[ServiceWrapper] = {
-        service match {
-          case Tab.EmailServices.MailChimp =>
-            for {
-              session <- userSession.is
-              user <- User.find(session.userId)
-              credentials <- user.credentialsFor("Mailchimp")
-              token <- credentials.serviceCredentials.get("token")
-              mailChimpListId <- mailChimpListId
-            } yield {
-              MailChimpServiceWrapper(token, mailChimpListId)
-            }
-
-          case Tab.EmailServices.ConstantContact =>
-            for {
-              session <- userSession.is
-              user <- User.find(session.userId)
-              credentials <- user.credentialsFor("Constant Contact")
-              token <- credentials.serviceCredentials.get("token")
-              constantContactListId <- constantContactListId
-            } yield {
-              ConstantContactServiceWrapper(credentials.userIdentifier, token, constantContactListId.toLong)
-            }
-
-          case Tab.EmailServices.CampaignMonitor =>
-            for {
-              session <- userSession.is
-              listId <- campaignMonitorListId
-            } yield {
-              CampaignMonitorServiceWrapper(session.userId, listId)
-            }
-
-          case Tab.EmailServices.LeadGeneration =>
-            Some(LeadGenerationServiceWrapper(leadGenerationTargetEmail))
-
-          case _ => None
-        }
-      }
-
       for {
         session <- userSession.is
       } yield {
