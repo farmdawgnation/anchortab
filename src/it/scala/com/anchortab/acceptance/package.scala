@@ -33,7 +33,7 @@ object AcceptanceTest extends Tag("com.anchortab.acceptance.AcceptanceTest")
 object PublicTest extends Tag("com.anchortab.acceptance.PublicTest")
 
 trait AcceptanceSpec extends FeatureSpec with GivenWhenThen 
-    with Chrome with BeforeAndAfterAll with ShouldMatchers 
+    with Firefox with BeforeAndAfterAll with ShouldMatchers
     with Eventually with IntegrationPatience {
 
   val testHost: String
