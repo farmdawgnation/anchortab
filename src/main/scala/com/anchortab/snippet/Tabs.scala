@@ -25,8 +25,5 @@ import org.bson.types.ObjectId
 
 import org.joda.time._
 
-case class TabEmbedCodeReceived(embedCode: String) extends SimpleAnchorTabEvent("tab-embed-code-received")
-case class NewTabCreated(embedCode: String) extends SimpleAnchorTabEvent("new-tab-created")
-
 object Tabs extends Loggable {
 }
