@@ -44,9 +44,8 @@ class TabSubscribersList(requestTab: Tab) {
       ".delete-subscriber [onclick]" #> ajaxInvoke(deleteSubscriber(subscriber.email) _)
     }
 
-    if (subscriberInformation.nonEmpty)
-      ".subscriber" #> subscriberInformation
-    else
-      ".subscriber" #> <tr><td colspan="4">No subscribers.</td></tr>
+    ".empty-list" #> (subscriberInformation.nonEmpty ? ClearNodes | PassThru) andThen
+    ".subscriber" #> (subscriberInformation.nonEmpty ? PassThru | ClearNodes) andThen
+    ".subscriber" #> subscriberInformation
   }
 }
