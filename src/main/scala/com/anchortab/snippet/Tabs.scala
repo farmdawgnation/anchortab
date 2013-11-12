@@ -40,25 +40,4 @@ object Tabs extends Loggable {
     tabNewMenu ::
     tabEditMenu ::
     Nil
-
-  def snippetHandlers : SnippetPF = {
-    case "no-tab-views-help" :: Nil => noTabViewsHelp
-  }
-
-  def noTabViewsHelp = {
-    {
-      for {
-        session <- userSession.is
-        numTabs = Tab.count("userId" -> session.userId)
-        numEmptyTabs = Tab.count(
-          ("userId" -> session.userId) ~
-          ("stats.views" -> 0)
-        ) if numEmptyTabs == numTabs && numTabs > 0
-      } yield {
-        PassThru
-      }
-    } openOr {
-      ClearNodes
-    }
-  }
 }

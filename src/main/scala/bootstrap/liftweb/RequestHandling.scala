@@ -104,7 +104,6 @@ object RequestHandling {
     LiftRules.snippets.append(Accounts.snippetHandlers)
     LiftRules.snippets.append(Admin.snippetHandlers)
     LiftRules.snippets.append(Invites.snippetHandlers)
-    LiftRules.snippets.append(Tabs.snippetHandlers)
     LiftRules.snippets.append(Subscription.snippetHandlers)
     LiftRules.snippets.append(Affiliate.snippetHandlers)
   }
