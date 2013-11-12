@@ -29,15 +29,4 @@ case class TabEmbedCodeReceived(embedCode: String) extends SimpleAnchorTabEvent(
 case class NewTabCreated(embedCode: String) extends SimpleAnchorTabEvent("new-tab-created")
 
 object Tabs extends Loggable {
-  val tabNewMenu = Menu.i("New Tab") / "manager" / "tabs" / "new" >>
-    TemplateBox(() => Templates("manager" :: "tab" :: "form" :: Nil))
-  val tabEditMenu =
-    Menu.param[Tab]("Edit Tab", Text("Edit Tab"), Tab.find(_), _._id.toString) /
-    "manager" / "tab" / * >>
-    TemplateBox(() => Templates("manager" :: "tab" :: "form" :: Nil))
-
-  val menus =
-    tabNewMenu ::
-    tabEditMenu ::
-    Nil
 }

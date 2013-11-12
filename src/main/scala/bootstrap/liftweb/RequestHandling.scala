@@ -129,7 +129,6 @@ object RequestHandling {
       landingMenus ++
       Authentication.menus ++
       Dashboard.menus ++
-      Tabs.menus ++
       Accounts.menus ++
       Subscription.menus ++
       Invites.menus ++
@@ -141,7 +140,9 @@ object RequestHandling {
         ResetPassword.menu,
         Register.menu,
         TabList.menu,
-        TabSubscribersList.menu
+        TabSubscribersList.menu,
+        TabForm.tabNewMenu,
+        TabForm.tabEditMenu
       )
 
     LiftRules.setSiteMap(SiteMap(menus: _*))

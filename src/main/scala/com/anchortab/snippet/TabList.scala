@@ -43,7 +43,7 @@ class TabList {
         RedirectTo(TabSubscribersList.menu.toLoc.calcHref(tab))
       }) &
       ".edit-tab [onclick]" #> ajaxInvoke(() => {
-        RedirectTo(Tabs.tabEditMenu.toLoc.calcHref(tab))
+        RedirectTo(TabForm.tabEditMenu.toLoc.calcHref(tab))
       }) &
       ".delete-tab [onclick]" #> ajaxInvoke(() => {
         Tab.delete("_id" -> tab._id)

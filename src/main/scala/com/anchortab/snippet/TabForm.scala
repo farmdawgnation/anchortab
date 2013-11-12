@@ -1,9 +1,11 @@
 package com.anchortab.snippet
 
-import scala.xml.NodeSeq
+import scala.xml._
 
 import net.liftweb._
   import common._
+  import sitemap._
+    import Loc._
   import http._
     import js._
       import JsCmds._
@@ -15,9 +17,17 @@ import net.liftweb._
 
 import com.anchortab.model._
 
+object TabForm {
+  val tabNewMenu = Menu.i("New Tab") / "manager" / "tabs" / "new" >>
+    TemplateBox(() => Templates("manager" :: "tab" :: "form" :: Nil))
+  val tabEditMenu =
+    Menu.param[Tab]("Edit Tab", Text("Edit Tab"), Tab.find(_), _._id.toString) /
+    "manager" / "tab" / * >>
+    TemplateBox(() => Templates("manager" :: "tab" :: "form" :: Nil))
+}
 class TabForm extends Loggable with MailChimpTabForm with ConstantContactTabForm
               with CampaignMonitorTabForm {
-  val requestTab = Tabs.tabEditMenu.currentValue
+  val requestTab = TabForm.tabEditMenu.currentValue
 
   var tabName = requestTab.map(_.name) openOr ""
   var appearanceDelay = requestTab.map(_.appearance.delay.toString) openOr ""
