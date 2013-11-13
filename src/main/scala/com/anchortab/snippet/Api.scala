@@ -76,7 +76,14 @@ object Api extends RestHelper with Loggable {
           )
 
           QuotasActor ! CheckQuotaCounts(user._id)
-          EventActor ! TrackEvent(Event.Types.TabView, remoteIp, userAgent, user._id, tab._id, domain = domain)
+          EventActor ! TrackEvent(Event(
+            Event.Types.TabView,
+            Some(remoteIp),
+            Some(userAgent),
+            Some(user._id),
+            Some(tab._id),
+            domain = domain
+          ))
 
           val whitelabelTab = tab.appearance.whitelabel && plan.hasFeature_?(Plan.Features.WhitelabeledTabs)
           val colorScheme = {
@@ -135,35 +142,13 @@ object Api extends RestHelper with Loggable {
           val userAgent = req.userAgent openOr "unknown"
           val domain = req.header("X-Embedded-Domain")
 
-          if (! tab.hasSubscriber_?(email)) {
-            implicit val formats = Tab.formats
-
-            val subscriberInformation = TabSubscriber(email, name)
-
-            User.update("_id" -> user._id,
-              "$inc" -> (
-                ("quotaCounts." + Plan.Quotas.EmailSubscriptions) -> 1
-              )
-            )
-
-            Tab.update("_id" -> tab._id, (
-              ("$inc" -> ("stats.submissions" -> 1)) ~
-              ("$addToSet" -> ("subscribers" -> decompose(subscriberInformation)))
-            ))
-          }
-
           val submitResult = {
-            val successMessage = {
-              for {
-                serviceWrapper <- tab.service
-              } yield {
-                ServiceWrapperSubmissionActor ! SubscribeEmailToServiceWrapper(serviceWrapper, email, name)
-
+            val successMessage =
+              if (tab.service.isDefined) {
                 "tab-successConfirm"
+              } else {
+                "tab-successNoConfirm"
               }
-            } getOrElse {
-              "tab-successNoConfirm"
-            }
 
             ("success" -> 1) ~
             ("email" -> email) ~
@@ -171,7 +156,15 @@ object Api extends RestHelper with Loggable {
           }
 
           QuotasActor ! CheckQuotaCounts(user._id)
-          EventActor ! TrackEvent(Event.Types.TabSubmit, remoteIp, userAgent, user._id, tab._id, domain = domain)
+          EventActor ! TrackEvent(Event(
+            Event.Types.TabSubmit,
+            Some(remoteIp),
+            Some(userAgent),
+            Some(user._id),
+            Some(tab._id),
+            domain = domain
+          ))
+          ServiceWrapperSubmissionActor ! SubscribeEmailToServiceWrapper(tab, email, name)
 
           Call(callbackFnName, submitResult)
         }
