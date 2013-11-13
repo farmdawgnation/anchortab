@@ -50,7 +50,8 @@ object ErrorNotifierActor extends LiftActor with Loggable {
 
   override def messageHandler = {
     case ScheduleErrorNotifierChecks =>
-      Schedule(() => this ! CheckForEmailSubmissionErrors, timeSpanUntilNextEmailSubmissionCheck)
+      if (Props.productionMode)
+        Schedule(() => this ! CheckForEmailSubmissionErrors, timeSpanUntilNextEmailSubmissionCheck)
 
     case CheckForEmailSubmissionErrors =>
       checkForEmailSubmissionErrors
