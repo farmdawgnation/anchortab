@@ -208,7 +208,7 @@ trait SubmitErrorNotificationEmailHandling extends EmailHandlerChain {
       } yield {
         ErrorDescriptor(
           email,
-          event.createdAt.toString,
+          event.createdAt.toString("MM/dd/yyyy hh:mm aa") + " UTC",
           tab.name,
           event.message.getOrElse("N/A")
         )
