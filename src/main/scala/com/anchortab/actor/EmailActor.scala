@@ -41,6 +41,7 @@ case class SendNeighborhoodWatchEmail(
 ) extends EmailActorMessage
 case class SendLeadGenerationSubscriptionEmail(targetEmail: String, subscribedEmail: String, subscriberName: Option[String]) extends EmailActorMessage
 case class SendSubmitErrorNotificationEmail(targetEmail: String, events: List[Event]) extends EmailActorMessage
+case class SendRetentionEmail(targetEmail: String) extends EmailActorMessage
 
 trait WelcomeEmailHandling extends EmailHandlerChain {
   val welcomeEmailSubject = "Welcome to Anchor Tab!"
@@ -224,6 +225,17 @@ trait SubmitErrorNotificationEmailHandling extends EmailHandlerChain {
       val message = transform.apply(submitErrorNotificationTemplate)
 
       sendEmail(submitErrorNotificationSubject, targetEmail :: Nil, message)
+  }
+}
+
+trait RetentionEmailHandling extends EmailHandlerChain {
+  val retentionEmailTemplate =
+    Templates("emails-hidden" :: "retention-email" :: Nil) openOr NodeSeq.Empty
+  val retentionEmailSubject = "How can we help?"
+
+  addHandler {
+    case SendRetentionEmail(targetEmail) =>
+      sendEmail(retentionEmailSubject, targetEmail :: Nil, retentionEmailTemplate)
   }
 }
 

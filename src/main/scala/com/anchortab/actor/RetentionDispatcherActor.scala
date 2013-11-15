@@ -32,7 +32,9 @@ object RetentionDispatcherActor extends LiftActor with Loggable {
   private def midnightMinusTwo = (new DateTime()).withTimeAtStartOfDay().minusDays(2)
 
   protected def dispatchRetentionEmailTo(targets: List[User]) = {
-    // EmailActor
+    targets.foreach { target =>
+      EmailActor ! SendRetentionEmail(target.email)
+    }
   }
 
   def retentionEmailTargets = {
