@@ -59,6 +59,9 @@ class Boot {
     // Schedule error notifier
     ErrorNotifierActor ! ScheduleErrorNotifierChecks
 
+    // Schedule retention emails
+    RetentionDispatcherActor ! ScheduleRetentionDispatch
+
     // Set Stripe API key
     stripe.apiKey = Props.get("stripe.apiKey") openOr "sk_test_eIk3iZ4csTxHtFmmh86M0E1n"
     stripe.apiVersion = Some("2013-08-13")
