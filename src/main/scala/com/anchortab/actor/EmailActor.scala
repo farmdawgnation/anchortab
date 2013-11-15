@@ -248,7 +248,8 @@ object EmailActor extends EmailHandlerChain
                   with InvoicePaymentFailedEmailHandling
                   with NeighborhoodWatchEmailHandling
                   with LeadGenerationSubscriptionEmailHandling
-                  with SubmitErrorNotificationEmailHandling {
+                  with SubmitErrorNotificationEmailHandling
+                  with RetentionEmailHandling {
   implicit val formats = DefaultFormats
 
   val fromEmail = "hello@anchortab.com"
