@@ -40,6 +40,8 @@ case class SendNeighborhoodWatchEmail(
   similarEmailAddresses: List[SimilarEmailAddresses]
 ) extends EmailActorMessage
 case class SendLeadGenerationSubscriptionEmail(targetEmail: String, subscribedEmail: String, subscriberName: Option[String]) extends EmailActorMessage
+case class SendSubmitErrorNotificationEmail(targetEmail: String, events: List[Event]) extends EmailActorMessage
+case class SendRetentionEmail(targetEmail: String) extends EmailActorMessage
 
 trait WelcomeEmailHandling extends EmailHandlerChain {
   val welcomeEmailSubject = "Welcome to Anchor Tab!"
@@ -190,6 +192,53 @@ trait LeadGenerationSubscriptionEmailHandling extends EmailHandlerChain {
   }
 }
 
+trait SubmitErrorNotificationEmailHandling extends EmailHandlerChain {
+  val submitErrorNotificationTemplate =
+    Templates("emails-hidden" :: "submit-error-notification-email" :: Nil) openOr NodeSeq.Empty
+  val submitErrorNotificationSubject = "Action Required: Error submitting emails."
+
+  case class ErrorDescriptor(email: String, formattedTime: String, tabName: String, error: String)
+
+  addHandler {
+    case SendSubmitErrorNotificationEmail(targetEmail, events) =>
+      val errorDescriptors = for {
+        event <- events
+        tabId <- event.tabId
+        tab <- Tab.find(tabId)
+        email <- event.email
+      } yield {
+        ErrorDescriptor(
+          email,
+          event.createdAt.toString("MM/dd/yyyy hh:mm aa") + " UTC",
+          tab.name,
+          event.message.getOrElse("N/A")
+        )
+      }
+
+      val transform = ".error" #> errorDescriptors.map { errorDescriptor =>
+        ".email *" #> errorDescriptor.email &
+        ".time *" #> errorDescriptor.formattedTime &
+        ".tab-name *" #> errorDescriptor.tabName &
+        ".error-message *" #> errorDescriptor.error
+      }
+
+      val message = transform.apply(submitErrorNotificationTemplate)
+
+      sendEmail(submitErrorNotificationSubject, targetEmail :: Nil, message)
+  }
+}
+
+trait RetentionEmailHandling extends EmailHandlerChain {
+  val retentionEmailTemplate =
+    Templates("emails-hidden" :: "retention-email" :: Nil) openOr NodeSeq.Empty
+  val retentionEmailSubject = "How can we help?"
+
+  addHandler {
+    case SendRetentionEmail(targetEmail) =>
+      sendEmail(retentionEmailSubject, targetEmail :: Nil, retentionEmailTemplate)
+  }
+}
+
 object EmailActor extends EmailHandlerChain
                   with WelcomeEmailHandling
                   with ForgotPasswordEmailHandling
@@ -198,7 +247,9 @@ object EmailActor extends EmailHandlerChain
                   with TrialEndingEmailHandling
                   with InvoicePaymentFailedEmailHandling
                   with NeighborhoodWatchEmailHandling
-                  with LeadGenerationSubscriptionEmailHandling {
+                  with LeadGenerationSubscriptionEmailHandling
+                  with SubmitErrorNotificationEmailHandling
+                  with RetentionEmailHandling {
   implicit val formats = DefaultFormats
 
   val fromEmail = "hello@anchortab.com"

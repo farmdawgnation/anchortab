@@ -104,7 +104,6 @@ object RequestHandling {
     LiftRules.snippets.append(Accounts.snippetHandlers)
     LiftRules.snippets.append(Admin.snippetHandlers)
     LiftRules.snippets.append(Invites.snippetHandlers)
-    LiftRules.snippets.append(Tabs.snippetHandlers)
     LiftRules.snippets.append(Subscription.snippetHandlers)
     LiftRules.snippets.append(Affiliate.snippetHandlers)
   }
@@ -130,7 +129,6 @@ object RequestHandling {
       landingMenus ++
       Authentication.menus ++
       Dashboard.menus ++
-      Tabs.menus ++
       Accounts.menus ++
       Subscription.menus ++
       Invites.menus ++
@@ -140,7 +138,11 @@ object RequestHandling {
         ForgotPassword.menu,
         ForgotPasswordComplete.menu,
         ResetPassword.menu,
-        Register.menu
+        Register.menu,
+        TabList.menu,
+        TabSubscribersList.menu,
+        TabForm.tabNewMenu,
+        TabForm.tabEditMenu
       )
 
     LiftRules.setSiteMap(SiteMap(menus: _*))

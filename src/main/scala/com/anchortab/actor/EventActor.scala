@@ -20,8 +20,7 @@ import org.joda.time._
 import com.anchortab.model._
 import com.anchortab.comet._
 
-case class TrackEvent(eventType:String, ip:String, userAgent:String, userId:ObjectId, tabId:ObjectId,
-                      email:Option[String] = None, domain:Option[String] = None)
+case class TrackEvent(event: Event)
 case class EventActorClientCometRegistered(comet: CometActor)
 case class EventActorClientCometDeregistered(cometName: String)
 case class EventSummaryRequested(comet: CometActor, userId:ObjectId, eventType: String)
@@ -33,14 +32,14 @@ object EventActor extends LiftActor with Loggable {
   val registeredComets: HashMap[String, CometActor] = new HashMap
 
   def messageHandler = {
-    case TrackEvent(eventType, ip, userAgent, userId, tabId, email, domain) =>
-      EventLog.track(eventType, ip, userAgent, userId, tabId, email, domain)
+    case TrackEvent(event) =>
+      event.save
 
-      if (eventType == Event.Types.TabView || eventType == Event.Types.TabSubmit) {
+      for (userId <- event.userId if event.eventType == Event.Types.TabSubmit) {
         val targetComet = "event-summary-comet-" + userId
 
         for(comet <- registeredComets.get(targetComet)) {
-          this ! EventSummaryRequested(comet, userId, eventType)
+          this ! EventSummaryRequested(comet, userId, event.eventType)
         }
       }
 

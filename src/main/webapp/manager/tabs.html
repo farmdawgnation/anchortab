@@ -9,7 +9,7 @@
       <lift:pwn-if-not-logged-in />
       <h2>My Tabs</h2>
 
-      <p class="helpful" data-lift="no-tab-views-help">
+      <p class="helpful" data-lift="TabList.noTabViewsHelp">
         You have a tab, but it doesn't look like it's been viewed yet.
         If you need your embed code again, click the button that says "Embed"
         to the right of your tab. Having trouble getting the embed code to work?
@@ -17,10 +17,10 @@
       </p>
 
       <p>
-        <button data-lift="Tabs.newTabButton" class="new-tab-button">New Tab</button>
+        <button data-lift="TabList.newTabButton" class="new-tab-button">New Tab</button>
       </p>
 
-      <table class="l:Tabs.tabList tab-list">
+      <table class="tab-list" data-lift="TabList.render">
         <tr class="header">
           <th>Tab Name</th>
           <th>Subscriptions</th>
@@ -29,7 +29,7 @@
         <tr class="empty-list">
           <td colspan="4">You currently have no tabs.</td>
         </tr>
-        <tr class="subscriber">
+        <tr class="tab">
           <td class="tab-name">The Awesome Tab</td>
           <td class="subscription-count">99999999</td>
           <td>
