@@ -24,7 +24,12 @@ import org.joda.time._
 
 import com.stripe
 
-object StripeHook extends RestHelper with Loggable {
+object StripeHook extends StripeHook {
+  override val emailActor = EmailActor
+}
+trait StripeHook extends RestHelper with Loggable {
+  def emailActor: EmailActor
+
   private def newPlanFromStripe(user: User, plan: Plan, status: String) = {
     implicit val formats = User.formats
 
@@ -60,7 +65,7 @@ object StripeHook extends RestHelper with Loggable {
     } yield {
       val amount = totalAmountInCents / 100d
 
-      EmailActor ! SendInvoicePaymentSucceededEmail(user.email, amount)
+      emailActor ! SendInvoicePaymentSucceededEmail(user.email, amount)
       OkResponse()
     }
   }
@@ -82,7 +87,7 @@ object StripeHook extends RestHelper with Loggable {
         }
         val amount = totalAmountInCents / 100d
 
-        EmailActor ! SendInvoicePaymentFailedEmail(user.email, amount, nextPaymentAttempt)
+        emailActor ! SendInvoicePaymentFailedEmail(user.email, amount, nextPaymentAttempt)
       }
 
       OkResponse()
@@ -221,7 +226,7 @@ object StripeHook extends RestHelper with Loggable {
       // between those and the real ones that come in advance of a real trial ending. We use
       // the heuristic of subtracting one hour from the time to see if it's still in the future.
       if (trialEnd.minusHours(1) isAfterNow)
-        EmailActor ! SendTrialEndingEmail(user.email, user.activeCard.isDefined, plan.name, trialEnd)
+        emailActor ! SendTrialEndingEmail(user.email, user.activeCard.isDefined, plan.name, trialEnd)
 
       OkResponse()
     }
