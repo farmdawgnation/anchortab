@@ -239,17 +239,18 @@ trait RetentionEmailHandling extends EmailHandlerChain {
   }
 }
 
-object EmailActor extends EmailHandlerChain
-                  with WelcomeEmailHandling
-                  with ForgotPasswordEmailHandling
-                  with QuotaWarningEmailHandling
-                  with QuotaErrorEmailHandling
-                  with TrialEndingEmailHandling
-                  with InvoicePaymentFailedEmailHandling
-                  with NeighborhoodWatchEmailHandling
-                  with LeadGenerationSubscriptionEmailHandling
-                  with SubmitErrorNotificationEmailHandling
-                  with RetentionEmailHandling {
+object EmailActor extends EmailActor
+trait EmailActor extends EmailHandlerChain
+                    with WelcomeEmailHandling
+                    with ForgotPasswordEmailHandling
+                    with QuotaWarningEmailHandling
+                    with QuotaErrorEmailHandling
+                    with TrialEndingEmailHandling
+                    with InvoicePaymentFailedEmailHandling
+                    with NeighborhoodWatchEmailHandling
+                    with LeadGenerationSubscriptionEmailHandling
+                    with SubmitErrorNotificationEmailHandling
+                    with RetentionEmailHandling {
   implicit val formats = DefaultFormats
 
   val fromEmail = "hello@anchortab.com"
