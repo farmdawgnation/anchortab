@@ -35,8 +35,29 @@ object StripeHookSpecExamples {
     user
   }
 
+  def plan = {
+    val plan = Plan(
+      randomString(32),
+      randomString(32),
+      10.0,
+      0,
+      Map.empty,
+      Map.empty,
+      stripeId = Some(randomString(32))
+    )
+
+    plan.save
+
+    plan
+  }
+
   lazy val customer1 = customer()
   lazy val customer2 = customer(activeCard = true)
+  lazy val customer3 = customer(activeCard = true)
+  lazy val customer4 = customer(activeCard = true)
+
+  lazy val plan1 = plan
+  lazy val plan2 = plan
 }
 
 class StripeHookSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll {
@@ -75,24 +96,80 @@ class StripeHookSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll 
 
     customer1
     customer2
+    customer3
+
+    plan1
+    plan2
   }
 
   override def afterAll() {
     customer1.delete
     customer2.delete
+    customer3.delete
+
+    plan1.delete
+    plan2.delete
   }
 
   describe("POST /stripe-hook") {
     describe("general processing") {
-      it("should return 500 if the request body isn't valid JSON")(pending)
+      it("returns an empty if attempting to process an event id twice") {
+        val stripeData =
+          ("id" -> randomString(32)) ~
+          ("type" -> "bacon") ~
+          ("data" -> ("object" -> JObject(Nil)))
 
-      it("should return a 404 on attempting to process an event id twice")(pending)
+        withStripeHookAndEmailActor { (stripeHook, emailActor) =>
+          runStripeHookRequest(stripeHook, stripeData)(_ => false)
 
-      it("should return a 500 if the event type is missing")(pending)
+          runStripeHookRequest(stripeHook, stripeData) { response =>
+            response should equal (Empty)
+          }
+        }
+      }
 
-      it("should return a 500 if the data attribute is missing")(pending)
+      it("returns an Empty if the event type is missing") {
+        val stripeData =
+          ("id" -> randomString(32)) ~
+          ("data" -> ("object" -> JObject(Nil)))
 
-      it("should return a 500 if the data object attribute is missing")(pending)
+        withStripeHookAndEmailActor { (stripeHook, emailActor) =>
+          runStripeHookRequest(stripeHook, stripeData)(_ => false)
+
+          runStripeHookRequest(stripeHook, stripeData) { response =>
+            response should equal (Empty)
+          }
+        }
+      }
+
+      it("returns an Empty if the data attribute is missing") {
+        val stripeData =
+          ("id" -> randomString(32)) ~
+          ("type" -> "bacon")
+
+        withStripeHookAndEmailActor { (stripeHook, emailActor) =>
+          runStripeHookRequest(stripeHook, stripeData)(_ => false)
+
+          runStripeHookRequest(stripeHook, stripeData) { response =>
+            response should equal (Empty)
+          }
+        }
+      }
+
+      it("returns an Empty if the data object attribute is missing") {
+        val stripeData =
+          ("id" -> randomString(32)) ~
+          ("type" -> "bacon") ~
+          ("data" -> JObject(Nil))
+
+        withStripeHookAndEmailActor { (stripeHook, emailActor) =>
+          runStripeHookRequest(stripeHook, stripeData)(_ => false)
+
+          runStripeHookRequest(stripeHook, stripeData) { response =>
+            response should equal (Empty)
+          }
+        }
+      }
     }
 
     describe("invoice.payment_succeeded") {
@@ -188,7 +265,99 @@ class StripeHookSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll 
     }
 
     describe("customer.subscription.created") {
-      it("should create a new plan from stripe for a new subscription")(pending)
+      it("should create a new active sub in our db for a user without a sub") {
+        val stripeData =
+          ("id" -> randomString(32)) ~
+          ("type" -> "customer.subscription.created") ~
+          ("data" -> ("object" -> (
+            ("customer" -> customer3.stripeCustomerId) ~
+            ("plan" -> ("id" -> plan1.stripeId)) ~
+            ("status" -> "active")
+          )))
+
+        withStripeHookAndEmailActor { (stripeHook, emailActor) =>
+          runStripeHookRequest(stripeHook, stripeData) { response =>
+            response match {
+              case Full(response) =>
+                response should equal (OkResponse())
+
+                val subscription = User.find(customer3._id).get.subscription.get
+
+                subscription.planId should equal (plan1._id)
+                subscription.price should equal (plan1.price)
+                subscription.term should equal (plan1.term)
+                subscription.status should equal ("active")
+
+              case other =>
+                fail("got: " + other)
+            }
+          }
+        }
+      }
+
+      it("should create a new trailing sub in our db for a user without a sub") {
+        val stripeData =
+          ("id" -> randomString(32)) ~
+          ("type" -> "customer.subscription.created") ~
+          ("data" -> ("object" -> (
+            ("customer" -> customer4.stripeCustomerId) ~
+            ("plan" -> ("id" -> plan1.stripeId)) ~
+            ("status" -> "trialing")
+          )))
+
+        withStripeHookAndEmailActor { (stripeHook, emailActor) =>
+          runStripeHookRequest(stripeHook, stripeData) { response =>
+            response match {
+              case Full(response) =>
+                response should equal (OkResponse())
+
+                val subscription = User.find(customer4._id).get.subscription.get
+
+                subscription.planId should equal (plan1._id)
+                subscription.price should equal (plan1.price)
+                subscription.term should equal (plan1.term)
+                subscription.status should equal ("trial")
+
+              case other =>
+                fail("got: " + other)
+            }
+          }
+        }
+      }
+
+      it("should end an old subscription when a new one is created") {
+        val stripeData =
+          ("id" -> randomString(32)) ~
+          ("type" -> "customer.subscription.created") ~
+          ("data" -> ("object" -> (
+            ("customer" -> customer3.stripeCustomerId) ~
+            ("plan" -> ("id" -> plan2.stripeId)) ~
+            ("status" -> "active")
+          )))
+
+        withStripeHookAndEmailActor { (stripeHook, emailActor) =>
+          runStripeHookRequest(stripeHook, stripeData) { response =>
+            response match {
+              case Full(response) =>
+                response should equal (OkResponse())
+
+                val user = User.find(customer3._id).get
+                val subscription = user.subscription.get
+                val oldSubscription = user.subscriptions.find(_.planId == plan1._id).get
+
+                oldSubscription.status should equal ("cancelled")
+
+                subscription.planId should equal (plan2._id)
+                subscription.price should equal (plan2.price)
+                subscription.term should equal (plan2.term)
+                subscription.status should equal ("active")
+
+              case other =>
+                fail("got: " + other)
+            }
+          }
+        }
+      }
     }
 
     describe("customer.subscription.updated") {
