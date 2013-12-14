@@ -212,31 +212,6 @@ trait StripeHook extends RestHelper with Loggable {
     }
   }
 
-  def customerSubscriptionTrialWillEnd(objectJson: JValue) = {
-    for {
-      stripeCustomerId <- tryo((objectJson \ "customer").extract[String]) ?~! "No customer."
-      trialEndInSecs <- tryo((objectJson \ "trial_end").extract[Long]) ?~! "No trial end."
-      user <- User.find("stripeCustomerId" -> stripeCustomerId)
-      subscription <- user.subscription
-      plan <- subscription.plan
-    } yield {
-      val trialEnd = new DateTime(trialEndInSecs * 1000)
-
-      // We get a trial end event every time a user switches plans. So, we need to distinguish
-      // between those and the real ones that come in advance of a real trial ending. We use
-      // the heuristic of subtracting one hour from the time to see if it's still in the future.
-      if (trialEnd.minusHours(1) isAfterNow)
-        emailActor ! SendTrialEndingEmail(user.email, user.activeCard.isDefined, plan.name, trialEnd)
-
-      OkResponse()
-    }
-  }
-
-  /**
-   * Filters IDs that have already been processed.
-   *
-   * TODO: Implement.
-  **/
   private def validStripeEventId(id: String): Option[String] = {
     RecordedStripeEvent.find("stripeEventId" -> id) match {
       case None => Some(id)
@@ -262,7 +237,6 @@ trait StripeHook extends RestHelper with Loggable {
             case "customer.subscription.created" => customerSubscriptionCreated(objectJson)
             case "customer.subscription.updated" => customerSubscriptionUpdated(objectJson)
             case "customer.subscription.deleted" => customerSubscriptionDeleted(objectJson)
-            case "customer.subscription.trial_will_end" => customerSubscriptionTrialWillEnd(objectJson)
             case _ => Full(OkResponse())
           }
 
