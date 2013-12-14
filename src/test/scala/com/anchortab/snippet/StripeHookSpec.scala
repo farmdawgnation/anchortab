@@ -111,6 +111,21 @@ class StripeHookSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll 
     plan2.delete
   }
 
+  def okResponseTest(stripeData: JValue)(additionalAssertions: (MockLiftActor)=>Unit) = {
+    withStripeHookAndEmailActor { (stripeHook, emailActor) =>
+      runStripeHookRequest(stripeHook, stripeData) { response =>
+        response match {
+          case Full(response) =>
+            response should equal (OkResponse())
+            additionalAssertions(emailActor)
+
+          case other =>
+            fail("got: " + other)
+        }
+      }
+    }
+  }
+
   describe("POST /stripe-hook") {
     describe("general processing") {
       it("returns an empty if attempting to process an event id twice") {
@@ -182,19 +197,9 @@ class StripeHookSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll 
             ("total" -> 10000)
           )))
 
-        withStripeHookAndEmailActor { (stripeHook, emailActor) =>
-          runStripeHookRequest(stripeHook, stripeData) { response =>
-            response match {
-              case Full(response) =>
-                response should equal (OkResponse())
-
-                val expectedEmailActorMessage = SendInvoicePaymentSucceededEmail(customer1.email.toLowerCase, 100.0)
-                emailActor.messages should contain (expectedEmailActorMessage)
-
-              case other =>
-                fail("got: " + other)
-            }
-          }
+        okResponseTest(stripeData) { (emailActor) =>
+          val expectedEmailActorMessage = SendInvoicePaymentSucceededEmail(customer1.email.toLowerCase, 100.0)
+          emailActor.messages should contain (expectedEmailActorMessage)
         }
       }
     }
@@ -214,23 +219,13 @@ class StripeHookSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll 
             ("next_payment_attempt" -> tomorrowSeconds)
           )))
 
-        withStripeHookAndEmailActor { (stripeHook, emailActor) =>
-          runStripeHookRequest(stripeHook, stripeData) { response =>
-            response match {
-              case Full(response) =>
-                response should equal (OkResponse())
-
-                val expectedEmailActorMessage = SendInvoicePaymentFailedEmail(
-                  customer2.email.toLowerCase,
-                  100.0,
-                  Some(tomorrowFromSections)
-                )
-                emailActor.messages should contain (expectedEmailActorMessage)
-
-              case other =>
-                fail("got: " + other)
-            }
-          }
+        okResponseTest(stripeData) { (emailActor) =>
+          val expectedEmailActorMessage = SendInvoicePaymentFailedEmail(
+            customer2.email.toLowerCase,
+            100.0,
+            Some(tomorrowFromSections)
+          )
+          emailActor.messages should contain (expectedEmailActorMessage)
         }
       }
 
@@ -243,23 +238,13 @@ class StripeHookSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll 
             ("total" -> 10000)
           )))
 
-        withStripeHookAndEmailActor { (stripeHook, emailActor) =>
-          runStripeHookRequest(stripeHook, stripeData) { response =>
-            response match {
-              case Full(response) =>
-                response should equal (OkResponse())
-
-                val expectedEmailActorMessage = SendInvoicePaymentFailedEmail(
-                  customer2.email.toLowerCase,
-                  100.0,
-                  None
-                )
-                emailActor.messages should contain (expectedEmailActorMessage)
-
-              case other =>
-                fail("got: " + other)
-            }
-          }
+        okResponseTest(stripeData) { (emailActor) =>
+          val expectedEmailActorMessage = SendInvoicePaymentFailedEmail(
+            customer2.email.toLowerCase,
+            100.0,
+            None
+          )
+          emailActor.messages should contain (expectedEmailActorMessage)
         }
       }
     }
@@ -275,23 +260,14 @@ class StripeHookSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll 
             ("status" -> "active")
           )))
 
-        withStripeHookAndEmailActor { (stripeHook, emailActor) =>
-          runStripeHookRequest(stripeHook, stripeData) { response =>
-            response match {
-              case Full(response) =>
-                response should equal (OkResponse())
+        okResponseTest(stripeData) { (emailActor) =>
+          val subscription = User.find(customer3._id).get.subscription.get
 
-                val subscription = User.find(customer3._id).get.subscription.get
+          subscription.planId should equal (plan1._id)
+          subscription.price should equal (plan1.price)
+          subscription.term should equal (plan1.term)
+          subscription.status should equal ("active")
 
-                subscription.planId should equal (plan1._id)
-                subscription.price should equal (plan1.price)
-                subscription.term should equal (plan1.term)
-                subscription.status should equal ("active")
-
-              case other =>
-                fail("got: " + other)
-            }
-          }
         }
       }
 
@@ -305,23 +281,13 @@ class StripeHookSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll 
             ("status" -> "trialing")
           )))
 
-        withStripeHookAndEmailActor { (stripeHook, emailActor) =>
-          runStripeHookRequest(stripeHook, stripeData) { response =>
-            response match {
-              case Full(response) =>
-                response should equal (OkResponse())
+        okResponseTest(stripeData) { (emailActor) =>
+          val subscription = User.find(customer4._id).get.subscription.get
 
-                val subscription = User.find(customer4._id).get.subscription.get
-
-                subscription.planId should equal (plan1._id)
-                subscription.price should equal (plan1.price)
-                subscription.term should equal (plan1.term)
-                subscription.status should equal ("trial")
-
-              case other =>
-                fail("got: " + other)
-            }
-          }
+          subscription.planId should equal (plan1._id)
+          subscription.price should equal (plan1.price)
+          subscription.term should equal (plan1.term)
+          subscription.status should equal ("trial")
         }
       }
 
@@ -335,27 +301,17 @@ class StripeHookSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll 
             ("status" -> "active")
           )))
 
-        withStripeHookAndEmailActor { (stripeHook, emailActor) =>
-          runStripeHookRequest(stripeHook, stripeData) { response =>
-            response match {
-              case Full(response) =>
-                response should equal (OkResponse())
+        okResponseTest(stripeData) { (emailActor) =>
+          val user = User.find(customer3._id).get
+          val subscription = user.subscription.get
+          val oldSubscription = user.subscriptions.find(_.planId == plan1._id).get
 
-                val user = User.find(customer3._id).get
-                val subscription = user.subscription.get
-                val oldSubscription = user.subscriptions.find(_.planId == plan1._id).get
+          oldSubscription.status should equal ("cancelled")
 
-                oldSubscription.status should equal ("cancelled")
-
-                subscription.planId should equal (plan2._id)
-                subscription.price should equal (plan2.price)
-                subscription.term should equal (plan2.term)
-                subscription.status should equal ("active")
-
-              case other =>
-                fail("got: " + other)
-            }
-          }
+          subscription.planId should equal (plan2._id)
+          subscription.price should equal (plan2.price)
+          subscription.term should equal (plan2.term)
+          subscription.status should equal ("active")
         }
       }
     }
@@ -370,10 +326,6 @@ class StripeHookSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll 
       it("should properly cancel a db subscription")(pending)
 
       it("should immediately end a subscription that was unpaid")(pending)
-    }
-
-    describe("customer.subscription.trial_will_end") {
-      it("should send an email to a user with an ending trial")(pending)
     }
   }
 }
