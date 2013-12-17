@@ -193,16 +193,13 @@ trait StripeHook extends RestHelper with Loggable {
             User.update(
               ("_id" -> user._id) ~
               ("subscriptions._id" -> subscription._id),
-              (
-                "$set" -> (
+              ("$set" -> (
                   ("subscriptions.$.status" -> "stopped") ~
                   ("subscriptions.$.ends" -> decompose(new DateTime()))
-                ) ~
-                (
-                  "$unset" -> ("activeCard" -> true)
-                )
-              )
+              ))
             )
+
+            User.update("_id" -> user._id, "$unset" -> ("activeCard" -> true))
           }
 
         case _ =>
