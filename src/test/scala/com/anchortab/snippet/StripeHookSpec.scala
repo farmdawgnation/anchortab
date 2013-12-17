@@ -71,6 +71,9 @@ object StripeHookSpecExamples {
   lazy val customer4 = customer(activeCard = true)
   lazy val customer5 = customer(activeCard = true, activeSubscription = Some(plan1._id))
   lazy val customer6 = customer(activeCard = true, activeSubscription = Some(plan1._id))
+  lazy val customer7 = customer(activeCard = true, activeSubscription = Some(plan1._id))
+  lazy val customer8 = customer(activeCard = true, activeSubscription = Some(plan1._id))
+  lazy val customer9 = customer(activeCard = true, activeSubscription = Some(plan1._id))
 }
 
 class StripeHookSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll {
@@ -110,6 +113,12 @@ class StripeHookSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll 
     customer1
     customer2
     customer3
+    customer4
+    customer5
+    customer6
+    customer7
+    customer8
+    customer9
 
     plan1
     plan2
@@ -119,6 +128,12 @@ class StripeHookSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll 
     customer1.delete
     customer2.delete
     customer3.delete
+    customer4.delete
+    customer5.delete
+    customer6.delete
+    customer7.delete
+    customer8.delete
+    customer9.delete
 
     plan1.delete
     plan2.delete
@@ -330,9 +345,78 @@ class StripeHookSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll 
     }
 
     describe("customer.subscription.updated") {
-      it("should set up a canceled subscription to cancel")(pending)
+      it("should set up a canceled active subscription to cancel at period end") {
+        val tomorrow = (new DateTime()).plusDays(1)
+        val tomorrowSeconds = tomorrow.getMillis / 1000
+        val tomorrowFromSecs = new DateTime(tomorrowSeconds * 1000)
 
-      it("should properly change plans if the users plan is switched")(pending)
+        val stripeData =
+          ("id" -> randomString(32)) ~
+          ("type" -> "customer.subscription.updated") ~
+          ("data" -> ("object" -> (
+            ("customer" -> customer7.stripeCustomerId) ~
+            ("plan" -> ("id" -> plan1.stripeId)) ~
+            ("status" -> "active") ~
+            ("cancel_at_period_end" -> true) ~
+            ("current_period_end" -> tomorrowSeconds)
+          )))
+
+        okResponseTest(stripeData) { (emailActor) =>
+          val user = User.find(customer7._id).get
+          val subscription = user.subscription.get
+
+          user.subscriptions should have length 1
+          subscription.status should equal ("cancelled")
+          subscription.ends.get should equal (tomorrowFromSecs)
+        }
+      }
+
+      it("should set up a canceled active subscription to cancel immediately") {
+        val now = (new DateTime())
+        val nowSeconds = now.getMillis / 1000
+        val nowFromSecs = new DateTime(nowSeconds * 1000)
+
+        val stripeData =
+          ("id" -> randomString(32)) ~
+          ("type" -> "customer.subscription.updated") ~
+          ("data" -> ("object" -> (
+            ("customer" -> customer8.stripeCustomerId) ~
+            ("plan" -> ("id" -> plan1.stripeId)) ~
+            ("status" -> "canceled") ~
+            ("ended_at" -> nowSeconds) ~
+            ("cancel_at_period_end" -> false)
+          )))
+
+        okResponseTest(stripeData) { (emailActor) =>
+          val user = User.find(customer8._id).get
+          val subscription = user.subscriptions.head
+
+          user.subscriptions should have length 1
+          subscription.status should equal ("cancelled")
+          subscription.ends.get should equal (nowFromSecs)
+        }
+      }
+
+      it("should properly change plans if the users plan is switched") {
+        val stripeData =
+          ("id" -> randomString(32)) ~
+          ("type" -> "customer.subscription.updated") ~
+          ("data" -> ("object" -> (
+            ("customer" -> customer9.stripeCustomerId) ~
+            ("plan" -> ("id" -> plan2.stripeId)) ~
+            ("status" -> "active") ~
+            ("cancel_at_period_end" -> false)
+          )))
+
+        okResponseTest(stripeData) { (emailActor) =>
+          val user = User.find(customer9._id).get
+          val subscription = user.subscription.get
+
+          user.subscriptions should have length 2
+          subscription.status should equal ("active")
+          subscription.planId should equal (plan2._id)
+        }
+      }
     }
 
     describe("customer.subscription.deleted") {
@@ -369,13 +453,13 @@ class StripeHookSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll 
           ("id" -> randomString(32)) ~
           ("type" -> "customer.subscription.deleted") ~
           ("data" -> ("object" -> (
-            ("customer" -> customer5.stripeCustomerId) ~
+            ("customer" -> customer6.stripeCustomerId) ~
             ("status" -> "unpaid") ~
             ("current_period_end" -> tomorrowSeconds)
           )))
 
         okResponseTest(stripeData) { (emailActor) =>
-          val user = User.find(customer5._id).get
+          val user = User.find(customer6._id).get
           val subscription = user.subscriptions.head
 
           user.subscriptions should have length 1
