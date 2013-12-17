@@ -17,10 +17,12 @@ import net.liftweb.util._
 import com.anchortab.actor._
 import com.anchortab.model._
 
+import org.bson.types.ObjectId
+
 import org.joda.time._
 
 object StripeHookSpecExamples {
-  def customer(activeCard: Boolean = false) = {
+  def customer(activeCard: Boolean = false, activeSubscription: Option[ObjectId] = None) = {
     var user = User(
       email = randomString(32),
       password = randomString(32),
@@ -29,6 +31,15 @@ object StripeHookSpecExamples {
 
     if (activeCard)
       user = user.copy(activeCard = Some(UserActiveCard("1234", "mc", 4, 2013)))
+
+    activeSubscription.foreach { planId =>
+      user = user.copy(subscriptions = List(UserSubscription(
+        planId,
+        10.0,
+        Plan.MonthlyTerm,
+        status = "active"
+      )))
+    }
 
     user.save
 
@@ -51,13 +62,15 @@ object StripeHookSpecExamples {
     plan
   }
 
+  lazy val plan1 = plan
+  lazy val plan2 = plan
+
   lazy val customer1 = customer()
   lazy val customer2 = customer(activeCard = true)
   lazy val customer3 = customer(activeCard = true)
   lazy val customer4 = customer(activeCard = true)
-
-  lazy val plan1 = plan
-  lazy val plan2 = plan
+  lazy val customer5 = customer(activeCard = true, activeSubscription = Some(plan1._id))
+  lazy val customer6 = customer(activeCard = true, activeSubscription = Some(plan1._id))
 }
 
 class StripeHookSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll {
@@ -323,9 +336,54 @@ class StripeHookSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll 
     }
 
     describe("customer.subscription.deleted") {
-      it("should properly cancel a db subscription")(pending)
+      it("should properly cancel a db subscription") {
+        val tomorrow = (new DateTime()).plusDays(1)
+        val tomorrowSeconds = tomorrow.getMillis / 1000
+        val tomorrowFromSecs = new DateTime(tomorrowSeconds * 1000)
 
-      it("should immediately end a subscription that was unpaid")(pending)
+        val stripeData =
+          ("id" -> randomString(32)) ~
+          ("type" -> "customer.subscription.deleted") ~
+          ("data" -> ("object" -> (
+            ("customer" -> customer5.stripeCustomerId) ~
+            ("status" -> "canceled") ~
+            ("current_period_end" -> tomorrowSeconds)
+          )))
+
+        okResponseTest(stripeData) { (emailActor) =>
+          val user = User.find(customer5._id).get
+          val subscription = user.subscription.get
+
+          user.subscriptions should have length 1
+          subscription.status should equal ("cancelled")
+          subscription.ends should equal (Some(tomorrowFromSecs))
+        }
+      }
+
+      it("should immediately end a subscription that was unpaid") {
+        val tomorrow = (new DateTime()).plusDays(1)
+        val tomorrowSeconds = tomorrow.getMillis / 1000
+        val tomorrowFromSecs = new DateTime(tomorrowSeconds * 1000)
+
+        val stripeData =
+          ("id" -> randomString(32)) ~
+          ("type" -> "customer.subscription.deleted") ~
+          ("data" -> ("object" -> (
+            ("customer" -> customer5.stripeCustomerId) ~
+            ("status" -> "unpaid") ~
+            ("current_period_end" -> tomorrowSeconds)
+          )))
+
+        okResponseTest(stripeData) { (emailActor) =>
+          val user = User.find(customer5._id).get
+          val subscription = user.subscriptions.head
+
+          user.subscriptions should have length 1
+          subscription.status should equal ("stopped")
+          subscription.ends.get.isBefore(new DateTime()) should equal (true)
+          user.activeCard should equal (None)
+        }
+      }
     }
   }
 }
