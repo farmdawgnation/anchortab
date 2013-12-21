@@ -11,7 +11,8 @@ import scala.io._
 
 import com.anchortab.model.{DatabaseMeta, DatabaseVersion}
 
-object SetupDb extends Loggable {
+object SetupDb extends SetupDb
+trait SetupDb extends Loggable {
   def setup = {
     for {
       hostname <- Props.get("mongodb.host")
@@ -22,6 +23,19 @@ object SetupDb extends Loggable {
       MongoDB.defineDb(DefaultMongoIdentifier, MongoAddress(mongoHost, database))
     }
   }
+
+  protected def latestDatabaseVersion = {
+    for {
+      databaseVersionInputStream <- tryo(getClass.getClassLoader.getResourceAsStream("migrations/DBVERSION"))
+      databaseVersionAsString <- Source.fromInputStream(databaseVersionInputStream).getLines.toList.headOption
+      databaseVersion <- AsInt.unapply(databaseVersionAsString)
+    } yield {
+      databaseVersion
+    }
+  }
+
+  protected def migrationFilenameForVersion(version: Int) =
+    s"migrations/anchortab-$version.js"
 
   def ensureDbVersionIsSet = {
     DatabaseMeta.find(DatabaseMeta.databaseVersionKey) match {
@@ -38,16 +52,6 @@ object SetupDb extends Loggable {
         }
 
       case _ =>
-    }
-  }
-
-  protected def latestDatabaseVersion = {
-    for {
-      databaseVersionInputStream <- tryo(getClass.getClassLoader.getResourceAsStream("migrations/DBVERSION"))
-      databaseVersionAsString <- Source.fromInputStream(databaseVersionInputStream).getLines.toList.headOption
-      databaseVersion <- AsInt.unapply(databaseVersionAsString)
-    } yield {
-      databaseVersion
     }
   }
 
@@ -72,7 +76,7 @@ object SetupDb extends Loggable {
   }
 
   protected def runMigration(version: Int) = {
-    val migrationFilename = s"migrations/anchortab-$version.js"
+    val migrationFilename = migrationFilenameForVersion(version)
     val migrationStream = getClass.getClassLoader.getResourceAsStream(migrationFilename)
     val migrationFunction = Source.fromInputStream(migrationStream).getLines.mkString("\n")
 
