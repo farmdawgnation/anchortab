@@ -371,6 +371,32 @@ class StripeHookSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll 
         }
       }
 
+      it("should clear ending date and reactivate if cancelled subscription is reactivated") {
+        val tomorrow = (new DateTime()).plusDays(1)
+        val tomorrowSeconds = tomorrow.getMillis / 1000
+        val tomorrowFromSecs = new DateTime(tomorrowSeconds * 1000)
+
+        val stripeData =
+          ("id" -> randomString(32)) ~
+          ("type" -> "customer.subscription.updated") ~
+          ("data" -> ("object" -> (
+            ("customer" -> customer7.stripeCustomerId) ~
+            ("plan" -> ("id" -> plan1.stripeId)) ~
+            ("status" -> "active") ~
+            ("cancel_at_period_end" -> false) ~
+            ("current_period_end" -> tomorrowSeconds)
+          )))
+
+        okResponseTest(stripeData) { (emailActor) =>
+          val user = User.find(customer7._id).get
+          val subscription = user.subscription.get
+
+          user.subscriptions should have length 1
+          subscription.status should equal ("active")
+          subscription.ends should equal (None)
+        }
+      }
+
       it("should set up a canceled active subscription to cancel immediately") {
         val now = (new DateTime())
         val nowSeconds = now.getMillis / 1000
