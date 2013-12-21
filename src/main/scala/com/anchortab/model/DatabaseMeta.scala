@@ -15,6 +15,7 @@ import org.bson.types.ObjectId
 
 sealed trait DatabaseMetaValue
 case class DatabaseVersion(version: Int) extends DatabaseMetaValue
+case class ArbitraryData(data: String) extends DatabaseMetaValue
 
 case class DatabaseMeta(
   _id: String,
@@ -28,7 +29,7 @@ object DatabaseMeta extends MongoDocumentMeta[DatabaseMeta] {
   override def formats =
     allFormats ++
     JodaTimeSerializers.all +
-    ShortTypeHints(classOf[DatabaseVersion] :: Nil)
+    ShortTypeHints(classOf[DatabaseVersion] :: classOf[ArbitraryData] :: Nil)
 
   val databaseVersionKey = "database-version"
 }

@@ -75,7 +75,7 @@ trait SetupDb extends Loggable {
     }
   }
 
-  protected def runMigration(version: Int) = {
+  def runMigration(version: Int) = {
     val migrationFilename = migrationFilenameForVersion(version)
     val migrationStream = getClass.getClassLoader.getResourceAsStream(migrationFilename)
     val migrationFunction = Source.fromInputStream(migrationStream).getLines.mkString("\n")
