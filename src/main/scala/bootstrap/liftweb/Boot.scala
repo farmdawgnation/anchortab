@@ -31,6 +31,7 @@ class Boot {
 
     // Do database version / migration stuff.
     SetupDb.ensureDbVersionIsSet
+    SetupDb.migrateDatabase
 
     // Setup various request handling code.
     RequestHandling.setupHtml5

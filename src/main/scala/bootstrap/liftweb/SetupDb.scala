@@ -5,6 +5,8 @@ import net.liftweb.util._
   import Helpers._
 import net.liftweb.mongodb._
 
+import org.joda.time._
+
 import scala.io._
 
 import com.anchortab.model.{DatabaseMeta, DatabaseVersion}
@@ -25,9 +27,7 @@ object SetupDb extends Loggable {
     DatabaseMeta.find(DatabaseMeta.databaseVersionKey) match {
       case None =>
         for {
-          databaseVersionInputStream <- tryo(getClass.getClassLoader.getResourceAsStream("migrations/DBVERSION"))
-          databaseVersionAsString <- Source.fromInputStream(databaseVersionInputStream).getLines.toList.headOption
-          databaseVersion <- AsInt.unapply(databaseVersionAsString)
+          databaseVersion <- latestDatabaseVersion
         } yield {
           DatabaseMeta(
             DatabaseMeta.databaseVersionKey,
@@ -38,6 +38,55 @@ object SetupDb extends Loggable {
         }
 
       case _ =>
+    }
+  }
+
+  protected def latestDatabaseVersion = {
+    for {
+      databaseVersionInputStream <- tryo(getClass.getClassLoader.getResourceAsStream("migrations/DBVERSION"))
+      databaseVersionAsString <- Source.fromInputStream(databaseVersionInputStream).getLines.toList.headOption
+      databaseVersion <- AsInt.unapply(databaseVersionAsString)
+    } yield {
+      databaseVersion
+    }
+  }
+
+  def migrateDatabase = {
+    val latestVersion = latestDatabaseVersion.openOrThrowException("Can't complete db boot w/o version.")
+
+    DatabaseMeta.find(DatabaseMeta.databaseVersionKey) match {
+      case Some(DatabaseMeta(_, DatabaseVersion(version), _, _)) if version < latestVersion =>
+        logger.info("Database is out of date. Running migrations.")
+
+        (version until latestVersion).foreach { versionMigrating =>
+          logger.info("Upgrading to database version " + (versionMigrating + 1))
+          runMigration(versionMigrating + 1)
+        }
+
+      case None =>
+        throw new Exception("Couldn't retrieve current DB version. Things may be broken.")
+
+      case _ =>
+        logger.info("No database migration needed.")
+    }
+  }
+
+  protected def runMigration(version: Int) = {
+    val migrationFilename = s"migrations/anchortab-$version.js"
+    val migrationStream = getClass.getClassLoader.getResourceAsStream(migrationFilename)
+    val migrationFunction = Source.fromInputStream(migrationStream).getLines.mkString("\n")
+
+    DatabaseMeta.useDb { db =>
+      db.doEval(migrationFunction)
+    }
+
+    for(metaVersion <- DatabaseMeta.find(DatabaseMeta.databaseVersionKey)) {
+      val updatedMetaVersion = metaVersion.copy(
+        value = DatabaseVersion(version),
+        updatedAt = new DateTime()
+      )
+
+      updatedMetaVersion.save
     }
   }
 }
