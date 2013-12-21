@@ -29,6 +29,9 @@ class Boot {
     // Connect to MongoDB
     SetupDb.setup
 
+    // Do database version / migration stuff.
+    SetupDb.ensureDbVersionIsSet
+
     // Setup various request handling code.
     RequestHandling.setupHtml5
     RequestHandling.setupPackages
