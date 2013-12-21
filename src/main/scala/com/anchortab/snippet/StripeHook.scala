@@ -125,7 +125,12 @@ trait StripeHook extends RestHelper with Loggable {
     } yield {
       implicit val formats = User.formats
 
-      if (plan._id == user.plan._id && (currentUserSubscription.status != status || cancelAtPeriodEnd)) {
+      if (
+        plan._id == user.plan._id && (
+          currentUserSubscription.status != status ||
+          cancelAtPeriodEnd
+        )
+      ) {
         val (setPlanEnding: JObject, unsetPlanEnding: JObject) = {
           if (cancelAtPeriodEnd) {
             val currentPeriodEnd = (objectJson \ "current_period_end").extractOpt[Long]
