@@ -8,7 +8,7 @@ seq(resourceManagementSettings :_*)
 
 name := "Anchor Tab"
 
-version := "1.2.7"
+version := "1.2.9"
 
 organization := "com.anchortab"
 
@@ -30,7 +30,7 @@ net.virtualvoid.sbt.graph.Plugin.graphSettings
 scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-language:postfixOps")
 
 libraryDependencies ++= {
-  val liftVersion = "2.5.1"
+  val liftVersion = "2.6-M2"
   Seq(
     "net.liftweb"       %% "lift-webkit"        % liftVersion        % "compile",
     "net.liftweb"       %% "lift-testkit"       % liftVersion        % "test",
@@ -46,7 +46,7 @@ libraryDependencies ++= {
     "net.databinder.dispatch" %% "dispatch-lift-json" % "0.11.0",
     "com.stripe"        %% "stripe-scala"       % "1.1.2",
     "com.ecwid"         % "ecwid-mailchimp"     % "1.3.0.6",
-    "org.scalatest"     %% "scalatest"          % "2.0.RC2" % "it,test",
+    "org.scalatest"     %% "scalatest"          % "2.0" % "it,test",
     "org.seleniumhq.selenium" % "selenium-java" % "2.37.0" % "it",
     "org.apache.httpcomponents" % "httpclient"  % "4.3.1"  % "it",
     "com.newrelic.agent.java" % "newrelic-api"  % "3.1.0",

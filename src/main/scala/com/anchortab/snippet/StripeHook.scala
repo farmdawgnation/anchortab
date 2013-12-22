@@ -24,7 +24,12 @@ import org.joda.time._
 
 import com.stripe
 
-object StripeHook extends RestHelper with Loggable {
+object StripeHook extends StripeHook {
+  override val emailActor = EmailActor
+}
+trait StripeHook extends RestHelper with Loggable {
+  def emailActor: EmailActor
+
   private def newPlanFromStripe(user: User, plan: Plan, status: String) = {
     implicit val formats = User.formats
 
@@ -60,7 +65,7 @@ object StripeHook extends RestHelper with Loggable {
     } yield {
       val amount = totalAmountInCents / 100d
 
-      EmailActor ! SendInvoicePaymentSucceededEmail(user.email, amount)
+      emailActor ! SendInvoicePaymentSucceededEmail(user.email, amount)
       OkResponse()
     }
   }
@@ -82,7 +87,7 @@ object StripeHook extends RestHelper with Loggable {
         }
         val amount = totalAmountInCents / 100d
 
-        EmailActor ! SendInvoicePaymentFailedEmail(user.email, amount, nextPaymentAttempt)
+        emailActor ! SendInvoicePaymentFailedEmail(user.email, amount, nextPaymentAttempt)
       }
 
       OkResponse()
@@ -120,7 +125,12 @@ object StripeHook extends RestHelper with Loggable {
     } yield {
       implicit val formats = User.formats
 
-      if (plan._id == user.plan._id && currentUserSubscription.status != status) {
+      if (
+        plan._id == user.plan._id && (
+          currentUserSubscription.status != status ||
+          cancelAtPeriodEnd
+        )
+      ) {
         val (setPlanEnding: JObject, unsetPlanEnding: JObject) = {
           if (cancelAtPeriodEnd) {
             val currentPeriodEnd = (objectJson \ "current_period_end").extractOpt[Long]
@@ -157,6 +167,9 @@ object StripeHook extends RestHelper with Loggable {
         )
       } else if (plan._id != user.plan._id) {
         newPlanFromStripe(user, plan, status)
+
+        if (Props.productionMode)
+          EmailActor ! SendAdminNotificationEmail(PlanChanged(user.plan._id, plan._id), user.email)
       }
 
       OkResponse()
@@ -188,50 +201,25 @@ object StripeHook extends RestHelper with Loggable {
             User.update(
               ("_id" -> user._id) ~
               ("subscriptions._id" -> subscription._id),
-              (
-                "$set" -> (
+              ("$set" -> (
                   ("subscriptions.$.status" -> "stopped") ~
                   ("subscriptions.$.ends" -> decompose(new DateTime()))
-                ) ~
-                (
-                  "$unset" -> ("activeCard" -> true)
-                )
-              )
+              ))
             )
+
+            User.update("_id" -> user._id, "$unset" -> ("activeCard" -> true))
           }
 
         case _ =>
       }
 
-      OkResponse()
-    }
-  }
-
-  def customerSubscriptionTrialWillEnd(objectJson: JValue) = {
-    for {
-      stripeCustomerId <- tryo((objectJson \ "customer").extract[String]) ?~! "No customer."
-      trialEndInSecs <- tryo((objectJson \ "trial_end").extract[Long]) ?~! "No trial end."
-      user <- User.find("stripeCustomerId" -> stripeCustomerId)
-      subscription <- user.subscription
-      plan <- subscription.plan
-    } yield {
-      val trialEnd = new DateTime(trialEndInSecs * 1000)
-
-      // We get a trial end event every time a user switches plans. So, we need to distinguish
-      // between those and the real ones that come in advance of a real trial ending. We use
-      // the heuristic of subtracting one hour from the time to see if it's still in the future.
-      if (trialEnd.minusHours(1) isAfterNow)
-        EmailActor ! SendTrialEndingEmail(user.email, user.activeCard.isDefined, plan.name, trialEnd)
+      if (Props.productionMode)
+        EmailActor ! SendAdminNotificationEmail(SubscriptionDeleted, user.email)
 
       OkResponse()
     }
   }
 
-  /**
-   * Filters IDs that have already been processed.
-   *
-   * TODO: Implement.
-  **/
   private def validStripeEventId(id: String): Option[String] = {
     RecordedStripeEvent.find("stripeEventId" -> id) match {
       case None => Some(id)
@@ -251,15 +239,12 @@ object StripeHook extends RestHelper with Loggable {
           dataJson = (requestJson \ "data")
           objectJson = (dataJson \ "object")
         } yield {
-          println(pretty(render(requestJson)))
-
           val result: Box[LiftResponse] = eventType match {
             case "invoice.payment_succeeded" => invoicePaymentSucceeded(objectJson)
             case "invoice.payment_failed" => invoicePaymentFailed(objectJson)
             case "customer.subscription.created" => customerSubscriptionCreated(objectJson)
             case "customer.subscription.updated" => customerSubscriptionUpdated(objectJson)
             case "customer.subscription.deleted" => customerSubscriptionDeleted(objectJson)
-            case "customer.subscription.trial_will_end" => customerSubscriptionTrialWillEnd(objectJson)
             case _ => Full(OkResponse())
           }
 

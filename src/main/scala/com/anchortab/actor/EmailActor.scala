@@ -26,7 +26,12 @@ import com.anchortab.lib._
 
 import org.bson.types.ObjectId
 
+sealed trait AdminNotificationType
+case object SubscriptionDeleted extends AdminNotificationType
+case class PlanChanged(oldPlanId: ObjectId, newPlanId: ObjectId) extends AdminNotificationType
+
 sealed trait EmailActorMessage
+case class SendAdminNotificationEmail(notificationType: AdminNotificationType, userEmail: String) extends EmailActorMessage
 case class SendWelcomeEmail(userEmail: String) extends EmailActorMessage
 case class SendForgotPasswordEmail(userEmail: String, resetLink: String) extends EmailActorMessage
 case class SendQuotaWarningEmail(userEmail: String) extends EmailActorMessage
@@ -42,6 +47,33 @@ case class SendNeighborhoodWatchEmail(
 case class SendLeadGenerationSubscriptionEmail(targetEmail: String, subscribedEmail: String, subscriberName: Option[String]) extends EmailActorMessage
 case class SendSubmitErrorNotificationEmail(targetEmail: String, events: List[Event]) extends EmailActorMessage
 case class SendRetentionEmail(targetEmail: String) extends EmailActorMessage
+
+trait AdminNotificationEmailHandling extends EmailHandlerChain {
+  val adminNotificationTemplate = Templates("emails-hidden" :: "admin-notification-email" :: Nil) openOr NodeSeq.Empty
+
+  addHandler {
+    case SendAdminNotificationEmail(notificationType, userEmail) =>
+      val eventType = notificationType match {
+        case SubscriptionDeleted =>
+          "Subscription deleted."
+
+        case PlanChanged(oldPlanId, newPlanId) =>
+          val oldPlan = Plan.find(oldPlanId).map(_.name) getOrElse "N/A"
+          val newPlan = Plan.find(newPlanId).map(_.name) getOrElse "N/A"
+
+          s"Plan changed from $oldPlan to $newPlan."
+      }
+
+      val adminNotificationMessage = (
+        ".user-email *" #> userEmail &
+        ".event-type *" #> eventType
+      ).apply(adminNotificationTemplate)
+
+      val admins = User.findAll("role" -> User.Roles.Admin).map(_.email)
+
+      sendEmail("Anchor Tab Admin Notification", admins, adminNotificationMessage)
+  }
+}
 
 trait WelcomeEmailHandling extends EmailHandlerChain {
   val welcomeEmailSubject = "Welcome to Anchor Tab!"
@@ -239,17 +271,19 @@ trait RetentionEmailHandling extends EmailHandlerChain {
   }
 }
 
-object EmailActor extends EmailHandlerChain
-                  with WelcomeEmailHandling
-                  with ForgotPasswordEmailHandling
-                  with QuotaWarningEmailHandling
-                  with QuotaErrorEmailHandling
-                  with TrialEndingEmailHandling
-                  with InvoicePaymentFailedEmailHandling
-                  with NeighborhoodWatchEmailHandling
-                  with LeadGenerationSubscriptionEmailHandling
-                  with SubmitErrorNotificationEmailHandling
-                  with RetentionEmailHandling {
+object EmailActor extends EmailActor
+trait EmailActor extends EmailHandlerChain
+                    with WelcomeEmailHandling
+                    with ForgotPasswordEmailHandling
+                    with QuotaWarningEmailHandling
+                    with QuotaErrorEmailHandling
+                    with TrialEndingEmailHandling
+                    with InvoicePaymentFailedEmailHandling
+                    with NeighborhoodWatchEmailHandling
+                    with LeadGenerationSubscriptionEmailHandling
+                    with SubmitErrorNotificationEmailHandling
+                    with RetentionEmailHandling
+                    with AdminNotificationEmailHandling {
   implicit val formats = DefaultFormats
 
   val fromEmail = "hello@anchortab.com"

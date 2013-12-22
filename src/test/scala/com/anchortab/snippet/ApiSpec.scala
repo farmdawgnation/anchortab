@@ -1,6 +1,7 @@
 package com.anchortab.snippet
 
 import org.scalatest._
+  import concurrent._
 
 import net.liftweb.mockweb._
   import MockWeb._
@@ -95,7 +96,7 @@ object ApiSpecExamples {
   }
 }
 
-class ApiSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll {
+class ApiSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll with Eventually {
   import ApiSpecExamples._
 
   MockWeb.useLiftRulesGlobally = true
@@ -241,9 +242,13 @@ class ApiSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll {
             val success = (result \ "success").extract[Int]
             success should equal (1)
 
-            val theValidTab = Tab.find(validTab._id).get
-            theValidTab.subscribers.filter(_.email == "bacon@sammich.com").head.email should equal ("bacon@sammich.com")
-            theValidTab.subscribers.filter(_.name == Some("Bacon")).head.name should equal (Some("Bacon"))
+            eventually {
+              val theValidTab = Tab.find(validTab._id)
+              theValidTab.isDefined should be (true)
+              theValidTab.get.subscribers.filter(_.email == "bacon@sammich.com").headOption.isDefined should be (true)
+              theValidTab.get.subscribers.filter(_.email == "bacon@sammich.com").head.email should equal ("bacon@sammich.com")
+              theValidTab.get.subscribers.filter(_.name == Some("Bacon")).head.name should equal (Some("Bacon"))
+            }
 
           case somethingUnexpected => fail(somethingUnexpected.toString)
         }

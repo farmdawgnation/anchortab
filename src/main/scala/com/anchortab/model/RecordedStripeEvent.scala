@@ -12,4 +12,6 @@ import org.bson.types.ObjectId
 case class RecordedStripeEvent(stripeEventId: String, _id: ObjectId = ObjectId.get) extends MongoDocument[RecordedStripeEvent] {
   val meta = RecordedStripeEvent
 }
-object RecordedStripeEvent extends MongoDocumentMeta[RecordedStripeEvent]
+object RecordedStripeEvent extends MongoDocumentMeta[RecordedStripeEvent] {
+  override def formats = allFormats
+}
