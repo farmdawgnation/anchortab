@@ -22,6 +22,7 @@ import org.bson.types.ObjectId
 
 import org.joda.time._
 
+import com.anchortab.actor._
 import com.anchortab.model._
 import com.anchortab.util._
 
@@ -119,6 +120,9 @@ object Subscription extends Loggable {
             updatedUser.save
 
             Authentication.authenticationStickyNotices(updatedUser)
+
+            if (Props.productionMode)
+              EmailActor ! SendAdminNotificationEmail(PlanChanged(user.plan._id, plan._id), user.email)
 
             Notices.notice("Your subscription has been successfully changed.")
             Reload
