@@ -165,11 +165,11 @@ trait StripeHook extends RestHelper with Loggable {
           ) ~
           ("$unset" -> unsetPlanEnding)
         )
+      } else if (plan._id != user.plan._id) {
+        newPlanFromStripe(user, plan, status)
 
         if (Props.productionMode)
           EmailActor ! SendAdminNotificationEmail(PlanChanged(user.plan._id, plan._id), user.email)
-      } else if (plan._id != user.plan._id) {
-        newPlanFromStripe(user, plan, status)
       }
 
       OkResponse()
