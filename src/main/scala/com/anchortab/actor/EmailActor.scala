@@ -49,7 +49,7 @@ case class SendSubmitErrorNotificationEmail(targetEmail: String, events: List[Ev
 case class SendRetentionEmail(targetEmail: String) extends EmailActorMessage
 
 trait AdminNotificationEmailHandling extends EmailHandlerChain {
-  val adminNotificationTemplate = Templates("emails-hidden" :: "admin-notification" :: Nil) openOr NodeSeq.Empty
+  val adminNotificationTemplate = Templates("emails-hidden" :: "admin-notification-email" :: Nil) openOr NodeSeq.Empty
 
   addHandler {
     case SendAdminNotificationEmail(notificationType, userEmail) =>
