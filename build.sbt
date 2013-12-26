@@ -14,11 +14,11 @@ organization := "com.anchortab"
 
 scalaVersion := "2.10.3"
 
-awsAccessKey := Some("AKIAIIUM6RAXWVRN4NNQ")
+awsAccessKey := Some("AKIAIL7PSSMYIX5IEOIA")
 
-awsSecretKey := Some("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")
+awsSecretKey := Some("lvHhzPfOXiHjSicJOWFhaa5Mo7JHBeyxfGDdyBlY")
 
-awsS3Bucket := Some("assets.anchortab.com")
+awsS3Bucket := Some("assets.new.anchortab.com")
 
 resolvers ++= Seq("snapshots"     at "http://oss.sonatype.org/content/repositories/snapshots",
                 "releases"        at "http://oss.sonatype.org/content/repositories/releases",
