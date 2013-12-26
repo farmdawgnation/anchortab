@@ -18,7 +18,7 @@ awsAccessKey := Some("AKIAIL7PSSMYIX5IEOIA")
 
 awsSecretKey := Some("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")
 
-awsS3Bucket := Some("assets.new.anchortab.com")
+awsS3Bucket := Some("assets.anchortab.com")
 
 resolvers ++= Seq("snapshots"     at "http://oss.sonatype.org/content/repositories/snapshots",
                 "releases"        at "http://oss.sonatype.org/content/repositories/releases",
