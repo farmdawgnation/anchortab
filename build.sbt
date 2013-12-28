@@ -8,15 +8,15 @@ seq(resourceManagementSettings :_*)
 
 name := "Anchor Tab"
 
-version := "1.2.9"
+version := "1.2.10-M1"
 
 organization := "com.anchortab"
 
 scalaVersion := "2.10.3"
 
-awsAccessKey := Some("AKIAIIUM6RAXWVRN4NNQ")
+awsAccessKey := Some("AKIAIL7PSSMYIX5IEOIA")
 
-awsSecretKey := Some("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")
+awsSecretKey := Some("lvHhzPfOXiHjSicJOWFhaa5Mo7JHBeyxfGDdyBlY")
 
 awsS3Bucket := Some("assets.anchortab.com")
 
