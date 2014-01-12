@@ -45,8 +45,22 @@ object ServiceWrapper {
     classOf[MailChimpServiceWrapper],
     classOf[ConstantContactServiceWrapper],
     classOf[CampaignMonitorServiceWrapper],
-    classOf[LeadGenerationServiceWrapper]
+    classOf[LeadGenerationServiceWrapper],
+    classOf[PardotServiceWrapper]
   ))
+}
+
+case class PardotServiceWrapper(targetUri: String, emailFieldName: String, firstNameFieldName: String) extends ServiceWrapper {
+  override val wrapperIdentifier = "Pardot - " + targetUri
+
+  override val iFrameParameters = Some(ServiceIFrameParameters(
+    targetUri,
+    emailFieldName,
+    firstNameFieldName
+  ))
+
+  def subscribeEmail(email: String, name: Option[String] = None) = Full(true)
+  def unsubscribeEmail(email: String) = Full(true)
 }
 
 case class LeadGenerationServiceWrapper(targetEmail: String) extends ServiceWrapper {
