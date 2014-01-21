@@ -169,6 +169,15 @@ submitEmail = (event) ->
       email: email
       name: name
     success: (event) ->
+      if event.iFrame
+        iFrameSrc = event.iFrame.uri + "?" + event.iFrame.emailFieldName + "=" + encodeURIComponent(email) + "&" + event.iFrame.firstNameFieldName + "=" + encodeURIComponent(name)
+
+        $iframe = $("<iframe></iframe>")
+          .attr("src", iFrameSrc)
+          .css("display", "none")
+
+        $("html").append($iframe)
+
       $("#anchor-tab")
         .find(".success-message")
           .text(event.message)
