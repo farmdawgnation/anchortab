@@ -84,6 +84,7 @@ object Admin extends AffiliateCalculation {
     var featureWhitelabeledTabs = requestPlan.map(_.hasFeature_?(Plan.Features.WhitelabeledTabs)) openOr false
     var featureCustomColorSchemes = requestPlan.map(_.hasFeature_?(Plan.Features.CustomColorSchemes)) openOr false
     var featureApiAccess = requestPlan.map(_.hasFeature_?(Plan.Features.ApiAccess)) openOr false
+    var featurePardotIntegration = requestPlan.map(_.hasFeature_?(Plan.Features.PardotIntegration)) openOr false
     var quotaNumberOfTabs = requestPlan.flatMap(_.quotaFor(Plan.Quotas.NumberOfTabs).map(_.toString)) openOr ""
     var quotaEmailSubscriptions = requestPlan.flatMap(_.quotaFor(Plan.Quotas.EmailSubscriptions).map(_.toString)) openOr ""
     var quotaViews = requestPlan.flatMap(_.quotaFor(Plan.Quotas.Views).map(_.toString)) openOr ""
@@ -96,7 +97,8 @@ object Admin extends AffiliateCalculation {
           Plan.Features.BasicAnalytics -> featureBasicAnalytics,
           Plan.Features.WhitelabeledTabs -> featureWhitelabeledTabs,
           Plan.Features.CustomColorSchemes -> featureCustomColorSchemes,
-          Plan.Features.ApiAccess -> featureApiAccess
+          Plan.Features.ApiAccess -> featureApiAccess,
+          Plan.Features.PardotIntegration -> featurePardotIntegration
         )
       }
 
@@ -223,6 +225,7 @@ object Admin extends AffiliateCalculation {
       ".feature-whitelabeled-tabs" #> checkbox(featureWhitelabeledTabs, featureWhitelabeledTabs = _) &
       ".feature-custom-color-schemes" #> checkbox(featureCustomColorSchemes, featureCustomColorSchemes = _) &
       ".feature-api-access" #> checkbox(featureApiAccess, featureApiAccess = _) &
+      ".feature-pardot-integration" #> checkbox(featurePardotIntegration, featurePardotIntegration = _) &
       ".quota-number-of-tabs" #> text(quotaNumberOfTabs, quotaNumberOfTabs = _) &
       ".quota-email-subscriptions" #> text(quotaEmailSubscriptions, quotaEmailSubscriptions = _) &
       ".quota-views" #> text(quotaViews, quotaViews = _) &
