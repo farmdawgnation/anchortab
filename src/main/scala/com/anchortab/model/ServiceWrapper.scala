@@ -50,14 +50,24 @@ object ServiceWrapper {
   ))
 }
 
-case class PardotServiceWrapper(targetUri: String, emailFieldName: String, firstNameFieldName: String) extends ServiceWrapper {
-  override val wrapperIdentifier = "Pardot - " + targetUri
+case class PardotServiceWrapper(userId: ObjectId) extends ServiceWrapper {
+  override val wrapperIdentifier = "Pardot - " + userId.toString
 
-  override val iFrameParameters = Some(ServiceIFrameParameters(
-    targetUri,
-    emailFieldName,
-    firstNameFieldName
-  ))
+  override val iFrameParameters = {
+    for {
+      user <- User.find(userId)
+      pardotCredentials <- user.credentialsFor("Pardot")
+      targetUri <- pardotCredentials.serviceCredentials.get("url")
+      emailFieldName <- pardotCredentials.serviceCredentials.get("emailField")
+      firstNameFieldName <- pardotCredentials.serviceCredentials.get("firstNameField")
+    } yield {
+      ServiceIFrameParameters(
+        targetUri,
+        emailFieldName,
+        firstNameFieldName
+      )
+    }
+  }
 
   def subscribeEmail(email: String, name: Option[String] = None) = Full(true)
   def unsubscribeEmail(email: String) = Full(true)
