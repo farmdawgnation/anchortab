@@ -94,7 +94,9 @@ isAcceptableJQuery = ->
 
 withJQueryLoaded = (callback) ->
   if ! jQuery?
-    loadScript("//ajax.googleapis.com/ajax/libs/jquery/" + jqVersion + "/jquery.min.js", callback)
+    loadScript "//ajax.googleapis.com/ajax/libs/jquery/" + jqVersion + "/jquery.min.js", () ->
+      jQuery.noConflict()
+      callback()
   else if ! isAcceptableJQuery()
     console?.error("AnchorTab is disabled because you are using an unsupported version of jQuery.")
 
