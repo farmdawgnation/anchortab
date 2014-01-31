@@ -1,4 +1,4 @@
-imappermport AssemblyKeys._
+import AssemblyKeys._
 
 assemblySettings
 
