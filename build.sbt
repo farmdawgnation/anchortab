@@ -1,4 +1,4 @@
-import AssemblyKeys._
+imappermport AssemblyKeys._
 
 assemblySettings
 
@@ -28,6 +28,8 @@ resolvers ++= Seq("snapshots"     at "http://oss.sonatype.org/content/repositori
 net.virtualvoid.sbt.graph.Plugin.graphSettings
 
 scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-language:postfixOps")
+
+port in container.Configuration := 8081
 
 libraryDependencies ++= {
   val liftVersion = "2.6-M2"
