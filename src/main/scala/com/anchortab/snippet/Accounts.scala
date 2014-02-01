@@ -176,48 +176,6 @@ object Accounts extends Loggable {
     connectionTransform.apply(xhtml)
   }
 
-  def pardotIntegration = {
-    {
-      for {
-        session <- userSession.is
-        user <- User.find(session.userId)
-      } yield {
-        var pardotFormUrl = user.credentialsFor("Pardot").flatMap(_.serviceCredentials.get("url")) getOrElse ""
-        var firstNameField = user.credentialsFor("Pardot").flatMap(_.serviceCredentials.get("firstNameField")) getOrElse ""
-        var emailField = user.credentialsFor("Pardot").flatMap(_.serviceCredentials.get("emailField")) getOrElse ""
-
-        def persistPardotIntegration = {
-          implicit val formats = User.formats
-          val pardotCredentials = UserServiceCredentials("Pardot", "", Map(
-            "url" -> pardotFormUrl,
-            "firstNameField" -> firstNameField,
-            "emailField" -> emailField
-          ))
-
-          User.update("_id" -> session.userId, "$pull" -> ("serviceCredentials" -> ("serviceName" -> "Pardot")))
-
-          if (pardotFormUrl.trim.nonEmpty) {
-            User.update("_id" -> session.userId, "$push" -> ("serviceCredentials" -> decompose(pardotCredentials)))
-            Notices.notice("Your Pardot details have been saved. You can now create a tab that feeds to Pardot.")
-          } else {
-            Notices.notice("Your Pardot details have been successfully removed.")
-          }
-
-          Reload
-        }
-
-        ".pardot-integration" #> (user.plan.hasFeature_?(Plan.Features.PardotIntegration) ? PassThru | ClearNodes) andThen
-        makeFormsAjax andThen
-        "#pardot-form-url" #> text(pardotFormUrl, pardotFormUrl = _) &
-        "#pardot-first-name-field" #> text(firstNameField, firstNameField = _) &
-        "#pardot-email-field" #> text(emailField, emailField = _) &
-        ".submit" #> ajaxOnSubmit(persistPardotIntegration _)
-      }
-    } openOr {
-      ClearNodes
-    }
-  }
-
   def profileForm = {
     {
       for {

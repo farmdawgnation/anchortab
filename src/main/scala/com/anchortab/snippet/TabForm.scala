@@ -49,6 +49,10 @@ class TabForm(requestTab: Tab) extends Loggable
   var constantContactListId: Box[String] = Empty
   var campaignMonitorListId: Box[String] = Empty
 
+  var pardotTargetUri: String = ""
+  var pardotEmailField: String = ""
+  var pardotNameField: String = ""
+
   var leadGenerationTargetEmail: String = ""
 
   var service : Tab.EmailServices.Value = {
@@ -74,6 +78,10 @@ class TabForm(requestTab: Tab) extends Loggable
         Tab.EmailServices.LeadGeneration
 
       case Some(pdsw: PardotServiceWrapper) =>
+        pardotTargetUri = pdsw.targetUri
+        pardotEmailField = pdsw.emailFieldName
+        pardotNameField = pdsw.firstNameFieldName
+
         Tab.EmailServices.Pardot
 
       case _ => Tab.EmailServices.None
@@ -148,8 +156,10 @@ class TabForm(requestTab: Tab) extends Loggable
         }
 
       case Tab.EmailServices.Pardot =>
-        for (session <- userSession.is) yield {
-          PardotServiceWrapper(session.userId)
+        for {
+          session <- userSession.is
+        } yield {
+          PardotServiceWrapper(session.userId, pardotTargetUri, pardotEmailField, pardotNameField)
         }
 
       case Tab.EmailServices.LeadGeneration =>
@@ -286,7 +296,17 @@ class TabForm(requestTab: Tab) extends Loggable
         campaignMonitorLists.map(l => (l.id.toString, l.name)),
         campaignMonitorListId,
         id => campaignMonitorListId = Full(id)
-      )
+      ) andThen
+      ".only-if-pardot-authorized" #> {
+        if (service == Tab.EmailServices.Pardot && pardotAuthorized_?) {
+          PassThru
+        } else {
+          ClearNodes
+        }
+      } andThen
+      "#pardot-target-uri" #> text(pardotTargetUri, pardotTargetUri = _) &
+      "#pardot-email-field-name" #> text(pardotEmailField, pardotEmailField = _) &
+      "#pardot-first-name-field-name" #> text(pardotNameField, pardotNameField = _)
     } &
     ".submit" #> ajaxSubmit("Save Tab", submit _)
   }

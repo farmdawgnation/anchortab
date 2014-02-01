@@ -50,16 +50,12 @@ object ServiceWrapper {
   ))
 }
 
-case class PardotServiceWrapper(userId: ObjectId) extends ServiceWrapper {
-  override val wrapperIdentifier = "Pardot - " + userId.toString
+case class PardotServiceWrapper(userId: ObjectId, targetUri: String, emailFieldName: String, firstNameFieldName: String) extends ServiceWrapper {
+  override val wrapperIdentifier = "Pardot - " + userId.toString + " - " + targetUri
 
   override val iFrameParameters = {
     for {
       user <- User.find(userId)
-      pardotCredentials <- user.credentialsFor("Pardot")
-      targetUri <- pardotCredentials.serviceCredentials.get("url")
-      emailFieldName <- pardotCredentials.serviceCredentials.get("emailField")
-      firstNameFieldName <- pardotCredentials.serviceCredentials.get("firstNameField")
     } yield {
       ServiceIFrameParameters(
         targetUri,

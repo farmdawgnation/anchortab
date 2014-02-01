@@ -16,8 +16,7 @@ trait PardotTabForm {
   val pardotAuthorized_? = {
     for {
       session <- userSession.is
-      user <- User.find(session.userId)
-      credentials <- user.credentialsFor("Pardot") if user.plan.hasFeature_?(Plan.Features.PardotIntegration)
+      user <- User.find(session.userId) if user.plan.hasFeature_?(Plan.Features.PardotIntegration)
     } yield {
       true
     }
