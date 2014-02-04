@@ -8,7 +8,7 @@ seq(resourceManagementSettings :_*)
 
 name := "Anchor Tab"
 
-version := "1.2.10-M1"
+version := "1.2.10"
 
 organization := "com.anchortab"
 
@@ -28,6 +28,8 @@ resolvers ++= Seq("snapshots"     at "http://oss.sonatype.org/content/repositori
 net.virtualvoid.sbt.graph.Plugin.graphSettings
 
 scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-language:postfixOps")
+
+port in container.Configuration := 8081
 
 libraryDependencies ++= {
   val liftVersion = "2.6-M2"

@@ -150,9 +150,13 @@ object Api extends RestHelper with Loggable {
                 "tab-successNoConfirm"
               }
 
+            val iFrameParameters =
+              tab.service.flatMap(_.iFrameParameters).map(decompose _)
+
             ("success" -> 1) ~
             ("email" -> email) ~
-            ("message" -> S.?(successMessage))
+            ("message" -> S.?(successMessage)) ~
+            ("iFrame" -> iFrameParameters)
           }
 
           QuotasActor ! CheckQuotaCounts(user._id)

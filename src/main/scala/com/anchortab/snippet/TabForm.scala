@@ -29,6 +29,7 @@ object TabForm {
 }
 class TabForm(requestTab: Tab) extends Loggable
                                           with MailChimpTabForm
+                                          with PardotTabForm
                                           with ConstantContactTabForm
                                           with CampaignMonitorTabForm {
 
@@ -47,6 +48,10 @@ class TabForm(requestTab: Tab) extends Loggable
   var mailChimpListId: Box[String] = Empty
   var constantContactListId: Box[String] = Empty
   var campaignMonitorListId: Box[String] = Empty
+
+  var pardotTargetUri: String = ""
+  var pardotEmailField: String = ""
+  var pardotNameField: String = ""
 
   var leadGenerationTargetEmail: String = ""
 
@@ -71,6 +76,13 @@ class TabForm(requestTab: Tab) extends Loggable
         leadGenerationTargetEmail = lgsw.targetEmail
 
         Tab.EmailServices.LeadGeneration
+
+      case Some(pdsw: PardotServiceWrapper) =>
+        pardotTargetUri = pdsw.targetUri
+        pardotEmailField = pdsw.emailFieldName
+        pardotNameField = pdsw.firstNameFieldName
+
+        Tab.EmailServices.Pardot
 
       case _ => Tab.EmailServices.None
     }
@@ -106,8 +118,9 @@ class TabForm(requestTab: Tab) extends Loggable
     val cc = (constantContactLists.nonEmpty ? List(Tab.EmailServices.ConstantContact) | List())
     val mc = (mailChimpAuthorized_? ? List(Tab.EmailServices.MailChimp) | List())
     val cm = (campaignMonitorAuthorized_? ? List(Tab.EmailServices.CampaignMonitor) | List())
+    val pd = (pardotAuthorized_? ? List(Tab.EmailServices.Pardot) | List())
 
-    none ++ leadGeneration ++ cc ++ mc ++ cm
+    none ++ leadGeneration ++ cc ++ mc ++ cm ++ pd
   }
 
   def serviceWrapper : Option[ServiceWrapper] = {
@@ -140,6 +153,13 @@ class TabForm(requestTab: Tab) extends Loggable
           listId <- campaignMonitorListId
         } yield {
           CampaignMonitorServiceWrapper(session.userId, listId)
+        }
+
+      case Tab.EmailServices.Pardot =>
+        for {
+          session <- userSession.is
+        } yield {
+          PardotServiceWrapper(session.userId, pardotTargetUri, pardotEmailField, pardotNameField)
         }
 
       case Tab.EmailServices.LeadGeneration =>
@@ -276,7 +296,17 @@ class TabForm(requestTab: Tab) extends Loggable
         campaignMonitorLists.map(l => (l.id.toString, l.name)),
         campaignMonitorListId,
         id => campaignMonitorListId = Full(id)
-      )
+      ) andThen
+      ".only-if-pardot-authorized" #> {
+        if (service == Tab.EmailServices.Pardot && pardotAuthorized_?) {
+          PassThru
+        } else {
+          ClearNodes
+        }
+      } andThen
+      "#pardot-target-uri" #> text(pardotTargetUri, pardotTargetUri = _) &
+      "#pardot-email-field-name" #> text(pardotEmailField, pardotEmailField = _) &
+      "#pardot-first-name-field-name" #> text(pardotNameField, pardotNameField = _)
     } &
     ".submit" #> ajaxSubmit("Save Tab", submit _)
   }

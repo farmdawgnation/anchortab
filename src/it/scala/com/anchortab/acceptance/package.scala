@@ -84,6 +84,7 @@ trait AcceptanceSpec extends FeatureSpec with GivenWhenThen
 }
 
 trait AnchorTabSpec extends AcceptanceSpec {
+  
   val testHost            = "http://local.anchortab.com"
   val testAuthorization   = "NZDTCNLTJVINNUW3RMEQTPWFW0VOBU52"
 

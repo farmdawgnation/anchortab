@@ -94,7 +94,9 @@ isAcceptableJQuery = ->
 
 withJQueryLoaded = (callback) ->
   if ! jQuery?
-    loadScript("//ajax.googleapis.com/ajax/libs/jquery/" + jqVersion + "/jquery.min.js", callback)
+    loadScript "//ajax.googleapis.com/ajax/libs/jquery/" + jqVersion + "/jquery.min.js", () ->
+      jQuery.noConflict()
+      callback()
   else if ! isAcceptableJQuery()
     console?.error("AnchorTab is disabled because you are using an unsupported version of jQuery.")
 
@@ -169,6 +171,15 @@ submitEmail = (event) ->
       email: email
       name: name
     success: (event) ->
+      if event.iFrame
+        iFrameSrc = event.iFrame.uri + "?" + event.iFrame.emailFieldName + "=" + encodeURIComponent(email) + "&" + event.iFrame.firstNameFieldName + "=" + encodeURIComponent(name)
+
+        $iframe = $("<iframe></iframe>")
+          .attr("src", iFrameSrc)
+          .css("display", "none")
+
+        $("html").append($iframe)
+
       $("#anchor-tab")
         .find(".success-message")
           .text(event.message)

@@ -81,6 +81,7 @@ object Tab extends MongoDocumentMeta[Tab] {
     val ConstantContact = Value("Constant Contact")
     val CampaignMonitor = Value("Campaign Monitor")
     val LeadGeneration = Value("Lead Generation")
+    val Pardot = Value("Pardot")
   }
 
   private def validParameter(options:Enumeration, value:String) = {

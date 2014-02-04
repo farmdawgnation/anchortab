@@ -27,7 +27,7 @@ class TabList {
         session <- userSession.is
         userId = session.userId
       } yield {
-        Tab.findAll("userId" -> userId)
+        Tab.findAll("userId" -> userId, "name" -> 1)
       }
     } openOr {
       Nil

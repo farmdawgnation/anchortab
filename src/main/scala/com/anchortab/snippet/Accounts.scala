@@ -20,7 +20,7 @@ import net.liftweb._
     import Extraction._
   import mongodb.BsonDSL._
 
-import com.anchortab.model.{User, UserProfile}
+import com.anchortab.model._
 import com.anchortab.constantcontact.ConstantContact
 import com.anchortab.mailchimp._
 import com.anchortab.campaignmonitor._

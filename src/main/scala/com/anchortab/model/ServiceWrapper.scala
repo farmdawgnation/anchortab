@@ -19,6 +19,12 @@ import com.ecwid.mailchimp._
 
 import org.bson.types.ObjectId
 
+case class ServiceIFrameParameters(
+  uri: String,
+  emailFieldName: String,
+  firstNameFieldName: String
+)
+
 /**
  * The ServiceWrapper trait is the common interface for all wrappers around external email
  * subscription services. The only two functions these wrappers are required to expose are
@@ -26,7 +32,9 @@ import org.bson.types.ObjectId
  * those operations are irrelevent to the parent interface.
 **/
 sealed trait ServiceWrapper {
-  def credentialsValid_? : Boolean
+  def credentialsValid_? : Boolean = true
+  def iFrameParameters: Option[ServiceIFrameParameters] = None
+
   def subscribeEmail(email: String, name: Option[String] = None) : Box[Boolean]
   def unsubscribeEmail(email:String) : Box[Boolean]
 
@@ -37,12 +45,32 @@ object ServiceWrapper {
     classOf[MailChimpServiceWrapper],
     classOf[ConstantContactServiceWrapper],
     classOf[CampaignMonitorServiceWrapper],
-    classOf[LeadGenerationServiceWrapper]
+    classOf[LeadGenerationServiceWrapper],
+    classOf[PardotServiceWrapper]
   ))
 }
 
+case class PardotServiceWrapper(userId: ObjectId, targetUri: String, emailFieldName: String, firstNameFieldName: String) extends ServiceWrapper {
+  override val wrapperIdentifier = "Pardot - " + userId.toString + " - " + targetUri
+
+  override val iFrameParameters = {
+    for {
+      user <- User.find(userId)
+    } yield {
+      ServiceIFrameParameters(
+        targetUri,
+        emailFieldName,
+        firstNameFieldName
+      )
+    }
+  }
+
+  def subscribeEmail(email: String, name: Option[String] = None) = Full(true)
+  def unsubscribeEmail(email: String) = Full(true)
+}
+
 case class LeadGenerationServiceWrapper(targetEmail: String) extends ServiceWrapper {
-  val credentialsValid_? = true
+  override val credentialsValid_? = true
   val wrapperIdentifier = "I don't show up on services screen."
 
   def subscribeEmail(email: String, name: Option[String] = None) = {
@@ -59,7 +87,7 @@ case class LeadGenerationServiceWrapper(targetEmail: String) extends ServiceWrap
 case class CampaignMonitorServiceWrapper(userId: ObjectId, listId: String) extends ServiceWrapper
                                                                               with CampaignMonitorCredentialsHelper
                                                                               with Loggable {
-  val credentialsValid_? = true
+  override val credentialsValid_? = true
 
   def subscribeEmail(email: String, name: Option[String] = None) = {
     val result = withAccessCredentials(userId) { (accessToken, refreshToken) =>
@@ -87,7 +115,7 @@ case class ConstantContactServiceWrapper(username:String, implicit val accessTok
   import com.anchortab.constantcontact.model.ContactLists._
 
   // This is an OAuth-based API wrapper, making the checking of valid credentials unneeded for the moment
-  val credentialsValid_? = true
+  override val credentialsValid_? = true
 
   def subscribeEmail(email:String, name: Option[String] = None) = {
     val contact = Contact(
@@ -118,7 +146,7 @@ case class ConstantContactServiceWrapper(username:String, implicit val accessTok
 }
 
 case class MailChimpServiceWrapper(apiKey:String, listId:String) extends ServiceWrapper with Loggable {
-  def credentialsValid_? = {
+  override def credentialsValid_? = {
     // Instantiate a MailChimpClient
     val mcClient = new MailChimpClient
 
