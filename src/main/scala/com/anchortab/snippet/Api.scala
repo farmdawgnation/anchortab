@@ -51,8 +51,7 @@ object Api extends RestHelper with Loggable {
             NewRelic.ignoreTransaction
             "This tab has been disabled."
           } ~> 403
-          subscription <- (user.subscription: Box[UserSubscription]) ?~ "No subscription found." ~> 500
-          plan <- (subscription.plan: Box[Plan]) ?~ "No plan found." ~> 500
+          plan = user.plan
           callbackFnName <- req.param("callback") ?~ "Callback not specified." ~> 400
         } yield {
           val remoteIp = req.header("X-Forwarded-For") openOr req.remoteAddr
