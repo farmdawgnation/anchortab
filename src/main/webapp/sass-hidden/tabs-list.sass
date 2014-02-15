@@ -13,18 +13,48 @@
     &:last-child
       text-align: right
 
-    .get-code, .edit-tab, .delete-tab
+    > button
       background-color: #1a86d8
       border: 0
       +border-radius(300px)
       color: white
+
+      padding-top: 2px
+      padding-bottom: 2px
 
       cursor: pointer
       vertical-align: middle
       font-size: 14px
       font-size: 1.15em
 
-      .ss-icon
+      &:before
+        margin-right: 5px
+        padding-left: 1px
+
         position: relative
-        top: 1px
-        left: 0px
+        top: 2px
+
+        font-family: SSStandard
+        font-weight: normal
+        font-style: normal
+        text-decoration: none
+        text-rendering: optimizeLegibility
+        white-space: nowrap
+        -moz-font-feature-settings: "liga=1"
+        -moz-font-feature-settings: "liga"
+        -ms-font-feature-settings: "liga" 1
+        -o-font-feature-settings: "liga"
+        font-feature-settings: "liga"
+        -webkit-font-smoothing: antialiased
+        display: inline
+
+      &.edit-tab, &.delete-tab
+        width: 24px
+        white-space: nowrap
+        overflow: hidden
+
+      &.edit-tab:before
+        content: '\1f4dd'
+
+      &.delete-tab:before
+        content: '\2421'
