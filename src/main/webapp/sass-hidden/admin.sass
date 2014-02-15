@@ -1,0 +1,69 @@
+@import "manager-common"
+
+.user-table
+  +pretty-table
+
+  td:last-child
+    text-align: right
+
+  .edit-user, .impersonate-user
+    +pretty-button
+
+.new-user
+  +pretty-button
+
+.plans-list
+  +pretty-table
+
+  td:last-child
+    text-align: right
+
+  .edit-plan, .delete-plan
+    +pretty-button
+
+.new-plan
+  +pretty-button
+
+.plan-form
+  +pretty-form
+
+.miracle-grant-form, .miracle-revoke-form
+  +pretty-form
+
+  .submit
+    +pretty-button
+
+.registration-form
+  +pretty-form
+
+.invites-list
+  +pretty-table
+
+  td:last-child
+    text-align: right
+
+.new-invite, .invite-link, .edit-invite, .delete-invite
+  +pretty-button
+
+.invite-form
+  +pretty-form
+
+.affiliate-report-month-selection
+  +pretty-form
+
+.affiliate-report
+  +pretty-table
+
+  .affiliate-report-row
+    .affiliate
+      vertical-align: top
+
+      > small
+        display: block
+        font-weight: normal
+
+    .subscribe-summary > li
+      font-weight: bold
+
+      > .subscribe-count
+        font-weight: normal

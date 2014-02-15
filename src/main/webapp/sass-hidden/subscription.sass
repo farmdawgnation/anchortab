@@ -1,0 +1,23 @@
+@import "manager-common"
+
+.plan-selection
+  +pretty-table
+
+  tr td
+    height: 39px
+
+    &:last-child
+      text-align: right
+
+    > .plan-details
+      font-weight: normal
+      display: block
+
+  .select-plan, .cancel-plan
+    +pretty-button
+
+.billing-information
+  margin-top: 35px
+
+.update-billing-information, .setup-billing
+  +pretty-button

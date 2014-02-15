@@ -1,0 +1,30 @@
+@import "manager-common"
+
+.new-tab-button
+  +pretty-button
+
+.tab-list
+  +pretty-table
+
+  tr.empty-list > td
+    text-align: center
+
+  td
+    &:last-child
+      text-align: right
+
+    .get-code, .subscribers, .edit-tab, .delete-tab
+      background-color: #1a86d8
+      border: 0
+      +border-radius(300px)
+      color: white
+
+      cursor: pointer
+      vertical-align: middle
+      font-size: 14px
+      font-size: 1.15em
+
+      .ss-icon
+        position: relative
+        top: 1px
+        left: 0px
