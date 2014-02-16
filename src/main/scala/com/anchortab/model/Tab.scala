@@ -39,7 +39,7 @@ case class TabStats(views:Long = 0, submissions:Long = 0)
 case class TabSubscriber(email:String, name:Option[String] = None, verified:Boolean = false, createdAt:DateTime = new DateTime(),
                          _id:ObjectId = ObjectId.get)
 
-case class TabError(email: String, service: String, message: String, createdAt: DateTime = new DateTime())
+case class TabError(email: String, service: String, message: String, name: Option[String] = None, createdAt: DateTime = new DateTime())
 
 case class Tab(
   name: String,
