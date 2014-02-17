@@ -14,6 +14,7 @@ import net.liftweb._
   import util._
     import Helpers._
   import mongodb.BsonDSL._
+  import json.Extraction._
 
 import com.anchortab.model.{User, Tab, Plan}
 
@@ -39,5 +40,16 @@ class TabErrorsList(requestTab: Tab) {
     ".empty-list" #> (errorInformation.nonEmpty ? ClearNodes | PassThru) andThen
     ".error" #> (errorInformation.nonEmpty ? PassThru | ClearNodes) andThen
     ".error" #> errorInformation
+  }
+
+  def clearErrors = {
+    def doClearErrors(s: String) = {
+      implicit val formats = Tab.formats
+      Tab.update("_id" -> requestTab._id, "$set" -> ("errors" -> decompose(List())))
+      Notices.notice("The errors have been cleared, my leige.")
+      RedirectTo(TabList.menu.loc.calcDefaultHref)
+    }
+
+    ".clear-errors-button [onclick]" #> onEvent(doClearErrors _)
   }
 }
