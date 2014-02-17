@@ -20,6 +20,7 @@ manager.css
 dashboard.css
 tabs-list.css
 tab-form.css
+tab-errors-list.css
 subscription.css
 services.css
 account.css

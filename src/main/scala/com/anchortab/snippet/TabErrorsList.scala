@@ -1,0 +1,43 @@
+package com.anchortab.snippet
+
+import scala.xml.Text
+
+import java.text.SimpleDateFormat
+
+import net.liftweb._
+  import sitemap._
+    import Loc._
+  import http._
+    import js.JsCmds._
+    import SHtml._
+  import common._
+  import util._
+    import Helpers._
+  import mongodb.BsonDSL._
+
+import com.anchortab.model.{User, Tab, Plan}
+
+import org.bson.types.ObjectId
+
+object TabErrorsList {
+  val menu =
+    Menu.param[Tab]("Tab Errors", Text("Tab Errors"), Tab.find(_), _._id.toString) /
+    "manager" / "tab" / * / "errors" >>
+    TemplateBox(() => Templates("manager" :: "tab" :: "errors" :: Nil))
+}
+class TabErrorsList(requestTab: Tab) {
+  val dateAndTimeFormatter = new SimpleDateFormat("MM/dd/yyyy hh:mm aa")
+
+  def tabName = "span *" #> requestTab.name
+
+  def render = {
+    val errorInformation = requestTab.errors.map { error =>
+      ".message *" #> error.message &
+      ".time *" #> dateAndTimeFormatter.format(error.createdAt.toDate)
+    }
+
+    ".empty-list" #> (errorInformation.nonEmpty ? ClearNodes | PassThru) andThen
+    ".error" #> (errorInformation.nonEmpty ? PassThru | ClearNodes) andThen
+    ".error" #> errorInformation
+  }
+}

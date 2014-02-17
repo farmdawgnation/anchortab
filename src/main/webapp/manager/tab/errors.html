@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+    <title>Tab Manager</title>
+  </head>
+  <body class="lift:content_id=main">
+    <div id="main" class="lift:surround?with=tab-manager;at=content">
+      <lift:pwn-if-not-logged-in />
+      <h2>Errors for: <span data-lift="TabErrorsList.tabName" class="tab-name">My Awesome Tab</span></h2>
+
+      <table class="error-list" data-lift="TabErrorsList.render">
+        <tr class="header">
+          <th>Time</th>
+          <th>Message</th>
+        </tr>
+        <tr class="empty-list">
+          <td colspan="2">There are no errors on this tab.</td>
+        </tr>
+        <tr class="error">
+          <td class="time">10/01/2012 10:00:00 AM</td>
+          <td class="message">Some error goes here.</td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>

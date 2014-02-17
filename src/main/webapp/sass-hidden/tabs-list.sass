@@ -48,10 +48,18 @@
         -webkit-font-smoothing: antialiased
         display: inline
 
-      &.edit-tab, &.delete-tab
+      &.edit-tab, &.delete-tab, &.view-errors
         width: 24px
         white-space: nowrap
         overflow: hidden
+
+      &.view-errors
+        background-color: #EA6262
+
+        &:before
+          content: '\26a0'
+          left: -2px
+          top: 0
 
       &.edit-tab:before
         content: '\1f4dd'
