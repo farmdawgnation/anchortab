@@ -53,7 +53,8 @@ class TabList {
 
         Notices.notice("Tab deleted.")
         Reload
-      })
+      }) andThen
+      ".view-errors" #> (tab.errors.nonEmpty ? PassThru | ClearNodes)
     }
   }
 
