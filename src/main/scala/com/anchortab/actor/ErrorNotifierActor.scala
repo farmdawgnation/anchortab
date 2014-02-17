@@ -17,7 +17,12 @@ sealed trait ErrorNotifierMessage
 case object ScheduleErrorNotifierChecks extends ErrorNotifierMessage
 case object CheckForEmailSubmissionErrors extends ErrorNotifierMessage
 
-object ErrorNotifierActor extends LiftActor with Loggable {
+object ErrorNotifierActor extends ErrorNotifierActor {
+  val emailActor = EmailActor
+}
+trait ErrorNotifierActor extends LiftActor with Loggable {
+  def emailActor: LiftActor
+
   private def timeSpanUntilNextEmailSubmissionCheck = {
     val beginningOfNextDay = Props.mode match {
       case Props.RunModes.Development => (new DateTime()).plusMinutes(1).getMillis
@@ -33,15 +38,14 @@ object ErrorNotifierActor extends LiftActor with Loggable {
   private def checkForEmailSubmissionErrors = {
     implicit val formats = Event.formats
 
-    val recentSubmissionErrors = Event.findAll(
-      ("createdAt" -> ("$gt" -> decompose(yesterday))) ~
-      ("eventType" -> Event.Types.TabSubmitError)
+    val erroredTabs = Tab.findAll(
+      ("errors.createdAt" -> ("$gt" -> decompose(yesterday)))
     )
 
-    recentSubmissionErrors.groupBy(_.userId).foreach {
-      case (Some(userId), events) =>
+    erroredTabs.groupBy(_.userId).foreach {
+      case (userId, erroredTabsForUser) =>
         for (user <- User.find(userId)) {
-          EmailActor ! SendSubmitErrorNotificationEmail(user.email, events)
+          emailActor ! SendSubmitErrorNotificationEmail(user.email, erroredTabsForUser)
         }
 
       case _ =>

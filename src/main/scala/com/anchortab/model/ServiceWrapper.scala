@@ -46,8 +46,30 @@ object ServiceWrapper {
     classOf[ConstantContactServiceWrapper],
     classOf[CampaignMonitorServiceWrapper],
     classOf[LeadGenerationServiceWrapper],
-    classOf[PardotServiceWrapper]
+    classOf[PardotServiceWrapper],
+    classOf[AlwaysSuccessfulServiceWrapper],
+    classOf[AlwaysFailureServiceWrapper],
+    classOf[AlwaysEmptyServiceWrapper]
   ))
+}
+
+case class AlwaysSuccessfulServiceWrapper() extends ServiceWrapper {
+  override val wrapperIdentifier = "Always Successful"
+  override val iFrameParameters = None
+  def subscribeEmail(email: String, name: Option[String]) = Full(true)
+  def unsubscribeEmail(email: String) = Full(true)
+}
+case class AlwaysFailureServiceWrapper() extends ServiceWrapper {
+  override val wrapperIdentifier = "Always failure"
+  override val iFrameParameters = None
+  def subscribeEmail(email: String, name: Option[String]) = Failure("Chablewit.")
+  def unsubscribeEmail(email: String) = Failure("Chablewit.")
+}
+case class AlwaysEmptyServiceWrapper() extends ServiceWrapper {
+  override val wrapperIdentifier = "Always empty"
+  override val iFrameParameters = None
+  def subscribeEmail(email: String, name: Option[String]) = Empty
+  def unsubscribeEmail(email: String) = Empty
 }
 
 case class PardotServiceWrapper(userId: ObjectId, targetUri: String, emailFieldName: String, firstNameFieldName: String) extends ServiceWrapper {

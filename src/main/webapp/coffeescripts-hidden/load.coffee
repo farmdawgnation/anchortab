@@ -87,7 +87,7 @@ loadGAIfNeeded = ->
 isAcceptableJQuery = ->
   jQueryVersionPieces = jQuery.fn.jquery.split(".")
 
-  if (jQueryVersionPieces[1] >= 5) || (Number(jQueryVersionPieces[1]) == 4 && jQueryVersionPieces[2] >= 3)
+  if (jQueryVersionPieces[0] > 1) || (jQueryVersionPieces[1] >= 5) || (Number(jQueryVersionPieces[1]) == 4 && jQueryVersionPieces[2] >= 3)
     true
   else
     false

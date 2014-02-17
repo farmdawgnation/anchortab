@@ -19,9 +19,9 @@ case class SubscribeEmailToServiceWrapper(
 )
 
 object ServiceWrapperSubmissionActor extends LiftActor with Loggable {
-  protected def addSubscriberToTab(tab: Tab, email: String, name: Option[String]) = {
-    implicit val formats = Tab.formats
+  implicit val formats = Tab.formats
 
+  protected def addSubscriberToTab(tab: Tab, email: String, name: Option[String]) = {
     val subscriberInformation = TabSubscriber(email, name)
 
     User.update("_id" -> tab.userId,
@@ -36,28 +36,25 @@ object ServiceWrapperSubmissionActor extends LiftActor with Loggable {
     ))
   }
 
+  protected def recordError(tab: Tab, tabError: TabError) = {
+    Tab.update("_id" -> tab._id, "$push" -> ("errors" -> decompose(tabError)))
+  }
+
   def messageHandler = {
     case SubscribeEmailToServiceWrapper(tab, email, name) =>
       tab.service match {
         case Some(serviceWrapper) =>
           serviceWrapper.subscribeEmail(email, name) match {
-            case Failure(msg, _, _) =>
-              logger.error("Error submitting email " + email + ":" + msg)
+            case Failure(message, _, _) =>
+              logger.error("Error submitting email " + email + ":" + message)
 
               NewRelic.noticeError("External Submission Error", Map(
                 "service wrapper" -> serviceWrapper.wrapperIdentifier,
                 "email" -> email,
-                "error message" -> msg
+                "error message" -> message
               ))
 
-              EventActor ! TrackEvent(Event(
-                eventType = Event.Types.TabSubmitError,
-                userId = Some(tab.userId),
-                tabId = Some(tab._id),
-                email = Some(email),
-                service = Some(serviceWrapper.wrapperIdentifier),
-                message = Some(msg)
-              ))
+              recordError(tab, TabError(email, serviceWrapper.wrapperIdentifier, message, name))
 
             case Empty =>
               logger.error("Got Empty while trying to submit email " + email)
@@ -67,13 +64,9 @@ object ServiceWrapperSubmissionActor extends LiftActor with Loggable {
                 "email" -> email
               ))
 
-              EventActor ! TrackEvent(Event(
-                eventType = Event.Types.TabSubmitError,
-                userId = Some(tab.userId),
-                tabId = Some(tab._id),
-                email = Some(email),
-                service = Some(serviceWrapper.wrapperIdentifier)
-              ))
+              val message = "Something unexpected occured and we didn't get an error."
+
+              recordError(tab, TabError(email, serviceWrapper.wrapperIdentifier, message, name))
 
             case _ => // Success!
               addSubscriberToTab(tab, email, name)

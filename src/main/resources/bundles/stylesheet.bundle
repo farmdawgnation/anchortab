@@ -13,10 +13,21 @@ landing.css
 tipsy.css
 
 manager
-manager.css
 jquery.modal.css
 tipsy.css
 pretty-meters.css
+manager.css
+dashboard.css
+tabs-list.css
+tab-form.css
+tab-errors-list.css
+subscription.css
+services.css
+account.css
+affiliate.css
+
+admin
+admin.css
 
 landing-ie9
 landing-ie9.css

@@ -1,0 +1,14 @@
+@import "manager-common"
+
+.connected-services-summary
+  +pretty-table
+
+  small
+    display: block
+    font-weight: normal
+
+  td:last-child
+    text-align: right
+
+  .connect-service, .disconnect-service
+    +pretty-button

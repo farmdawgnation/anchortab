@@ -1,0 +1,68 @@
+@import "manager-common"
+
+.new-tab-button
+  +pretty-button
+
+.tab-list
+  +pretty-table
+
+  tr.empty-list > td
+    text-align: center
+
+  td
+    &:last-child
+      text-align: right
+
+    > button
+      background-color: #1a86d8
+      border: 0
+      +border-radius(300px)
+      color: white
+
+      padding-top: 2px
+      padding-bottom: 2px
+
+      cursor: pointer
+      vertical-align: middle
+      font-size: 14px
+      font-size: 1.15em
+
+      &:before
+        margin-right: 5px
+        padding-left: 1px
+
+        position: relative
+        top: 2px
+
+        font-family: SSStandard
+        font-weight: normal
+        font-style: normal
+        text-decoration: none
+        text-rendering: optimizeLegibility
+        white-space: nowrap
+        -moz-font-feature-settings: "liga=1"
+        -moz-font-feature-settings: "liga"
+        -ms-font-feature-settings: "liga" 1
+        -o-font-feature-settings: "liga"
+        font-feature-settings: "liga"
+        -webkit-font-smoothing: antialiased
+        display: inline
+
+      &.edit-tab, &.delete-tab, &.view-errors
+        width: 24px
+        white-space: nowrap
+        overflow: hidden
+
+      &.view-errors
+        background-color: #EA6262
+
+        &:before
+          content: '\26a0'
+          left: -2px
+          top: 0
+
+      &.edit-tab:before
+        content: '\1f4dd'
+
+      &.delete-tab:before
+        content: '\2421'

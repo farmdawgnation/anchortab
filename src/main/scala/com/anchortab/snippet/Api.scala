@@ -1,5 +1,7 @@
 package com.anchortab.snippet
 
+import java.util.Locale
+
 import scala.math._
 
 import net.liftweb._
@@ -25,6 +27,8 @@ import com.anchortab.actor._
 import com.newrelic.api.agent._
 
 object Api extends RestHelper with Loggable {
+  private val localizationCache = new collection.mutable.HashMap[Locale, JObject] with collection.mutable.SynchronizedMap[Locale, JObject]
+
   def statelessRewrite : RewritePF = {
     case RewriteRequest(ParsePath("api" :: "v1" :: "user" :: userId :: "tabs" :: Nil, _, _, _), _, _) =>
       RewriteResponse("api" :: "v1" :: "user" :: userId :: "tabs" :: "0" :: Nil)
@@ -51,8 +55,7 @@ object Api extends RestHelper with Loggable {
             NewRelic.ignoreTransaction
             "This tab has been disabled."
           } ~> 403
-          subscription <- (user.subscription: Box[UserSubscription]) ?~ "No subscription found." ~> 500
-          plan <- (subscription.plan: Box[Plan]) ?~ "No plan found." ~> 500
+          plan = user.plan
           callbackFnName <- req.param("callback") ?~ "Callback not specified." ~> 400
         } yield {
           val remoteIp = req.header("X-Forwarded-For") openOr req.remoteAddr
@@ -94,26 +97,28 @@ object Api extends RestHelper with Loggable {
             }
           }
 
+          val localizedContent = localizationCache.getOrElseUpdate(S.locale, {
+            List(
+              "tab-firstName",
+              "tab-emailAddress",
+              "tab-submit",
+              "tab-subscribe",
+              "tab-minimizeAnchorTab",
+              "tab-maximizeAnchorTab",
+              "tab-somethingWentWrong",
+              "tab-invalidEmail"
+            ).map({ localizationKey =>
+              (localizationKey -> S.?(localizationKey))
+            }).foldLeft(JObject(Nil))(_ ~ _)
+          })
+
           val tabJson =
             ("delay" -> tab.appearance.delay) ~
             ("colorScheme" -> decompose(colorScheme)) ~
             ("whitelabel" -> whitelabelTab) ~
             ("customText" -> tab.appearance.customText) ~
             ("collectName" -> tab.appearance.collectName) ~
-            ("i18n" ->(
-              List(
-                "tab-firstName",
-                "tab-emailAddress",
-                "tab-submit",
-                "tab-subscribe",
-                "tab-minimizeAnchorTab",
-                "tab-maximizeAnchorTab",
-                "tab-somethingWentWrong",
-                "tab-invalidEmail"
-              ).map({ localizationKey =>
-                (localizationKey -> S.?(localizationKey))
-              }).foldLeft(JObject(Nil))(_ ~ _)
-            ))
+            ("i18n" -> localizedContent)
 
           Call(callbackFnName, tabJson)
         }

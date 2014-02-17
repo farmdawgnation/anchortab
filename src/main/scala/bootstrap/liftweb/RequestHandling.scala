@@ -141,6 +141,7 @@ object RequestHandling {
         Register.menu,
         TabList.menu,
         TabSubscribersList.menu,
+        TabErrorsList.menu,
         TabForm.tabNewMenu,
         TabForm.tabEditMenu
       )

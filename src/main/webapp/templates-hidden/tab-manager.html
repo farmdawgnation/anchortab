@@ -4,33 +4,30 @@
     <script data-lift="newrelic-browser-timing-header"></script>
     <title class="lift:page-title">Anchor Tab Manager</title>
 
-    <l:head>
-      <l:ie-conditional version="lte IE 8" eager_eval="true">
-        <l:script-bundle name="ie8-lah-de-dah"></l:script-bundle>
-      </l:ie-conditional>
-      <link href="/fonts/ss-standard/ss-standard.css" rel="stylesheet" type="text/css">
-      <link href='//fonts.googleapis.com/css?family=Open+Sans:400,800,700,600|Damion' rel='stylesheet' type='text/css'>
-      <script class="l:jquery" src="/javascripts/jquery-1.8.2.js"></script>
-      <l:style-bundle name="manager"></l:style-bundle>
-      <l:script-bundle name="manager"></l:script-bundle>
-      <link rel="shortcut icon" type="image/png" href="/images/favicon.png">
-    </l:head>
+    <script data-lift="jquery" src="/javascripts/jquery-1.8.2.js"></script>
+
+    <link href="/fonts/ss-standard/ss-standard.css" rel="stylesheet" type="text/css">
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:400,800,700,600|Damion' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" data-lift="style-bundle?name=manager">
+    <link rel="stylesheet" data-lift="style-bundle?name=admin">
+
+    <link rel="shortcut icon" type="image/png" href="/images/favicon.png">
   </head>
   <body id="manager">
     <section id="manager-container">
       <header>
         <h1 class="logo">Anchor Tab</h1>
 
-        <div class="l:show-if-logged-in user-info">
-          <img class="l:user-gravatar user-info-picture" src="http://www.gravatar.com/avatar/07f5810e1ab035acc499630a24c08a51.jpg?s=60">
-          <span class="l:user-name">Burt Reynolds</span>
+        <div data-lift="show-if-logged-in" class="user-info">
+          <img data-lift="user-gravatar" class="user-info-picture" src="http://www.gravatar.com/avatar/07f5810e1ab035acc499630a24c08a51.jpg?s=60">
+          <span data-lift="user-name">Burt Reynolds</span>
           <a href="/session/logout" class="action">Log Out</a>
         </div>
       </header>
 
       <section id="content-container-wrapper">
-        <nav class="l:highlight-active-navigation">
-          <ul class="l:show-if-logged-in top-nav">
+        <nav data-lift="highlight-active-navigation">
+          <ul data-lift="show-if-logged-in" class="top-nav">
             <li class="dashboard"><a href="/manager/dashboard">Dashboard</a></li>
             <li>Tab Management</li>
             <li class="submenu-container">
@@ -56,8 +53,8 @@
                 <li class="affiliate" data-lift="show-if-affiliate"><a href="/manager/affiliate"><span class="ss-icon">&#xE570;</span> Affiliate Panel</a>
               </ul>
             </li>
-            <li class="l:show-if-admin">Administration</li>
-            <li class="l:show-if-admin submenu-container">
+            <li data-lift="show-if-admin">Administration</li>
+            <li data-lift="show-if-admin" class="submenu-container">
               <ul>
                 <li class="users"><a href="/admin/users"><span class="ss-icon">&#x1F465;</span> Users</a></li>
                 <li class="plans"><a href="/admin/plans"><span class="ss-icon">&#x1F4C1;</span> Plans</a></li>
@@ -99,8 +96,13 @@
         </div>
       </section>
     </section>
-    <script class="l:google-analytics"></script>
-    <script data-lift="uservoice"></script>
+    <head_merge>
+      <lift:ie-conditional version="lte IE 8" eager_eval="true">
+        <script data-lift="script-bundle?name=ie8-lah-de-dah"></script>
+      </lift:ie-conditional>
+    </head_merge>
+    <script data-lift="google-analytics"></script>
+    <script data-lift="script-bundle?name=manager"></script>
     <script data-lift="newrelic-browser-timing-footer"></script>
   </body>
 </html>
