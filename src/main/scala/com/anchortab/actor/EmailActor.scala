@@ -45,7 +45,7 @@ case class SendNeighborhoodWatchEmail(
   similarEmailAddresses: List[SimilarEmailAddresses]
 ) extends EmailActorMessage
 case class SendLeadGenerationSubscriptionEmail(targetEmail: String, subscribedEmail: String, subscriberName: Option[String]) extends EmailActorMessage
-case class SendSubmitErrorNotificationEmail(targetEmail: String, events: List[Event]) extends EmailActorMessage
+case class SendSubmitErrorNotificationEmail(targetEmail: String, erroredTabs: List[Tab]) extends EmailActorMessage
 case class SendRetentionEmail(targetEmail: String) extends EmailActorMessage
 
 trait AdminNotificationEmailHandling extends EmailHandlerChain {
@@ -232,20 +232,21 @@ trait SubmitErrorNotificationEmailHandling extends EmailHandlerChain {
   case class ErrorDescriptor(email: String, formattedTime: String, tabName: String, error: String)
 
   addHandler {
-    case SendSubmitErrorNotificationEmail(targetEmail, events) =>
-      val errorDescriptors = for {
-        event <- events
-        tabId <- event.tabId
-        tab <- Tab.find(tabId)
-        email <- event.email
-      } yield {
-        ErrorDescriptor(
-          email,
-          event.createdAt.toString("MM/dd/yyyy hh:mm aa") + " UTC",
-          tab.name,
-          event.message.getOrElse("N/A")
-        )
-      }
+    case SendSubmitErrorNotificationEmail(targetEmail, erroredTabs) =>
+      val yesterday = (new DateTime()).withTimeAtStartOfDay().minusDays(1)
+
+      val errorDescriptors =
+        for {
+          tab <- erroredTabs
+          tabError <- tab.errors.filter(_.createdAt isAfter yesterday)
+        } yield {
+          ErrorDescriptor(
+            tabError.email,
+            tabError.createdAt.toString("MM/dd/yyyy hh:mm aa") + " UTC",
+            tab.name,
+            tabError.message
+          )
+        }
 
       val transform = ".error" #> errorDescriptors.map { errorDescriptor =>
         ".email *" #> errorDescriptor.email &
