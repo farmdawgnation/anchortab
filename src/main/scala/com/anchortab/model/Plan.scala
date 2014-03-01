@@ -90,6 +90,6 @@ object Plan extends MongoDocumentMeta[Plan] {
   // The DefaultPlan, or the plan you're on if you don't have a plan. If we decide to offer
   // a free tier at some point in the future, we should change this plan to describe the
   // free tier.
-  val DefaultPlan = Plan("Not subscribed.", "You are currently not subscribed to a plan.", 0, 0,
+  val DefaultPlan = Plan("Free Edition", "1 tab, 10 subscribes", 0, 0,
                          Map.empty, Map(Quotas.EmailSubscriptions -> 10, Quotas.NumberOfTabs -> 1))
 }
