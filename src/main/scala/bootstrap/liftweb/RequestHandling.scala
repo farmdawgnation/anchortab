@@ -140,7 +140,6 @@ object RequestHandling {
         ResetPassword.menu,
         Register.menu,
         TabList.menu,
-        TabSubscribersList.menu,
         TabErrorsList.menu,
         TabForm.tabNewMenu,
         TabForm.tabEditMenu

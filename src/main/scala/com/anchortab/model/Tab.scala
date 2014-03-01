@@ -36,9 +36,6 @@ object TabAppearance {
 
 case class TabStats(views:Long = 0, submissions:Long = 0)
 
-case class TabSubscriber(email:String, name:Option[String] = None, verified:Boolean = false, createdAt:DateTime = new DateTime(),
-                         _id:ObjectId = ObjectId.get)
-
 case class TabError(email: String, service: String, message: String, name: Option[String] = None, createdAt: DateTime = new DateTime())
 
 case class Tab(
@@ -46,7 +43,6 @@ case class Tab(
   userId: ObjectId,
   appearance: TabAppearance,
   stats: TabStats = new TabStats,
-  subscribers: List[TabSubscriber] = List(),
   errors: List[TabError] = List(),
   service: Option[ServiceWrapper] = Empty,
   _id: ObjectId = ObjectId.get
@@ -62,9 +58,6 @@ case class Tab(
     ("appearance" -> decompose(appearance)) ~
     ("service" -> decompose(service))
   }
-
-  lazy val subscriberEmails = subscribers.map(_.email)
-  def hasSubscriber_?(email:String) = subscriberEmails.contains(email)
 
   val embedCode =
     """<script id="anchortab-loader" type="text/javascript" data-tab-id="""" + _id + """" src="""" + Tab.embedScriptUrl + """"></script>"""

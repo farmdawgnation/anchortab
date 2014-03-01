@@ -22,8 +22,6 @@ object ServiceWrapperSubmissionActor extends LiftActor with Loggable {
   implicit val formats = Tab.formats
 
   protected def addSubscriberToTab(tab: Tab, email: String, name: Option[String]) = {
-    val subscriberInformation = TabSubscriber(email, name)
-
     User.update("_id" -> tab.userId,
       "$inc" -> (
         ("quotaCounts." + Plan.Quotas.EmailSubscriptions) -> 1
@@ -31,8 +29,7 @@ object ServiceWrapperSubmissionActor extends LiftActor with Loggable {
     )
 
     Tab.update("_id" -> tab._id, (
-      ("$inc" -> ("stats.submissions" -> 1)) ~
-      ("$addToSet" -> ("subscribers" -> decompose(subscriberInformation)))
+      ("$inc" -> ("stats.submissions" -> 1))
     ))
   }
 
