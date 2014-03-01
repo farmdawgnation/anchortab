@@ -91,5 +91,5 @@ object Plan extends MongoDocumentMeta[Plan] {
   // a free tier at some point in the future, we should change this plan to describe the
   // free tier.
   val DefaultPlan = Plan("Not subscribed.", "You are currently not subscribed to a plan.", 0, 0,
-                         Map.empty, Map(Quotas.EmailSubscriptions -> 0, Quotas.Views -> 0))
+                         Map.empty, Map(Quotas.EmailSubscriptions -> 10, Quotas.NumberOfTabs -> 1))
 }
