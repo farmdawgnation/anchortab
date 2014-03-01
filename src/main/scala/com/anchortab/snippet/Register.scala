@@ -37,7 +37,7 @@ class Register extends Loggable {
     Plan.findAll("visibleOnRegistration" -> true)
   }
 
-  private val planSelections = plans.map { plan =>
+  private val planSelections = (Plan.DefaultPlan +: plans).map { plan =>
     ((plan.hasTrial_? || plan.free_?).toString, plan._id.toString, plan.registrationTitle)
   }
 
