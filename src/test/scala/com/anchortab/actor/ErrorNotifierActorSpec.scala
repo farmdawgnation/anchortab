@@ -79,8 +79,10 @@ class ErrorNotifierActorSpec extends FunSpec with ShouldMatchers with BeforeAndA
             println(thing)
             userEmail should be (user.email)
 
-            tabs should contain (tab2)
-            tabs should contain (tab3)
+            val tabIds = tabs.map(_._id)
+
+            tabIds should contain (tab2._id)
+            tabIds should contain (tab3._id)
 
           case _ =>
             fail("Message didn't match.")
