@@ -78,8 +78,8 @@ class ErrorNotifierActorSpec extends FunSpec with ShouldMatchers with BeforeAndA
           case SendSubmitErrorNotificationEmail(userEmail, tabs) =>
             userEmail should be (user.email)
 
-            tabs(0)._id should be (tab2._id)
-            tabs(1)._id should be (tab3._id)
+            tabs should contain (tab2)
+            tabs should contain (tab3)
 
           case _ =>
             fail("Message didn't match.")
