@@ -111,13 +111,13 @@ object OAuth extends Loggable {
         }
       }
 
-    case req @ Req("oauth2" :: "campaign-monitor" :: Nil, _, _) if req.param("error").isDefined =>
+    case req @ Req("oauth2" :: serviceIdentifier :: Nil, _, _) if req.param("error").isDefined =>
       () => {
         for {
           error <- req.param("error")
           errorDescription <- req.param("error_description")
         } yield {
-          Notices.error("Campaign Monitor Error: " + errorDescription)
+          Notices.error("Error Logging In: " + errorDescription)
           RedirectResponse("/manager/services")
         }
       }
