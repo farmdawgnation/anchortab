@@ -7,6 +7,7 @@ import net.liftweb._
   import sitemap._
     import Loc._
   import http._
+    import SHtml._
     import S.SFuncHolder
     import provider._
     import js._
@@ -26,27 +27,6 @@ import com.anchortab.actor._
 
 import com.stripe
 
-object AuthenticationSHtml extends SHtml {
-  private def selected(in: Boolean) = if (in) new UnprefixedAttribute("selected", "selected", Null) else Null
-
-  /**
-   * Create a select box based on the list with a default value and the function to be executed on
-   * form submission
-   *
-   * @param opts -- the options.  A list of value and text pairs
-   * @param deflt -- the default value (or Empty if no default value)
-   * @param func -- the function to execute on form submission
-   */
-  def selectPlans(opts: Seq[(String, String, String)], deflt: Box[String],
-               strFunc: (String)=>Any, attrs: ElemAttr*): Elem = {
-    val func = S.SFuncHolder(strFunc)
-    val vals = opts.map(_._2)
-    val testFunc = S.LFuncHolder(in => in.filter(v => vals.contains(v)) match {case Nil => false case xs => func(xs)}, func.owner)
-
-    attrs.foldLeft(S.fmapFunc(testFunc)(fn => <select name={fn}>{opts.flatMap {case (hasTrial, value, text) => (<option data-has-trial={hasTrial} value={value}>{text}</option>) % selected(deflt.exists(_ == value))}}</select>))(_ % _)
-  }
-}
-
 case object LoginFailed extends SimpleAnchorTabEvent("login-failed")
 case class RedirectingToWePay(preapprovalUrl: String) extends SimpleAnchorTabEvent("redirecting-to-wepay")
 case class FormValidationError(fieldSelector: String, error: String) extends
@@ -58,8 +38,6 @@ object statelessUser extends RequestVar[Box[User]](Empty)
 object passwordResetUser extends RequestVar[Box[User]](Empty)
 
 object Authentication extends Loggable {
-  import AuthenticationSHtml._
-
   /**
    * Sitemap menus.
   **/
