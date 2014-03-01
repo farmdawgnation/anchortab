@@ -44,17 +44,24 @@ class Register extends Loggable {
   }
 
   private def createStripeCustomer(plan: Plan) = {
-    if (stripeToken.trim.nonEmpty) {
-      tryo(stripe.Customer.create(Map(
-        "plan" -> plan.stripeId.getOrElse(""),
-        "email" -> emailAddress,
-        "card" -> stripeToken
-      )))
-    } else {
-      tryo(stripe.Customer.create(Map(
-        "plan" -> plan.stripeId.getOrElse(""),
-        "email" -> emailAddress
-      )))
+    def createFn(customerMap: Map[String, _]) = tryo(stripe.Customer.create(customerMap))
+
+    (selectedPlan, stripeToken.trim) match {
+      case (freePlan, _) if freePlan.free_? =>
+        createFn(Map("email" -> emailAddress))
+
+      case (_, stripeToken) if stripeToken.isEmpty =>
+        Failure("Your Stripe Token was empty and you attempted to subscribe to a paid plan.")
+
+      case (paidPlan, _) if paidPlan.stripeId.isEmpty =>
+        Failure("Paid plan didn't have a Stripe identifier.")
+
+      case (paidPlan, stripeToken) =>
+        createFn(Map(
+          "email" -> emailAddress,
+          "plan" -> plan.stripeId.getOrElse(""),
+          "card" -> stripeToken
+        ))
     }
   }
 
