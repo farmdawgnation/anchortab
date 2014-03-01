@@ -82,6 +82,7 @@ object Subscription extends Loggable {
         ".not-subscribed" #> ClearNodes
       }
     } openOr {
+      ".trial-plan" #> ClearNodes &
       ".cancelled-subscription" #> ClearNodes &
       ".provisional-plan" #> ClearNodes &
       ".special-plan-assignment" #> ClearNodes &
