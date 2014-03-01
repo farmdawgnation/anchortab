@@ -178,7 +178,10 @@ class TabForm(requestTab: Tab) extends Loggable
           if (colorScheme.name != "Custom")
             colorScheme
           else
-            TabColorScheme(customColorSchemeBase, customColorSchemeSecondary, "Custom")
+            TabColorScheme.Custom.copy(
+              baseColor = customColorSchemeBase,
+              secondaryColor = customColorSchemeSecondary
+            )
         }
 
         requestTab.copy(
