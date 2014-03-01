@@ -98,9 +98,9 @@ object Subscription extends Loggable {
             newPlanStripeId <- (plan.stripeId:Box[String]) ?~ "Plan lacks Stripe ID."
             customerId <- (user.stripeCustomerId:Box[String]) ?~ "User lacks Stripe ID."
             customer <- tryo(stripe.Customer.retrieve(customerId)) ?~ "Stripe doesn't recognize user."
-            updatedStripeSubscription <- tryo(customer.updateSubscription(Map(
-              "plan" -> newPlanStripeId,
-              "trial_end" -> "now"
+            cancelledStripeSubscription = tryo(customer.cancelSubscription(customer.subscriptions.data.head.id))
+            updatedStripeSubscription <- tryo(customer.createSubscription(Map(
+              "plan" -> newPlanStripeId
             )))
             updatedSubscription = subscription.map(_.copy(
               status = "cancelled",
@@ -149,9 +149,12 @@ object Subscription extends Loggable {
         for {
           customerId <- user.stripeCustomerId
           customer <- tryo(stripe.Customer.retrieve(customerId))
-          stripeSubscription <- tryo(customer.cancelSubscription(Map(
+          stripeSubscription <- tryo(customer.cancelSubscription(
+            customer.subscriptions.data.head.id,
+            Map(
             "at_period_end" -> true
-          )))
+            ))
+          )
           periodEnd <- stripeSubscription.currentPeriodEnd
           updatedSubscription = subscription.copy(
             status = "cancelled",
