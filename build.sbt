@@ -8,7 +8,7 @@ seq(resourceManagementSettings :_*)
 
 name := "Anchor Tab"
 
-version := "1.2.12-SNAPSHOT"
+version := "1.2.12"
 
 organization := "com.anchortab"
 
