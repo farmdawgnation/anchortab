@@ -140,10 +140,7 @@ object Authentication extends Loggable {
     case "show-if-admin" :: Nil => showIfAdmin
     case "show-if-affiliate" :: Nil => showIfAffiliate
 
-    case "register-casual-blogger" :: Nil => registerButton("Casual Blogger")
     case "register-influencer" :: Nil => registerButton("The Influencer")
-    case "register-industry-leader" :: Nil => registerButton("Industry Leader")
-    case "register-free-edition" :: Nil => registerButton("Free Edition")
   }
 
   def registerButton(planName: String) = {
