@@ -217,7 +217,7 @@ object Subscription extends Loggable {
           ("visibleOnRegistration" -> true),
           ("_id" -> currentPlan._id)
         )))
-        val currentSubscriptionCanceling = subscription.map(_.cancelled_? && plan.isDefined).getOrElse(false)
+        val currentSubscriptionCanceling = subscription.filter(_.plan.isDefined).map(_.cancelled_?).getOrElse(false)
 
         ClearClearable andThen
         ".plan" #> plans.map { plan =>
