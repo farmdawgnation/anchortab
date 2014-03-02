@@ -1,23 +1,19 @@
 @import 'public-common'
 
 #landing
-  .plans-and-pricing
-    +stylish-button
-
-    display: block
-    margin-right: auto
-    margin-left: auto
-
-    // Explicitly setting the width here for IE8.
-    width: 200px
-
   > .im-on-a-boat
     background-image: image-url('secondary-page-boat.jpg')
     background-repeat: no-repeat
     background-position: top center
     height: 486px
 
-    .plans-and-pricing
+    .go-to-plans-and-pricing
+      +stylish-button
+
+      display: block
+      margin-right: auto
+      margin-left: auto
+
       position: relative
       top: 10px
       z-index: 2
