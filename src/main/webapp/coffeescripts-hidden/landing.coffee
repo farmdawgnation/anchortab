@@ -65,4 +65,9 @@ $(document).ready ->
     $(".login input").addClass("error")
 
   $(".register-button").on 'click', (event) ->
-    document.location.href = "/register#" + $(event.target).data("plan-id")
+    planId = $(event.target).data("plan-id")
+
+    if planId?
+      document.location.href = "/register##{planId}"
+    else
+      document.location.href = "/register"
