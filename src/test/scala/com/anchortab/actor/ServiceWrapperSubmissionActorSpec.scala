@@ -75,17 +75,6 @@ class ServiceWrapperSubmissionActorSpec extends FunSpec with ShouldMatchers with
       }
     }
 
-    it("should correctly add subscriber information to a tab after a successful submission") {
-      ServiceWrapperSubmissionActor ! SubscribeEmailToServiceWrapper(tabWithSuccessfulService, "bacon3@bacon.com", None)
-
-      eventually(timeout(1 seconds)) {
-        val tabSubscribers =
-          Tab.find(tabWithSuccessfulService._id).map(_.subscribers).getOrElse(Nil).filter(_.email == "bacon3@bacon.com")
-
-        tabSubscribers should have length (1)
-      }
-    }
-
     it("should correctly handle the case a service generates a failure") {
       ServiceWrapperSubmissionActor ! SubscribeEmailToServiceWrapper(tabWithFailureService, "bacon3@bacon.com", None)
 

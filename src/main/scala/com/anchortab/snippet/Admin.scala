@@ -239,8 +239,19 @@ object Admin extends AffiliateCalculation {
   def adminPlansList(xhtml:NodeSeq) = {
     val plans = Plan.findAll
 
-    def editPlan(planId:ObjectId)(s:String) = {
-      RedirectTo("/admin/plan/" + planId.toString)
+    def deletePlan(plan: Plan)(s: String) = {
+      {
+        for {
+          stripeId <- plan.stripeId
+          stripePlan <- tryo(stripe.Plan.retrieve(stripeId))
+          deletedPlan <- tryo(stripePlan.delete)
+        } yield {
+          plan.delete
+          Reload
+        }
+      } getOrElse {
+        Alert("Something went wrong.")
+      }
     }
 
     val planTransform =
@@ -248,7 +259,8 @@ object Admin extends AffiliateCalculation {
         ".plan-name *" #> plan.name &
         ".plan-price *" #> plan.price.toString &
         ".plan-term *" #> plan.term.description &
-        ".edit-plan [onclick]" #> onEvent(editPlan(plan._id) _)
+        ".edit-plan [href]" #> plansEditMenu.toLoc.calcHref(plan) &
+        ".delete-plan [onclick]" #> onEventIf("Delete this plan?", deletePlan(plan) _)
       }
 
     planTransform.apply(xhtml)

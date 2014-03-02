@@ -14,16 +14,16 @@ import org.joda.time._
 
 import org.bson.types.ObjectId
 
-case class TabColorScheme(baseColor: String, secondaryColor: String, name: String = "") {
+case class TabColorScheme(baseColor: String, secondaryColor: String, textColor: String, buttonTopColor: String, buttonBottomColor: String, buttonTextColor: String, name: String = "") {
   override val toString = name
 }
 object TabColorScheme {
-  val Gray = TabColorScheme("#848484", "#5e5e5e", "Gray")
-  val Green = TabColorScheme("#39bd42", "#2b8a31", "Green")
-  val Red = TabColorScheme("#db2f2d", "#9b2220", "Red")
-  val Blue = TabColorScheme("#2d8bd6", "#226aa3", "Blue")
+  val Gray = TabColorScheme("#848484", "#5e5e5e", "#000000", "#706F6F", "#262625", "#ffffff", "Gray")
+  val Green = TabColorScheme("#39bd42", "#2b8a31", "#000000", "#706F6F", "#262625", "#ffffff", "Green")
+  val Red = TabColorScheme("#db2f2d", "#9b2220", "#000000", "#706F6F", "#262625", "#ffffff", "Red")
+  val Blue = TabColorScheme("#2d8bd6", "#226aa3", "#000000", "#706F6F", "#262625", "#ffffff", "Blue")
 
-  val Custom = TabColorScheme("", "", "Custom")
+  val Custom = TabColorScheme("", "", "#000000", "#706F6F", "#262625", "#ffffff", "Custom")
 
   val basic = Red :: Green :: Blue :: Gray :: Nil
   val advanced = basic ++ (Custom :: Nil)
@@ -36,9 +36,6 @@ object TabAppearance {
 
 case class TabStats(views:Long = 0, submissions:Long = 0)
 
-case class TabSubscriber(email:String, name:Option[String] = None, verified:Boolean = false, createdAt:DateTime = new DateTime(),
-                         _id:ObjectId = ObjectId.get)
-
 case class TabError(email: String, service: String, message: String, name: Option[String] = None, createdAt: DateTime = new DateTime())
 
 case class Tab(
@@ -46,7 +43,6 @@ case class Tab(
   userId: ObjectId,
   appearance: TabAppearance,
   stats: TabStats = new TabStats,
-  subscribers: List[TabSubscriber] = List(),
   errors: List[TabError] = List(),
   service: Option[ServiceWrapper] = Empty,
   _id: ObjectId = ObjectId.get
@@ -62,9 +58,6 @@ case class Tab(
     ("appearance" -> decompose(appearance)) ~
     ("service" -> decompose(service))
   }
-
-  lazy val subscriberEmails = subscribers.map(_.email)
-  def hasSubscriber_?(email:String) = subscriberEmails.contains(email)
 
   val embedCode =
     """<script id="anchortab-loader" type="text/javascript" data-tab-id="""" + _id + """" src="""" + Tab.embedScriptUrl + """"></script>"""

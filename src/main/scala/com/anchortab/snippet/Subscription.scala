@@ -82,6 +82,7 @@ object Subscription extends Loggable {
         ".not-subscribed" #> ClearNodes
       }
     } openOr {
+      ".trial-plan" #> ClearNodes &
       ".cancelled-subscription" #> ClearNodes &
       ".provisional-plan" #> ClearNodes &
       ".special-plan-assignment" #> ClearNodes &
@@ -91,6 +92,17 @@ object Subscription extends Loggable {
 
   def planSelection = {
     def changeSubscription(user: User, subscription: Option[UserSubscription], newPlanId: ObjectId)() = {
+      def maybeCancelSubscription(customer: stripe.Customer) = {
+        customer.subscriptions.data match {
+          case Nil => Full(false)
+          case singleSubscription :: Nil =>
+            tryo(customer.cancelSubscription(singleSubscription.id))
+          case multipleSubscriptions =>
+            logger.error("The customer " + customer.id + " has multiple subscriptions. Bailing.")
+            Failure("There are somehow multiple subscriptions on your Stripe account. Please contact us.")
+        }
+      }
+
       val changeResult: Box[JsCmd] =
         if (user.activeCard.isDefined) {
           for {
@@ -98,9 +110,9 @@ object Subscription extends Loggable {
             newPlanStripeId <- (plan.stripeId:Box[String]) ?~ "Plan lacks Stripe ID."
             customerId <- (user.stripeCustomerId:Box[String]) ?~ "User lacks Stripe ID."
             customer <- tryo(stripe.Customer.retrieve(customerId)) ?~ "Stripe doesn't recognize user."
-            updatedStripeSubscription <- tryo(customer.updateSubscription(Map(
-              "plan" -> newPlanStripeId,
-              "trial_end" -> "now"
+            cancelledStripeSubscription <- maybeCancelSubscription(customer)
+            updatedStripeSubscription <- tryo(customer.createSubscription(Map(
+              "plan" -> newPlanStripeId
             )))
             updatedSubscription = subscription.map(_.copy(
               status = "cancelled",
@@ -149,9 +161,13 @@ object Subscription extends Loggable {
         for {
           customerId <- user.stripeCustomerId
           customer <- tryo(stripe.Customer.retrieve(customerId))
-          stripeSubscription <- tryo(customer.cancelSubscription(Map(
+          existingStripeSubscription <- customer.subscriptions.data.headOption
+          stripeSubscription <- tryo(customer.cancelSubscription(
+            existingStripeSubscription.id,
+            Map(
             "at_period_end" -> true
-          )))
+            ))
+          )
           periodEnd <- stripeSubscription.currentPeriodEnd
           updatedSubscription = subscription.copy(
             status = "cancelled",
@@ -201,7 +217,7 @@ object Subscription extends Loggable {
           ("visibleOnRegistration" -> true),
           ("_id" -> currentPlan._id)
         )))
-        val currentSubscriptionCanceling = subscription.map(_.cancelled_?).getOrElse(false)
+        val currentSubscriptionCanceling = subscription.filter(_.plan.isDefined).map(_.cancelled_?).getOrElse(false)
 
         ClearClearable andThen
         ".plan" #> plans.map { plan =>

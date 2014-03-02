@@ -29,7 +29,7 @@ class Register extends Loggable {
   private var stripeToken = ""
   private var emailAddress = ""
   private var requestedPassword = ""
-  private var selectedPlan = ""
+  private var selectedPlan: Plan = Plan.DefaultPlan
 
   private val plans = {
     Invites.acceptInviteMenu.currentValue.flatMap(_.forPlan).map(List(_))
@@ -37,22 +37,31 @@ class Register extends Loggable {
     Plan.findAll("visibleOnRegistration" -> true)
   }
 
-  private val planSelections = plans.map { plan =>
+  private val planSelections = (Plan.DefaultPlan +: plans).map { plan =>
     ((plan.hasTrial_? || plan.free_?).toString, plan._id.toString, plan.registrationTitle)
+
+    SelectableOption(plan, plan.registrationTitle, "data-has-trial" -> plan.free_?.toString)
   }
 
   private def createStripeCustomer(plan: Plan) = {
-    if (stripeToken.trim.nonEmpty) {
-      tryo(stripe.Customer.create(Map(
-        "plan" -> plan.stripeId.getOrElse(""),
-        "email" -> emailAddress,
-        "card" -> stripeToken
-      )))
-    } else {
-      tryo(stripe.Customer.create(Map(
-        "plan" -> plan.stripeId.getOrElse(""),
-        "email" -> emailAddress
-      )))
+    def createFn(customerMap: Map[String, _]) = tryo(stripe.Customer.create(customerMap))
+
+    (selectedPlan, stripeToken.trim) match {
+      case (freePlan, _) if freePlan.free_? =>
+        createFn(Map("email" -> emailAddress))
+
+      case (_, stripeToken) if stripeToken.isEmpty =>
+        Failure("Your Stripe Token was empty and you attempted to subscribe to a paid plan.")
+
+      case (paidPlan, _) if paidPlan.stripeId.isEmpty =>
+        Failure("Paid plan didn't have a Stripe identifier.")
+
+      case (paidPlan, stripeToken) =>
+        createFn(Map(
+          "email" -> emailAddress,
+          "plan" -> plan.stripeId.getOrElse(""),
+          "card" -> stripeToken
+        ))
     }
   }
 
@@ -95,9 +104,8 @@ class Register extends Loggable {
       case Nil =>
         val user : Box[User] =
           for {
-            plan <- (Plan.find(selectedPlan):Box[Plan]) ?~! "Plan could not be located."
-            subscription <- generateSubscriptionForPlan(plan)
-            customer <- createStripeCustomer(plan)
+            subscription <- generateSubscriptionForPlan(selectedPlan)
+            customer <- createStripeCustomer(selectedPlan)
           } yield {
             val firstSteps = Map(
               UserFirstStep.Keys.ConnectAnExternalService -> UserFirstStep.Steps.ConnectAnExternalService,
@@ -161,7 +169,7 @@ class Register extends Loggable {
 
   def render = {
     SHtml.makeFormsAjax andThen
-    ".plan-selection" #> AuthenticationSHtml.selectPlans(planSelections, Empty, selectedPlan = _) &
+    ".plan-selection" #> selectObj[Plan](planSelections, Empty, selectedPlan = _) &
     "#stripe-token" #> hidden(stripeToken = _, stripeToken) &
     ".email-address" #> text(emailAddress, emailAddress = _) &
     ".password" #> password(requestedPassword, requestedPassword = _) &

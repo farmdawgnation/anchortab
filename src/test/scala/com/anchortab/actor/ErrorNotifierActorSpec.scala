@@ -75,11 +75,14 @@ class ErrorNotifierActorSpec extends FunSpec with ShouldMatchers with BeforeAndA
         val firstMessage = mockEmailActor.messages(0)
 
         firstMessage match {
-          case SendSubmitErrorNotificationEmail(userEmail, tabs) =>
+          case thing @ SendSubmitErrorNotificationEmail(userEmail, tabs) =>
+            println(thing)
             userEmail should be (user.email)
 
-            tabs(0)._id should be (tab2._id)
-            tabs(1)._id should be (tab3._id)
+            val tabIds = tabs.map(_._id)
+
+            tabIds should contain (tab2._id)
+            tabIds should contain (tab3._id)
 
           case _ =>
             fail("Message didn't match.")
