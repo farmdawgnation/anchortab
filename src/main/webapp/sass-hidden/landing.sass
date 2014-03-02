@@ -1,31 +1,15 @@
 @import 'public-common'
 
 #landing
-  > section
-    width: 100%
-    position: relative
+  .plans-and-pricing
+    +stylish-button
 
-    > *
-      width: 907px
-      margin-right: auto
-      margin-left: auto
-      position: relative
+    display: block
+    margin-right: auto
+    margin-left: auto
 
-    h4
-      font-family: 'Damion', cursive
-      font-size: 36px
-
-      line-height: 1.2em
-
-    .plans-and-pricing
-      +stylish-button
-
-      display: block
-      margin-right: auto
-      margin-left: auto
-
-      // Explicitly setting the width here for IE8.
-      width: 200px
+    // Explicitly setting the width here for IE8.
+    width: 200px
 
   > .im-on-a-boat
     background-image: image-url('secondary-page-boat.jpg')
@@ -41,75 +25,10 @@
       &:hover
         top: 6px
 
-    .login-container
-      position: absolute
-      right: 20px
-      top: 15px
-
-      .go-to-manager
-        +pretty-button
-        width: auto
-
-      > .social
-        text-align: right
-
-        > .facebook
-          +header-social-sprite('facebook')
-
-        > .twitter
-          +header-social-sprite('twitter')
-
-        > .github
-          +header-social-sprite('github')
-
-      > .login
-        margin-top: 15px
-
-        input
-          +pretty-input
-
-          &.error
-            border: 1px solid red
-
-        input.submit
-          +pretty-button
-
-        .forgot-password
-          position: absolute
-          right: 90px
-          bottom: -15px
-          color: black
-
-          font-family: 'Open Sans', Arial, sans-serif
-          font-size: 11px
-          font-size: 0.8rem
-
-          font-weight: 600
-
-          &:link, &:visited
-            text-decoration: none
-
-          &:hover
-            text-decoration: underline
-
     .intro-video
       position: absolute
       right: 20px
       top: 13rem
-
-    h1
-      +replace-text('logo.png')
-
-      display: inline-block
-      width: 397px
-      height: 125px
-
-      margin-top: 20px
-
-      a
-        display: block
-        width: 397px
-        height: 125px
 
     h2
       font-size: 63px
@@ -529,94 +448,3 @@
     > h4
       color: #187bda
       padding-bottom: 60px
-
-  > footer
-    background-image: image-url('textures/texture1.png')
-    color: white
-
-    font-size: 12px
-    font-size: 0.85rem
-
-    font-family: 'Open Sans', 'Arial', sans-serif
-
-    > .section-container
-      width: 907px
-      margin-right: auto
-      margin-left: auto
-      position: relative
-
-      font-size: 12px
-      font-size: 0.85rem
-
-      background-image: image-url('footer-rope.png')
-      background-repeat: no-repeat
-      background-position: 0 135px
-
-      p.attribution
-        color: #a1a1a1
-        font-size: 12px
-        font-size: 0.85rem
-        font-style: italic
-
-        a
-          color: #a1a1a1
-
-        a:hover
-          text-decoration: underline
-
-      li
-        position: relative
-
-        &.email, &.facebook, &.twitter
-          margin-bottom: 11px
-
-        &.email a
-          +social-footer-sprite('email')
-
-        &.facebook a
-          +social-footer-sprite('facebook')
-
-        &.twitter a
-          +social-footer-sprite('twitter')
-
-      a
-        text-decoration: none
-        line-height: 20px
-
-        &:link, &:visited
-          color: white
-
-        &:hover
-          color: #187bda
-
-      p
-        font-size: 12px
-        font-size: 0.85rem
-
-      .copyright
-        text-align: center
-        padding-top: 20px
-
-      .love
-        text-align: center
-        padding-bottom: 50px
-
-      div
-        width: 299px
-        display: inline-block
-        vertical-align: top
-
-        padding-top: 86px
-
-        &.contact-us
-          position: absolute
-          right: 0
-          top: 0
-
-        h5
-          font-size: 14px
-          font-size: 1.7rem
-
-          font-family: 'Damion', cursive
-
-          margin-bottom: 65px
