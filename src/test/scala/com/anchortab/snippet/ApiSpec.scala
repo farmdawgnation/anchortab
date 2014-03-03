@@ -27,6 +27,19 @@ object ApiSpecExamples {
     user
   }
 
+  lazy val overQuotaUser = {
+    val user = User(
+      email = "stephen@west.com",
+      password = "abc123",
+      authorizations = UserAuthorizationKey("ApiSpec", nonAdminUserAuthorizationKey) :: Nil,
+      quotaCounts = Map(Plan.Quotas.EmailSubscriptions -> 500000000)
+    )
+
+    user.save
+
+    user
+  }
+
   val adminUserAuthorizationKey = "IAMANAWESOMEADMIN123"
   lazy val adminUser = {
     val user = User(
@@ -87,8 +100,16 @@ object ApiSpecExamples {
     theTab
   }
 
-  lazy val disabledTab = {
+  lazy val nonAdminTab = {
     val theTab = Tab("Disabled Tab", nonAdminUser._id, TabAppearance.defaults)
+
+    theTab.save
+
+    theTab
+  }
+
+  lazy val disabledTab = {
+    val theTab = Tab("Disabled Tab", overQuotaUser._id, TabAppearance.defaults)
 
     theTab.save
 
@@ -105,6 +126,7 @@ class ApiSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll with Ev
     bootstrap.liftweb.SetupDb.setup
 
     nonAdminUser
+    overQuotaUser
     adminUser
     userToDelete
 
@@ -117,6 +139,7 @@ class ApiSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll with Ev
 
   override def afterAll() {
     nonAdminUser.delete
+    overQuotaUser.delete
     adminUser.delete
     userToDelete.delete
 
@@ -331,7 +354,7 @@ class ApiSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll with Ev
 
   describe("GET /api/v1/tab/*") {
     it("should return the tab as JSON for valid credentials and tab ID") {
-      runApiRequest("/api/v1/tab/" + disabledTab._id.toString, Some(nonAdminUserAuthorizationKey)) { response =>
+      runApiRequest("/api/v1/tab/" + nonAdminTab._id.toString, Some(nonAdminUserAuthorizationKey)) { response =>
         response match {
           case Full(JsonResponse(json, _, _, code)) =>
             code should equal (200)
