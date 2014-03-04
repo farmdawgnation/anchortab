@@ -93,7 +93,7 @@ object ApiSpecExamples {
   }
 
   lazy val validTab = {
-    val theTab = Tab("Test Tab", subscribedUser._id, TabAppearance.defaults)
+    val theTab = Tab("Test Tab", subscribedUser._id, TabAppearance.defaults, LeadGenerationServiceWrapper(""))
 
     theTab.save
 
@@ -101,7 +101,7 @@ object ApiSpecExamples {
   }
 
   lazy val nonAdminTab = {
-    val theTab = Tab("Disabled Tab", nonAdminUser._id, TabAppearance.defaults)
+    val theTab = Tab("Disabled Tab", nonAdminUser._id, TabAppearance.defaults, LeadGenerationServiceWrapper(""))
 
     theTab.save
 
@@ -109,7 +109,7 @@ object ApiSpecExamples {
   }
 
   lazy val disabledTab = {
-    val theTab = Tab("Disabled Tab", overQuotaUser._id, TabAppearance.defaults)
+    val theTab = Tab("Disabled Tab", overQuotaUser._id, TabAppearance.defaults, LeadGenerationServiceWrapper(""))
 
     theTab.save
 
