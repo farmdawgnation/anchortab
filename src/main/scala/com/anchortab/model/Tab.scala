@@ -42,9 +42,9 @@ case class Tab(
   name: String,
   userId: ObjectId,
   appearance: TabAppearance,
+  service: ServiceWrapper,
   stats: TabStats = new TabStats,
   errors: List[TabError] = List(),
-  service: Option[ServiceWrapper] = Empty,
   _id: ObjectId = ObjectId.get
 ) extends MongoDocument[Tab] {
   val meta = Tab

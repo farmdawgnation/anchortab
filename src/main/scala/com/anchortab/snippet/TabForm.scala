@@ -33,7 +33,7 @@ class TabForm(requestTab: Tab) extends Loggable
                                           with ConstantContactTabForm
                                           with CampaignMonitorTabForm {
 
-  def this() = this(Tab("", ObjectId.get, TabAppearance.defaults))
+  def this() = this(Tab("", ObjectId.get, TabAppearance.defaults, LeadGenerationServiceWrapper("")))
 
   var tabName = requestTab.name
   var appearanceDelay = requestTab.appearance.delay.toString
@@ -57,34 +57,32 @@ class TabForm(requestTab: Tab) extends Loggable
 
   var service : Tab.EmailServices.Value = {
     requestTab.service match {
-      case Some(mcsw:MailChimpServiceWrapper) =>
+      case mcsw: MailChimpServiceWrapper =>
         mailChimpListId = Full(mcsw.listId)
 
         Tab.EmailServices.MailChimp
 
-      case Some(ccsw:ConstantContactServiceWrapper) =>
+      case ccsw: ConstantContactServiceWrapper =>
         constantContactListId = Full(ccsw.listId.toString)
 
         Tab.EmailServices.ConstantContact
 
-      case Some(cmsw: CampaignMonitorServiceWrapper) =>
+      case cmsw: CampaignMonitorServiceWrapper =>
         campaignMonitorListId = Full(cmsw.listId)
 
         Tab.EmailServices.CampaignMonitor
 
-      case Some(lgsw: LeadGenerationServiceWrapper) =>
+      case lgsw: LeadGenerationServiceWrapper =>
         leadGenerationTargetEmail = lgsw.targetEmail
 
         Tab.EmailServices.LeadGeneration
 
-      case Some(pdsw: PardotServiceWrapper) =>
+      case pdsw: PardotServiceWrapper =>
         pardotTargetUri = pdsw.targetUri
         pardotEmailField = pdsw.emailFieldName
         pardotNameField = pdsw.firstNameFieldName
 
         Tab.EmailServices.Pardot
-
-      case _ => Tab.EmailServices.None
     }
   }
 
@@ -122,8 +120,8 @@ class TabForm(requestTab: Tab) extends Loggable
     leadGeneration ++ cc ++ mc ++ cm ++ pd
   }
 
-  def serviceWrapper : Option[ServiceWrapper] = {
-    service match {
+  def serviceWrapper : ServiceWrapper = {
+    val swOption: Option[ServiceWrapper] = service match {
       case Tab.EmailServices.MailChimp =>
         for {
           session <- userSession.is
@@ -163,9 +161,9 @@ class TabForm(requestTab: Tab) extends Loggable
 
       case Tab.EmailServices.LeadGeneration =>
         Some(LeadGenerationServiceWrapper(leadGenerationTargetEmail))
-
-      case _ => None
     }
+
+    swOption.getOrElse(LeadGenerationServiceWrapper(""))
   }
 
   def submit = {

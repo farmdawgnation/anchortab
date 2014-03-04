@@ -39,37 +39,31 @@ object ServiceWrapperSubmissionActor extends LiftActor with Loggable {
 
   def messageHandler = {
     case SubscribeEmailToServiceWrapper(tab, email, name) =>
-      tab.service match {
-        case Some(serviceWrapper) =>
-          serviceWrapper.subscribeEmail(email, name) match {
-            case Failure(message, _, _) =>
-              logger.error("Error submitting email " + email + ":" + message)
+      tab.service.subscribeEmail(email, name) match {
+        case Failure(message, _, _) =>
+          logger.error("Error submitting email " + email + ":" + message)
 
-              NewRelic.noticeError("External Submission Error", Map(
-                "service wrapper" -> serviceWrapper.wrapperIdentifier,
-                "email" -> email,
-                "error message" -> message
-              ))
+          NewRelic.noticeError("External Submission Error", Map(
+            "service wrapper" -> tab.service.wrapperIdentifier,
+            "email" -> email,
+            "error message" -> message
+          ))
 
-              recordError(tab, TabError(email, serviceWrapper.wrapperIdentifier, message, name))
+          recordError(tab, TabError(email, tab.service.wrapperIdentifier, message, name))
 
-            case Empty =>
-              logger.error("Got Empty while trying to submit email " + email)
+        case Empty =>
+          logger.error("Got Empty while trying to submit email " + email)
 
-              NewRelic.noticeError("External Submission Empty", Map(
-                "service wrapper" -> serviceWrapper.wrapperIdentifier,
-                "email" -> email
-              ))
+          NewRelic.noticeError("External Submission Empty", Map(
+            "service wrapper" -> tab.service.wrapperIdentifier,
+            "email" -> email
+          ))
 
-              val message = "Something unexpected occured and we didn't get an error."
+          val message = "Something unexpected occured and we didn't get an error."
 
-              recordError(tab, TabError(email, serviceWrapper.wrapperIdentifier, message, name))
+          recordError(tab, TabError(email, tab.service.wrapperIdentifier, message, name))
 
-            case _ => // Success!
-              addSubscriberToTab(tab, email, name)
-          }
-
-        case None =>
+        case _ => // Success!
           addSubscriberToTab(tab, email, name)
       }
   }

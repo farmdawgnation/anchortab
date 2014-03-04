@@ -148,15 +148,9 @@ object Api extends RestHelper with Loggable {
           val domain = req.header("X-Embedded-Domain")
 
           val submitResult = {
-            val successMessage =
-              if (tab.service.isDefined) {
-                "tab-successConfirm"
-              } else {
-                "tab-successNoConfirm"
-              }
-
+            val successMessage = "tab-successConfirm"
             val iFrameParameters =
-              tab.service.flatMap(_.iFrameParameters).map(decompose _)
+              tab.service.iFrameParameters.map(decompose _)
 
             ("success" -> 1) ~
             ("email" -> email) ~
