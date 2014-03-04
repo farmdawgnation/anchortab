@@ -42,6 +42,9 @@ trait ErrorNotifierActor extends LiftActor with Loggable {
       ("errors.createdAt" -> ("$gt" -> decompose(yesterday)))
     )
 
+    if (erroredTabs.isEmpty)
+      logger.info("Found no errored tabs for time period.")
+
     erroredTabs.groupBy(_.userId).foreach {
       case (userId, erroredTabsForUser) =>
         for (user <- User.find(userId)) {

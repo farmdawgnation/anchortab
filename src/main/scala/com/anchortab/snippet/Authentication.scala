@@ -140,14 +140,14 @@ object Authentication extends Loggable {
     case "show-if-admin" :: Nil => showIfAdmin
     case "show-if-affiliate" :: Nil => showIfAffiliate
 
-    case "register-casual-blogger" :: Nil => registerButton("Casual Blogger")
     case "register-influencer" :: Nil => registerButton("The Influencer")
-    case "register-industry-leader" :: Nil => registerButton("Industry Leader")
-    case "register-free-edition" :: Nil => registerButton("Free Edition")
   }
 
+  val planIdMap = scala.collection.concurrent.TrieMap[String, String]()
   def registerButton(planName: String) = {
-    "button [data-plan-id]" #> Plan.find("name" -> planName).map(_._id.toString)
+    val planId = planIdMap.getOrElseUpdate(planName, Plan.find("name" -> planName).map(_._id.toString).getOrElse(""))
+
+    "button [data-plan-id]" #> planId
   }
 
   def redirectToDashboardIfLoggedIn(ns:NodeSeq) = {

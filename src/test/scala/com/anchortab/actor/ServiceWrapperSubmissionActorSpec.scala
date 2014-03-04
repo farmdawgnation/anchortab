@@ -25,7 +25,7 @@ object ServiceWrapperSubmissionActorSpecExamples {
       randomString(32),
       user._id,
       TabAppearance.defaults,
-      service = Some(service)
+      service = service
     )
 
     tab.save

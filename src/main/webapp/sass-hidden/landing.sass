@@ -1,333 +1,33 @@
-@import 'base'
-
-@import "compass/typography/text/replacement"
-@import "compass/css3/box-sizing"
-@import "compass/css3/border-radius"
-@import "compass/css3/images"
-@import "compass/css3/transition"
-@import "mobile-mixins"
-
-=pretty-input
-  font-family: 'Open Sans', Ariel, sans-serif
-  font-size: 16px
-  height: 38px
-  width: 154px
-  padding: 0px 12px
-
-  border: 1px solid $light-gray
-
-  +box-sizing(border-box)
-  +border-radius(5px)
-
-=pretty-button
-  height: 38px
-  width: 84px
-  vertical-align: top
-
-  cursor: pointer
-
-  +box-sizing(border-box)
-  border: 0
-  +border-radius(5px)
-
-  background: $login-button-blue-top
-  +background(linear-gradient($login-button-blue-top, $login-button-blue-bottom))
-  color: white
-
-  font-family: 'Open Sans', Ariel, sans-serif
-  font-size: 16px
-
-  &:hover
-    background: $login-button-blue-bottom
-    +background(linear-gradient($login-button-blue-bottom, $login-button-blue-top))
-
-=mail-service-sprite($name)
-  $height: 0
-  $width: 0
-  $hoverPositionX: 0
-  $hoverPositionY: 0
-  $positionX: 0
-  $positionY: 0
-
-  @if $name == 'constant-contact'
-    $height: 22px
-    $width: 148px
-    $hoverPositionX: 0px
-    $hoverPositionY: 0px
-    $positionX: -148px
-    $positionY: 0px
-
-  @if $name == 'mailchimp'
-    $height: 36px
-    $width: 148px
-    $hoverPositionX: 0px
-    $hoverPositionY: -22px
-    $positionX: -148px
-    $positionY: -22px
-
-  @if $name == 'campaign-monitor'
-    $height: 17px
-    $width: 148px
-    $hoverPositionX: 0px
-    $hoverPositionY: -58px
-    $positionX: -148px
-    $positionY: -58px
-
-  text-indent: -9999999px
-  display: block
-  float: right
-  width: $width
-  height: $height
-  background-position: $positionX $positionY
-
-  background-image: image-url('mail-service-sprite.png')
-
-  &:hover
-    background-position: $hoverPositionX $hoverPositionY
-    cursor: pointer
-
-=header-social-sprite($name)
-  $positionX: 0
-
-  @if $name == 'facebook'
-    $positionX: 0
-  @if $name == 'twitter'
-    $positionX: -20px
-  @if $name == 'github'
-    $positionX: -40px
-
-  text-indent: -999999px
-  text-align: left
-  display: inline-block
-  width: 17px
-  height: 16px
-  margin-top: 18px
-
-  background-image: image-url('header-social-sprite.png')
-  background-position: $positionX 0
-
-  &:hover
-    cursor: pointer
-
-=social-footer-sprite($name)
-  $positionX: 0
-  $positionY: 0
-  $hoverPositionX: 0
-  $height: 0
-  $width: 0
-  $left: 0
-
-  @if $name == 'email'
-    $positionX: 0
-    $positionY: 0
-    $hoverPositionX: -22px
-    $height: 17px
-    $width: 21px
-  @if $name == 'facebook'
-    $positionX: -3px
-    $positionY: -17px
-    $hoverPositionX: -25px
-    $height: 17px
-    $width: 17px
-    $left: 2px
-  @if $name == 'twitter'
-    $positionX: -3px
-    $positionY: -33px
-    $hoverPositionX: -25px
-    $height: 16px
-    $width: 17px
-    $left: 2px
-
-  &:link
-    margin-left: 35px
-
-    &:before
-      content: ''
-      display: block
-      height: $height
-      width: $width
-
-      background-image: image-url('footer-social-sprite.png')
-      background-position: $positionX $positionY
-
-      position: absolute
-      top: 0
-      left: $left
-
-  &:hover
-    &:before
-      background-position: $hoverPositionX $positionY
-
-=h3rope($dark: false)
-  $rope: 'light-rope.png'
-
-  @if $dark
-    $rope: 'rope.png'
-
-  &:before, &:after
-    content: ''
-    background-image: image-url($rope)
-    display: inline-block
-    width: 260px
-    height: 24px
-
-    background-repeat: repeat-x
-    background-position: 0 50%
-
-  &:before
-    margin-right: 20px
-
-  &:after
-    margin-left: 20px
-
-  +smartphone
-    &:before, &:after
-      display: none
-
-=arrow-sprite($which)
-  $positionX: 0
-
-  @if $which == 'previous'
-    $positionX: 0
-  @if $which == 'next'
-    $positionX: -26px
-
-  z-index: 3
-  text-indent: -9999999px
-  background-image: image-url('how-it-works/arrows-sprite.png')
-  background-position: $positionX 0
-
-  width: 17px
-  height: 26px
-
-  &:hover
-    background-position: $positionX -27px
+@import 'public-common'
 
 #landing
-  > section
-    width: 100%
-    position: relative
+  > .im-on-a-boat
+    background-image: image-url('secondary-page-boat.jpg')
 
-    > *
-      width: 907px
-      margin-right: auto
-      margin-left: auto
-      position: relative
+    background-repeat: no-repeat
+    background-position: top center
+    height: 486px
 
-    h3
-      font-family: 'Open Sans', 'Arial', sans-serif
-      font-size: 36px
-      font-weight: bold
-      text-transform: uppercase
-      text-align: center
-
-      margin-bottom: 50px
-
-      &.dark-rope
-        +h3rope(true)
-
-      &.light-rope
-        +h3rope
-
-    h4
-      font-family: 'Damion', cursive
-      font-size: 36px
-
-      line-height: 1.2em
-
-    .plans-and-pricing
+    .go-to-plans-and-pricing
       +stylish-button
 
       display: block
       margin-right: auto
       margin-left: auto
 
-      // Explicitly setting the width here for IE8.
-      width: 200px
-
-  > .im-on-a-boat
-    background-image: image-url('secondary-page-boat.jpg')
-    background-repeat: no-repeat
-    background-position: top center
-    height: 486px
-
-    .plans-and-pricing
       position: relative
       top: 10px
       z-index: 2
 
+      width: 200px
+
       &:hover
         top: 6px
-
-    .login-container
-      position: absolute
-      right: 20px
-      top: 15px
-
-      .go-to-manager
-        +pretty-button
-        width: auto
-
-      > .social
-        text-align: right
-
-        > .facebook
-          +header-social-sprite('facebook')
-
-        > .twitter
-          +header-social-sprite('twitter')
-
-        > .github
-          +header-social-sprite('github')
-
-      > .login
-        margin-top: 15px
-
-        input
-          +pretty-input
-
-          &.error
-            border: 1px solid red
-
-        input.submit
-          +pretty-button
-
-        .forgot-password
-          position: absolute
-          right: 90px
-          bottom: -15px
-          color: black
-
-          font-family: 'Open Sans', Arial, sans-serif
-          font-size: 11px
-          font-size: 0.8rem
-
-          font-weight: 600
-
-          &:link, &:visited
-            text-decoration: none
-
-          &:hover
-            text-decoration: underline
 
     .intro-video
       position: absolute
       right: 20px
       top: 13rem
-
-    h1
-      +replace-text('logo.png')
-
-      display: inline-block
-      width: 397px
-      height: 125px
-
-      margin-top: 20px
-
-      a
-        display: block
-        width: 397px
-        height: 125px
 
     h2
       font-size: 63px
@@ -587,21 +287,6 @@
       &:before, &:after
         width: 240px
 
-    > h4.beta-subscription-header
-      margin-top: 110px
-      padding-bottom: 20px
-
-      & ~ .beta-subscribe
-        margin-top: 10px
-        padding-bottom: 180px
-
-        input
-          +pretty-input
-          width: 30rem
-
-        .submit
-          +pretty-button
-
     > table.plans-table
       width: 790px
       text-align: left
@@ -687,19 +372,6 @@
             background-color: #363636
             color: white
 
-          //
-            &:before
-              background-image: image-url('best-deal.png')
-              width: 75px
-              height: 75px
-
-              content: ''
-              display: block
-
-              position: absolute
-              top: -3px
-              left: 350px
-
         td
           width: 140px
           padding: 12px 12px
@@ -747,89 +419,3 @@
     > h4
       color: #187bda
       padding-bottom: 60px
-
-  > footer
-    background-image: image-url('textures/texture1.png')
-    color: white
-
-    font-size: 12px
-    font-size: 0.85rem
-
-    font-family: 'Open Sans', 'Arial', sans-serif
-
-    > .section-container
-      width: 907px
-      margin-right: auto
-      margin-left: auto
-      position: relative
-
-      font-size: 12px
-      font-size: 0.85rem
-
-      background-image: image-url('footer-rope.png')
-      background-repeat: no-repeat
-      background-position: 0 135px
-
-      p.attribution
-        color: #a1a1a1
-        font-size: 12px
-        font-size: 0.85rem
-        font-style: italic
-
-        a
-          color: #a1a1a1
-
-        a:hover
-          text-decoration: underline
-
-      li
-        position: relative
-
-        &.email, &.facebook, &.twitter
-          margin-bottom: 11px
-
-        &.email a
-          +social-footer-sprite('email')
-
-        &.facebook a
-          +social-footer-sprite('facebook')
-
-        &.twitter a
-          +social-footer-sprite('twitter')
-
-      a
-        text-decoration: none
-        line-height: 20px
-
-        &:link, &:visited
-          color: white
-
-        &:hover
-          color: #187bda
-
-      p
-        font-size: 12px
-        font-size: 0.85rem
-
-      .copyright
-        text-align: center
-        padding-top: 20px
-
-      .love
-        text-align: center
-        padding-bottom: 50px
-
-      div
-        width: 299px
-        display: inline-block
-        vertical-align: top
-
-        padding-top: 86px
-
-        h5
-          font-size: 14px
-          font-size: 1.7rem
-
-          font-family: 'Damion', cursive
-
-          margin-bottom: 65px
