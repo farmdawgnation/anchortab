@@ -113,14 +113,13 @@ class TabForm(requestTab: Tab) extends Loggable
       TabColorScheme.basic
 
   val validEmailServices = {
-    val none = List(Tab.EmailServices.None)
     val leadGeneration = List(Tab.EmailServices.LeadGeneration)
     val cc = (constantContactLists.nonEmpty ? List(Tab.EmailServices.ConstantContact) | List())
     val mc = (mailChimpAuthorized_? ? List(Tab.EmailServices.MailChimp) | List())
     val cm = (campaignMonitorAuthorized_? ? List(Tab.EmailServices.CampaignMonitor) | List())
     val pd = (pardotAuthorized_? ? List(Tab.EmailServices.Pardot) | List())
 
-    none ++ leadGeneration ++ cc ++ mc ++ cm ++ pd
+    leadGeneration ++ cc ++ mc ++ cm ++ pd
   }
 
   def serviceWrapper : Option[ServiceWrapper] = {
