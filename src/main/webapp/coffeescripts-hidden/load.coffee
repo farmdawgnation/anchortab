@@ -261,23 +261,35 @@ displayTab = (tabJson) ->
         .attr('href', "http://anchortab.com")
         .attr('target', '_blank')
 
-  # Build the color scheme CSS. :/
-  colorSchemeStyle = "background: #{colorScheme.baseColor}; "
-  colorSchemeStyle += "background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #{colorScheme.baseColor}), color-stop(100%, #{colorScheme.secondaryColor}));"
-  colorSchemeStyle += "background: -webkit-linear-gradient(#{colorScheme.baseColor}, #{colorScheme.secondaryColor}); "
-  colorSchemeStyle += "background: -moz-linear-gradient(#{colorScheme.baseColor}, #{colorScheme.secondaryColor});"
-  colorSchemeStyle += "background: -o-linear-gradient(#{colorScheme.baseColor}, #{colorScheme.secondaryColor});"
-  colorSchemeStyle += "background: linear-gradient(#{colorScheme.baseColor}, #{colorScheme.secondaryColor});"
+  # Build custom color scheme Tab CSS
+  tabStyle = "background: #{colorScheme.baseColor};"
+  tabStyle += "background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #{colorScheme.baseColor}), color-stop(100%, #{colorScheme.secondaryColor}));"
+  tabStyle += "background: -webkit-linear-gradient(#{colorScheme.baseColor}, #{colorScheme.secondaryColor}); "
+  tabStyle += "background: -moz-linear-gradient(#{colorScheme.baseColor}, #{colorScheme.secondaryColor});"
+  tabStyle += "background: -o-linear-gradient(#{colorScheme.baseColor}, #{colorScheme.secondaryColor});"
+  tabStyle += "background: linear-gradient(#{colorScheme.baseColor}, #{colorScheme.secondaryColor});"
+
+  # Build custom color scheme Button CSS
+  buttonStyle = "background: #{colorScheme.buttonTopColor}; color: #{colorScheme.buttonTextColor}; "
+  buttonStyle += "background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #{colorScheme.buttonTopColor}), color-stop(100%, #{colorScheme.buttonBottomColor}));"
+  buttonStyle += "background: -webkit-linear-gradient(#{colorScheme.buttonTopColor}, #{colorScheme.buttonBottomColor}); "
+  buttonStyle += "background: -moz-linear-gradient(#{colorScheme.buttonTopColor}, #{colorScheme.buttonBottomColor});"
+  buttonStyle += "background: -o-linear-gradient(#{colorScheme.buttonTopColor}, #{colorScheme.buttonBottomColor});"
+  buttonStyle += "background: linear-gradient(#{colorScheme.buttonTopColor}, #{colorScheme.buttonBottomColor});"
+
+  # custom text style
+  customTextStyle = "color: #{colorScheme.textColor}; "
 
   # Create the tab and append to the end of the body.
   anchorTab =
     $("<div />")
       .attr("id", "anchor-tab")
-      .attr("style", colorSchemeStyle)
+      .attr("style", tabStyle)
       .append(anchorTabStamp)
       .append(
         $("<p />")
           .addClass("custom-message")
+          .attr("style", customTextStyle)
           .text(customMessage)
       )
       .append(
@@ -289,6 +301,7 @@ displayTab = (tabJson) ->
       .append(
         $("<button />")
           .addClass('email-submission')
+          .attr("style", buttonStyle)
           .text(submitButtonText)
           .click(submitEmail)
       )
