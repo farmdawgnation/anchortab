@@ -28,7 +28,7 @@ object ErrorNotifierActorSpecExamples {
       randomString(32),
       user._id,
       TabAppearance.defaults,
-      LeadGenerationServiceWrapper(""),
+      AlwaysSuccessfulServiceWrapper(),
       errors = errorList
     )
 
