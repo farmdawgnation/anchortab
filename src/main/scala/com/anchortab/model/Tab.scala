@@ -29,9 +29,9 @@ object TabColorScheme {
   val advanced = basic ++ (Custom :: Nil)
 }
 
-case class TabAppearance(delay:Int, colorScheme:TabColorScheme, customText:String, whitelabel:Boolean, collectName: Boolean)
+case class TabAppearance(delay:Int, colorScheme:TabColorScheme, customText:String, customSubmitButtonText: String, customMobileTabText: String, whitelabel:Boolean, collectName: Boolean)
 object TabAppearance {
-  val defaults = TabAppearance(30, TabColorScheme.Red, "", false, false)
+  val defaults = TabAppearance(30, TabColorScheme.Red, "", "Submit", "Subscribe", false, false)
 }
 
 case class TabStats(views:Long = 0, submissions:Long = 0)

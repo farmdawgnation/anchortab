@@ -43,6 +43,8 @@ class TabForm(requestTab: Tab) extends Loggable
   var whitelabel = requestTab.appearance.whitelabel
   var collectName = requestTab.appearance.collectName
   var customText = requestTab.appearance.customText
+  var customSubmitButtonText = requestTab.appearance.customSubmitButtonText
+  var customMobileTabText = requestTab.appearance.customMobileTabText
 
   var mailChimpApiKey = ""
   var mailChimpListId: Box[String] = Empty
@@ -188,6 +190,8 @@ class TabForm(requestTab: Tab) extends Loggable
             delay = appearanceDelay.toInt,
             colorScheme = customizedColorScheme,
             customText = customText,
+            customSubmitButtonText = customSubmitButtonText,
+            customMobileTabText = customMobileTabText,
             whitelabel = whitelabel,
             collectName = collectName
           ),
@@ -244,6 +248,8 @@ class TabForm(requestTab: Tab) extends Loggable
     "#whitelabel" #> checkbox(whitelabel, whitelabel = _) &
     "#collect-name" #> checkbox(collectName, collectName = _) &
     "#custom-text" #> text(customText, customText = _) &
+    "#custom-submit-button-text" #> text(customSubmitButtonText, customSubmitButtonText = _) &
+    "#custom-mobile-tab-text" #> text(customMobileTabText, customMobileTabText = _) &
     "#email-marketing-service-selection" #> idMemoize { renderer =>
       "#service" #> ajaxSelectObj[Tab.EmailServices.Value](
         validEmailServices.map(v => (v,v.toString)),
