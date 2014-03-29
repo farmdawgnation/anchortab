@@ -33,7 +33,6 @@ case class ServiceIFrameParameters(
  * those operations are irrelevent to the parent interface.
 **/
 sealed trait ServiceWrapper {
-  def credentialsValid_? : Boolean = true
   def iFrameParameters: Option[ServiceIFrameParameters] = None
 
   def subscribeEmail(email: String, name: Option[String] = None) : Box[Boolean]
@@ -93,7 +92,6 @@ case class PardotServiceWrapper(userId: ObjectId, targetUri: String, emailFieldN
 }
 
 case class LeadGenerationServiceWrapper(targetEmail: String) extends ServiceWrapper {
-  override val credentialsValid_? = true
   val wrapperIdentifier = "I don't show up on services screen."
 
   def subscribeEmail(email: String, name: Option[String] = None) = {
@@ -110,8 +108,6 @@ case class LeadGenerationServiceWrapper(targetEmail: String) extends ServiceWrap
 case class CampaignMonitorServiceWrapper(userId: ObjectId, listId: String) extends ServiceWrapper
                                                                               with CampaignMonitorCredentialsHelper
                                                                               with Loggable {
-  override val credentialsValid_? = true
-
   def subscribeEmail(email: String, name: Option[String] = None) = {
     val result = withAccessCredentials(userId) { (accessToken, refreshToken) =>
       CampaignMonitor.addSubscriber(accessToken, refreshToken, listId, email, name)
@@ -136,9 +132,6 @@ case class CampaignMonitorServiceWrapper(userId: ObjectId, listId: String) exten
 case class ConstantContactServiceWrapper(username:String, implicit val accessToken:String, listId:Long) extends ServiceWrapper with Loggable {
   import com.anchortab.constantcontact.model.Contacts._
   import com.anchortab.constantcontact.model.ContactLists._
-
-  // This is an OAuth-based API wrapper, making the checking of valid credentials unneeded for the moment
-  override val credentialsValid_? = true
 
   def subscribeEmail(email:String, name: Option[String] = None) = {
     val contact = Contact(
@@ -178,8 +171,6 @@ case class MailChimpServiceWrapper(userId:ObjectId, listId:String) extends Servi
       token
     }
   }
-
-  override def credentialsValid_? = true
 
   protected def buildSubscribeCall(apiKey: String, email: String, name: Option[String]) = {
     // Build the subscribe request
