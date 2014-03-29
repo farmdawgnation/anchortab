@@ -332,6 +332,7 @@ displayTab = (tabJson) ->
       .append(
         $("<p />")
           .addClass("success-message")
+          .attr("style", customTextStyle)
           .text("Success!")
       )
 
