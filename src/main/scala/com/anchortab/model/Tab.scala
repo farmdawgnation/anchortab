@@ -18,12 +18,12 @@ case class TabColorScheme(baseColor: String, secondaryColor: String, textColor: 
   override val toString = name
 }
 object TabColorScheme {
-  val Gray = TabColorScheme("#848484", "#5e5e5e", "#000000", "#706F6F", "#262625", "#ffffff", "Gray")
-  val Green = TabColorScheme("#39bd42", "#2b8a31", "#000000", "#706F6F", "#262625", "#ffffff", "Green")
-  val Red = TabColorScheme("#db2f2d", "#9b2220", "#000000", "#706F6F", "#262625", "#ffffff", "Red")
-  val Blue = TabColorScheme("#2d8bd6", "#226aa3", "#000000", "#706F6F", "#262625", "#ffffff", "Blue")
+  val Gray = TabColorScheme("#848484", "#5e5e5e", "#FFFFFF", "#706F6F", "#262625", "#ffffff", "Gray")
+  val Green = TabColorScheme("#39bd42", "#2b8a31", "#FFFFFF", "#706F6F", "#262625", "#ffffff", "Green")
+  val Red = TabColorScheme("#db2f2d", "#9b2220", "#FFFFFF", "#706F6F", "#262625", "#ffffff", "Red")
+  val Blue = TabColorScheme("#2d8bd6", "#226aa3", "#FFFFFF", "#706F6F", "#262625", "#ffffff", "Blue")
 
-  val Custom = TabColorScheme("", "", "#000000", "#706F6F", "#262625", "#ffffff", "Custom")
+  val Custom = TabColorScheme("", "", "#FFFFFF", "#706F6F", "#262625", "#ffffff", "Custom")
 
   val basic = Red :: Green :: Blue :: Gray :: Nil
   val advanced = basic ++ (Custom :: Nil)
