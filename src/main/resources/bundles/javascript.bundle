@@ -20,13 +20,12 @@ landing
 default
 
 manager
+spectrum.js
 base.js
 manager.js
 customSelect.jquery.js
 jquery.modal.js
 jquery.tipsy.js
-modernizr-colorinputs.js
-jscolor/jscolor.js
 pretty-meters.js
 jquery.payment.js
 stripe.js

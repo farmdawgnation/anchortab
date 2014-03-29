@@ -35,12 +35,12 @@
 
           <div class="custom-color-group">
             <label for="color-scheme-custom-base">Base Color:</label>
-            <input type="color" id="custom-color-scheme-base">
+            <input type="text" id="custom-color-scheme-base" rel="spectrum">
           </div>
 
           <div class="custom-color-group">
             <label for="color-scheme-custom-secondary">Secondary Color:</label>
-            <input type="color" id="custom-color-scheme-secondary">
+            <input type="text" id="custom-color-scheme-secondary" rel="spectrum">
           </div>
 
           <div class="whitelabel-group">
@@ -129,7 +129,7 @@
         <script type="text/javascript">
           $("#color-scheme, #appearance-delay").customSelect();
 
-          $("html.legacy-color-picker input[type=color]").addClass("color {hash: true}")
+          $("[rel=spectrum]").spectrum({showInput: true});
         </script>
       </lift:lazy-load>
     </div>

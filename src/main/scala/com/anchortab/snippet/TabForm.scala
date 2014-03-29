@@ -242,8 +242,8 @@ class TabForm(requestTab: Tab) extends Loggable
       }
     ) &
     ".custom-color-group" #> (hasCustomColorSchemes_? ? PassThru | ClearNodes) andThen
-    "#custom-color-scheme-base" #> text(customColorSchemeBase, customColorSchemeBase = _, ("type" -> "color")) &
-    "#custom-color-scheme-secondary" #> text(customColorSchemeSecondary, customColorSchemeSecondary = _, ("type" -> "color")) &
+    "#custom-color-scheme-base" #> text(customColorSchemeBase, customColorSchemeBase = _) &
+    "#custom-color-scheme-secondary" #> text(customColorSchemeSecondary, customColorSchemeSecondary = _) &
     ".whitelabel-group" #> (hasWhitelabel_? ? PassThru | ClearNodes) andThen
     "#whitelabel" #> checkbox(whitelabel, whitelabel = _) &
     "#collect-name" #> checkbox(collectName, collectName = _) &
