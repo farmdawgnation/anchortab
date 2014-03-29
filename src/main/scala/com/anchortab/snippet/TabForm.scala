@@ -37,9 +37,15 @@ class TabForm(requestTab: Tab) extends Loggable
 
   var tabName = requestTab.name
   var appearanceDelay = requestTab.appearance.delay.toString
+
   var colorScheme = requestTab.appearance.colorScheme
   var customColorSchemeBase = requestTab.appearance.colorScheme.baseColor
   var customColorSchemeSecondary = requestTab.appearance.colorScheme.secondaryColor
+  var customTextColor = requestTab.appearance.colorScheme.textColor
+  var customButtonTopColor = requestTab.appearance.colorScheme.buttonTopColor
+  var customButtonBottomColor = requestTab.appearance.colorScheme.buttonBottomColor
+  var customButtonTextColor = requestTab.appearance.colorScheme.buttonTextColor
+
   var whitelabel = requestTab.appearance.whitelabel
   var collectName = requestTab.appearance.collectName
   var customText = requestTab.appearance.customText
@@ -179,7 +185,11 @@ class TabForm(requestTab: Tab) extends Loggable
           else
             TabColorScheme.Custom.copy(
               baseColor = customColorSchemeBase,
-              secondaryColor = customColorSchemeSecondary
+              secondaryColor = customColorSchemeSecondary,
+              textColor = customTextColor,
+              buttonTopColor = customButtonTopColor,
+              buttonBottomColor = customButtonBottomColor,
+              buttonTextColor = customButtonTextColor
             )
         }
 
@@ -244,6 +254,10 @@ class TabForm(requestTab: Tab) extends Loggable
     ".custom-color-group" #> (hasCustomColorSchemes_? ? PassThru | ClearNodes) andThen
     "#custom-color-scheme-base" #> text(customColorSchemeBase, customColorSchemeBase = _) &
     "#custom-color-scheme-secondary" #> text(customColorSchemeSecondary, customColorSchemeSecondary = _) &
+    "#custom-color-scheme-text" #> text(customTextColor, customTextColor = _) &
+    "#custom-color-scheme-button-top" #> text(customButtonTopColor, customButtonTopColor = _) &
+    "#custom-color-scheme-button-bottom" #> text(customButtonBottomColor, customButtonBottomColor = _) &
+    "#custom-color-scheme-button-text" #> text(customButtonTextColor, customButtonTextColor = _) &
     ".whitelabel-group" #> (hasWhitelabel_? ? PassThru | ClearNodes) andThen
     "#whitelabel" #> checkbox(whitelabel, whitelabel = _) &
     "#collect-name" #> checkbox(collectName, collectName = _) &
