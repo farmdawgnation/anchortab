@@ -11,6 +11,7 @@ import net.liftweb._
 import com.anchortab.campaignmonitor._
 import com.anchortab.actor._
 import com.anchortab.util._
+import com.anchortab.model._
 
 import org.joda.time._
 
@@ -167,30 +168,20 @@ case class ConstantContactServiceWrapper(username:String, implicit val accessTok
   }
 }
 
-case class MailChimpServiceWrapper(apiKey:String, listId:String) extends ServiceWrapper with Loggable {
-  override def credentialsValid_? = {
-    // Instantiate a MailChimpClient
-    val mcClient = new MailChimpClient
-
-    // Build a dummy request
-    val listMembersCall = new ListMembersMethod
-    listMembersCall.apikey = apiKey
-    listMembersCall.id = listId
-
-    //Try to execute it
-    tryo(mcClient.execute(listMembersCall)) match {
-      case Full(_:ListMembersResult) => true
-      case Failure(msg, _, _) =>
-        logger.error("MailChimp exception during authentication check: " + msg)
-        false
-      case _ => false
+case class MailChimpServiceWrapper(userId:ObjectId, listId:String) extends ServiceWrapper with Loggable {
+  protected def retrieveApiKey = {
+    for {
+      user <- (User.find(userId): Box[User])
+      credentials <- (user.credentialsFor("Mailchimp"): Box[UserServiceCredentials]) ?~! "No credentials for Mailchimp"
+      token <- (credentials.serviceCredentials.get("token"): Box[String]) ?~! "No token in MailChimp credentials."
+    } yield {
+      token
     }
   }
 
-  def subscribeEmail(email:String, name: Option[String] = None) = {
-    // Instantiate a MailChimpClient
-    val mcClient = new MailChimpClient
+  override def credentialsValid_? = true
 
+  protected def buildSubscribeCall(apiKey: String, email: String, name: Option[String]) = {
     // Build the subscribe request
     val listSubscribeCall = new ListSubscribeMethod
     listSubscribeCall.apikey = apiKey
@@ -202,22 +193,42 @@ case class MailChimpServiceWrapper(apiKey:String, listId:String) extends Service
       listSubscribeCall.merge_vars = new MergeVars(name)
     }
 
-    // Execute the call against the remote server.
-    tryo(mcClient.execute(listSubscribeCall))
+    listSubscribeCall
+  }
+
+  def subscribeEmail(email:String, name: Option[String] = None) = {
+    // Instantiate a MailChimpClient
+    val mcClient = new MailChimpClient
+
+    for {
+      apiKey <- retrieveApiKey
+      listSubscribeCall = buildSubscribeCall(apiKey, email, name)
+      subscribeResult <- tryo(mcClient.execute(listSubscribeCall))
+    } yield {
+      subscribeResult
+    }
+  }
+
+  protected def buildUnsubscribeCall(apiKey: String, email: String) = {
+    // Build the unsubscribe request
+    val listUnsubscribeCall = new ListUnsubscribeMethod
+    listUnsubscribeCall.apikey = apiKey
+    listUnsubscribeCall.id = listId
+    listUnsubscribeCall.email_address = email
+    listUnsubscribeCall
   }
 
   def unsubscribeEmail(email:String) = {
     // Instantiate a MailChimpClient
     val mcClient = new MailChimpClient
 
-    // Build the unsubscribe request
-    val listUnsubscribeCall = new ListUnsubscribeMethod
-    listUnsubscribeCall.apikey = apiKey
-    listUnsubscribeCall.id = listId
-    listUnsubscribeCall.email_address = email
-
-    // Execute the call against the remote server
-    tryo(mcClient.execute(listUnsubscribeCall))
+    for {
+      apiKey <- retrieveApiKey
+      listUnsubscribeCall = buildUnsubscribeCall(apiKey, email)
+      unsubscribeResult <- tryo(mcClient.execute(listUnsubscribeCall))
+    } yield {
+      unsubscribeResult
+    }
   }
 
   def wrapperIdentifier = {

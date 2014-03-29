@@ -133,12 +133,9 @@ class TabForm(requestTab: Tab) extends Loggable
       case Tab.EmailServices.MailChimp =>
         for {
           session <- userSession.is
-          user <- User.find(session.userId)
-          credentials <- user.credentialsFor("Mailchimp")
-          token <- credentials.serviceCredentials.get("token")
           mailChimpListId <- mailChimpListId
         } yield {
-          MailChimpServiceWrapper(token, mailChimpListId)
+          MailChimpServiceWrapper(session.userId, mailChimpListId)
         }
 
       case Tab.EmailServices.ConstantContact =>
