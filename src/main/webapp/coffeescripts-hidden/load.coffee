@@ -221,6 +221,18 @@ displayTab = (tabJson) ->
   collectName = tabJson.collectName
   window.anchortab.i18n = tabJson.i18n
 
+  # For now, use i18n version of submit and mobile tab "Subscribe" if the defaults
+  # were defined. When we implement a managable i18n system, we can do away with this.
+  submitButtonText = if tabJson.submitButtonText == "Submit"
+    anchortab.i18n["tab-submit"]
+  else
+    tabJson.submitButtonText
+
+  mobileTabText = if tabJson.mobileTabText == "Subscribe"
+    anchortab.i18n["tab-subscribe"]
+  else
+    tabJson.mobileTabText
+
   # Load the Anchor Tab stylesheet.
   atStyleSheet =
     $("<link />")
@@ -271,7 +283,7 @@ displayTab = (tabJson) ->
       .append(
         $("<button />")
           .addClass('email-submission')
-          .text(anchortab.i18n["tab-submit"])
+          .text(submitButtonText)
           .click(submitEmail)
       )
       .append(
@@ -330,7 +342,7 @@ displayTab = (tabJson) ->
     if $("meta[name=viewport]").length > 0
       anchorTab.addClass("mobile-optimized-page")
 
-    anchorTab.find(".maximize").text(anchortab.i18n["tab-subscribe"])
+    anchorTab.find(".maximize").text(mobileTabText)
     anchorTab.find(".maximize").attr("style", colorSchemeStyle)
 
     anchorTab.find(".minimize").text("Close")
