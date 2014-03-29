@@ -33,7 +33,7 @@ class TabForm(requestTab: Tab) extends Loggable
                                           with ConstantContactTabForm
                                           with CampaignMonitorTabForm {
 
-  def this() = this(Tab("", ObjectId.get, TabAppearance.defaults, LeadGenerationServiceWrapper("")))
+  def this() = this(Tab("", ObjectId.get, TabAppearance.defaults, AlwaysFailureServiceWrapper()))
 
   var tabName = requestTab.name
   var appearanceDelay = requestTab.appearance.delay.toString
@@ -80,17 +80,20 @@ class TabForm(requestTab: Tab) extends Loggable
 
         Tab.EmailServices.CampaignMonitor
 
-      case lgsw: LeadGenerationServiceWrapper =>
-        leadGenerationTargetEmail = lgsw.targetEmail
-
-        Tab.EmailServices.LeadGeneration
-
       case pdsw: PardotServiceWrapper =>
         pardotTargetUri = pdsw.targetUri
         pardotEmailField = pdsw.emailFieldName
         pardotNameField = pdsw.firstNameFieldName
 
         Tab.EmailServices.Pardot
+
+      case lgsw: LeadGenerationServiceWrapper =>
+        leadGenerationTargetEmail = lgsw.targetEmail
+
+        Tab.EmailServices.LeadGeneration
+
+      case _ =>
+        Tab.EmailServices.LeadGeneration
     }
   }
 
@@ -163,10 +166,14 @@ class TabForm(requestTab: Tab) extends Loggable
         }
 
       case Tab.EmailServices.LeadGeneration =>
-        Some(LeadGenerationServiceWrapper(leadGenerationTargetEmail))
+        for {
+          session <- userSession.is
+        } yield {
+          LeadGenerationServiceWrapper(session.userId, requestTab._id, leadGenerationTargetEmail)
+        }
     }
 
-    swOption.getOrElse(LeadGenerationServiceWrapper(""))
+    swOption.getOrElse(AlwaysFailureServiceWrapper())
   }
 
   def submit = {

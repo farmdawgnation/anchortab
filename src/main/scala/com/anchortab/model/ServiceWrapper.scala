@@ -91,7 +91,7 @@ case class PardotServiceWrapper(userId: ObjectId, targetUri: String, emailFieldN
   def unsubscribeEmail(email: String) = Full(true)
 }
 
-case class LeadGenerationServiceWrapper(targetEmail: String) extends ServiceWrapper {
+case class LeadGenerationServiceWrapper(userId: ObjectId, tabId: ObjectId, targetEmail: String) extends ServiceWrapper {
   val wrapperIdentifier = "I don't show up on services screen."
 
   def subscribeEmail(email: String, name: Option[String] = None) = {
