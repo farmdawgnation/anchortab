@@ -493,7 +493,6 @@ class StripeHookSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll 
           user.subscriptions should have length 1
           subscription.status should equal ("stopped")
           subscription.ends.get.isBefore(new DateTime()) should equal (true)
-          user.activeCard should equal (None)
         }
       }
     }
