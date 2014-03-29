@@ -33,16 +33,24 @@ class TabForm(requestTab: Tab) extends Loggable
                                           with ConstantContactTabForm
                                           with CampaignMonitorTabForm {
 
-  def this() = this(Tab("", ObjectId.get, TabAppearance.defaults, LeadGenerationServiceWrapper("")))
+  def this() = this(Tab("", ObjectId.get, TabAppearance.defaults, AlwaysFailureServiceWrapper()))
 
   var tabName = requestTab.name
   var appearanceDelay = requestTab.appearance.delay.toString
+
   var colorScheme = requestTab.appearance.colorScheme
   var customColorSchemeBase = requestTab.appearance.colorScheme.baseColor
   var customColorSchemeSecondary = requestTab.appearance.colorScheme.secondaryColor
+  var customTextColor = requestTab.appearance.colorScheme.textColor
+  var customButtonTopColor = requestTab.appearance.colorScheme.buttonTopColor
+  var customButtonBottomColor = requestTab.appearance.colorScheme.buttonBottomColor
+  var customButtonTextColor = requestTab.appearance.colorScheme.buttonTextColor
+
   var whitelabel = requestTab.appearance.whitelabel
   var collectName = requestTab.appearance.collectName
   var customText = requestTab.appearance.customText
+  var customSubmitButtonText = requestTab.appearance.customSubmitButtonText
+  var customMobileTabText = requestTab.appearance.customMobileTabText
 
   var mailChimpApiKey = ""
   var mailChimpListId: Box[String] = Empty
@@ -72,17 +80,20 @@ class TabForm(requestTab: Tab) extends Loggable
 
         Tab.EmailServices.CampaignMonitor
 
-      case lgsw: LeadGenerationServiceWrapper =>
-        leadGenerationTargetEmail = lgsw.targetEmail
-
-        Tab.EmailServices.LeadGeneration
-
       case pdsw: PardotServiceWrapper =>
         pardotTargetUri = pdsw.targetUri
         pardotEmailField = pdsw.emailFieldName
         pardotNameField = pdsw.firstNameFieldName
 
         Tab.EmailServices.Pardot
+
+      case lgsw: LeadGenerationServiceWrapper =>
+        leadGenerationTargetEmail = lgsw.targetEmail
+
+        Tab.EmailServices.LeadGeneration
+
+      case _ =>
+        Tab.EmailServices.LeadGeneration
     }
   }
 
@@ -125,23 +136,18 @@ class TabForm(requestTab: Tab) extends Loggable
       case Tab.EmailServices.MailChimp =>
         for {
           session <- userSession.is
-          user <- User.find(session.userId)
-          credentials <- user.credentialsFor("Mailchimp")
-          token <- credentials.serviceCredentials.get("token")
           mailChimpListId <- mailChimpListId
         } yield {
-          MailChimpServiceWrapper(token, mailChimpListId)
+          MailChimpServiceWrapper(session.userId, mailChimpListId)
         }
 
       case Tab.EmailServices.ConstantContact =>
         for {
           session <- userSession.is
           user <- User.find(session.userId)
-          credentials <- user.credentialsFor("Constant Contact")
-          token <- credentials.serviceCredentials.get("token")
           constantContactListId <- constantContactListId
         } yield {
-          ConstantContactServiceWrapper(credentials.userIdentifier, token, constantContactListId.toLong)
+          ConstantContactServiceWrapper(session.userId, constantContactListId.toLong)
         }
 
       case Tab.EmailServices.CampaignMonitor =>
@@ -160,10 +166,14 @@ class TabForm(requestTab: Tab) extends Loggable
         }
 
       case Tab.EmailServices.LeadGeneration =>
-        Some(LeadGenerationServiceWrapper(leadGenerationTargetEmail))
+        for {
+          session <- userSession.is
+        } yield {
+          LeadGenerationServiceWrapper(session.userId, requestTab._id, leadGenerationTargetEmail)
+        }
     }
 
-    swOption.getOrElse(LeadGenerationServiceWrapper(""))
+    swOption.getOrElse(AlwaysFailureServiceWrapper())
   }
 
   def submit = {
@@ -177,7 +187,11 @@ class TabForm(requestTab: Tab) extends Loggable
           else
             TabColorScheme.Custom.copy(
               baseColor = customColorSchemeBase,
-              secondaryColor = customColorSchemeSecondary
+              secondaryColor = customColorSchemeSecondary,
+              textColor = customTextColor,
+              buttonTopColor = customButtonTopColor,
+              buttonBottomColor = customButtonBottomColor,
+              buttonTextColor = customButtonTextColor
             )
         }
 
@@ -188,6 +202,8 @@ class TabForm(requestTab: Tab) extends Loggable
             delay = appearanceDelay.toInt,
             colorScheme = customizedColorScheme,
             customText = customText,
+            customSubmitButtonText = customSubmitButtonText,
+            customMobileTabText = customMobileTabText,
             whitelabel = whitelabel,
             collectName = collectName
           ),
@@ -238,12 +254,18 @@ class TabForm(requestTab: Tab) extends Loggable
       }
     ) &
     ".custom-color-group" #> (hasCustomColorSchemes_? ? PassThru | ClearNodes) andThen
-    "#custom-color-scheme-base" #> text(customColorSchemeBase, customColorSchemeBase = _, ("type" -> "color")) &
-    "#custom-color-scheme-secondary" #> text(customColorSchemeSecondary, customColorSchemeSecondary = _, ("type" -> "color")) &
+    "#custom-color-scheme-base" #> text(customColorSchemeBase, customColorSchemeBase = _) &
+    "#custom-color-scheme-secondary" #> text(customColorSchemeSecondary, customColorSchemeSecondary = _) &
+    "#custom-color-scheme-text" #> text(customTextColor, customTextColor = _) &
+    "#custom-color-scheme-button-top" #> text(customButtonTopColor, customButtonTopColor = _) &
+    "#custom-color-scheme-button-bottom" #> text(customButtonBottomColor, customButtonBottomColor = _) &
+    "#custom-color-scheme-button-text" #> text(customButtonTextColor, customButtonTextColor = _) &
     ".whitelabel-group" #> (hasWhitelabel_? ? PassThru | ClearNodes) andThen
     "#whitelabel" #> checkbox(whitelabel, whitelabel = _) &
     "#collect-name" #> checkbox(collectName, collectName = _) &
     "#custom-text" #> text(customText, customText = _) &
+    "#custom-submit-button-text" #> text(customSubmitButtonText, customSubmitButtonText = _) &
+    "#custom-mobile-tab-text" #> text(customMobileTabText, customMobileTabText = _) &
     "#email-marketing-service-selection" #> idMemoize { renderer =>
       "#service" #> ajaxSelectObj[Tab.EmailServices.Value](
         validEmailServices.map(v => (v,v.toString)),

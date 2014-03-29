@@ -34,13 +34,33 @@
           </div>
 
           <div class="custom-color-group">
-            <label for="color-scheme-custom-base">Base Color:</label>
-            <input type="color" id="custom-color-scheme-base">
+            <label for="custom-color-scheme-base">Base Color:</label>
+            <input type="text" id="custom-color-scheme-base" rel="spectrum">
           </div>
 
           <div class="custom-color-group">
-            <label for="color-scheme-custom-secondary">Secondary Color:</label>
-            <input type="color" id="custom-color-scheme-secondary">
+            <label for="custom-color-scheme-secondary">Secondary Color:</label>
+            <input type="text" id="custom-color-scheme-secondary" rel="spectrum">
+          </div>
+
+          <div class="custom-color-group">
+            <label for="custom-color-scheme-text">Text Color:</label>
+            <input type="text" id="custom-color-scheme-text" rel="spectrum">
+          </div>
+
+          <div class="custom-color-group">
+            <label for="custom-color-scheme-button-top">Button Top Color:</label>
+            <input type="text" id="custom-color-scheme-button-top" rel="spectrum">
+          </div>
+
+          <div class="custom-color-group">
+            <label for="custom-color-scheme-button-bottom">Button Bottom Color:</label>
+            <input type="text" id="custom-color-scheme-button-bottom" rel="spectrum">
+          </div>
+
+          <div class="custom-color-group">
+            <label for="custom-color-scheme-button-text">Button Text Color:</label>
+            <input type="text" id="custom-color-scheme-button-text" rel="spectrum">
           </div>
 
           <div class="whitelabel-group">
@@ -54,8 +74,18 @@
           </div>
 
           <div>
-            <label for="custom-text">Custom Text:</label>
+            <label for="custom-text">Prompt:</label>
             <input type="text" id="custom-text" />
+          </div>
+
+          <div>
+            <label for="custom-text">Submit Button Text:</label>
+            <input type="text" id="custom-submit-button-text" />
+          </div>
+
+          <div>
+            <label for="custom-text">Mobile Tab Text:</label>
+            <input type="text" id="custom-mobile-tab-text" />
           </div>
 
           <div id="email-marketing-service-selection">
@@ -119,7 +149,7 @@
         <script type="text/javascript">
           $("#color-scheme, #appearance-delay").customSelect();
 
-          $("html.legacy-color-picker input[type=color]").addClass("color {hash: true}")
+          $("[rel=spectrum]").spectrum({showInput: true});
         </script>
       </lift:lazy-load>
     </div>

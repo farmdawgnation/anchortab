@@ -19,9 +19,6 @@ modal = (id, nodes, closeCallback) ->
   newModal.modal()
 
 $(document).ready ->
-  unless Modernizr.inputtypes.color
-    $("html").addClass("legacy-color-picker")
-
   $("select:not(.dont-auto-custom-select)").customSelect()
 
   $("[rel=tipsy]").tipsy()

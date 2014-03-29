@@ -4,6 +4,6 @@ addSbtPlugin("com.earldouglas" % "xsbt-web-plugin" % "0.4.2")
 
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.10.0")
 
-addSbtPlugin("com.openstudy" % "sbt-resource-management" % "0.4.1-SNAPSHOT")
+addSbtPlugin("com.openstudy" % "sbt-resource-management" % "0.4.2")
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.4")

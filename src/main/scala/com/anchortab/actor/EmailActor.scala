@@ -44,7 +44,7 @@ case class SendNeighborhoodWatchEmail(
   multipleAccountsSameIpAndUserAgent: List[MultipleAccountsSameIp],
   similarEmailAddresses: List[SimilarEmailAddresses]
 ) extends EmailActorMessage
-case class SendLeadGenerationSubscriptionEmail(targetEmail: String, subscribedEmail: String, subscriberName: Option[String]) extends EmailActorMessage
+case class SendLeadGenerationSubscriptionEmail(targetEmail: String, tabName: String, subscribedEmail: String, subscriberName: Option[String]) extends EmailActorMessage
 case class SendSubmitErrorNotificationEmail(targetEmail: String, erroredTabs: List[Tab]) extends EmailActorMessage
 case class SendRetentionEmail(targetEmail: String) extends EmailActorMessage
 
@@ -210,9 +210,10 @@ trait LeadGenerationSubscriptionEmailHandling extends EmailHandlerChain {
   val leadGenerationSubject = "New Lead from your Anchor Tab"
 
   addHandler {
-    case SendLeadGenerationSubscriptionEmail(targetEmail, subscribedEmail, subscriberName) =>
+    case SendLeadGenerationSubscriptionEmail(targetEmail, tabName, subscribedEmail, subscriberName) =>
       val transform =
         ".email-address [href]" #> ("mailto:" + subscribedEmail) &
+        ".tab-name *" #> tabName &
         ".email-address *" #> subscribedEmail &
         ".subscriber-name-line" #> subscriberName.map { name =>
           ".subscriber-name *" #> name
@@ -291,13 +292,17 @@ trait EmailActor extends EmailHandlerChain
   val fromName = "Anchor Tab"
 
   def sendEmail(subject: String, to: List[String], nodes: NodeSeq) = {
-    val sendMandrillMessage = Mandrill.SendMandrillMessage(
-      Mandrill.MandrillMessage(subject, fromEmail,
-        to.map(Mandrill.MandrillTo(_)),
-        Some(fromName),
-        html = Some(nodes.toString))
-    )
+    if (Props.productionMode) {
+      val sendMandrillMessage = Mandrill.SendMandrillMessage(
+        Mandrill.MandrillMessage(subject, fromEmail,
+          to.map(Mandrill.MandrillTo(_)),
+          Some(fromName),
+          html = Some(nodes.toString))
+      )
 
-    Mandrill.run(sendMandrillMessage)
+      Mandrill.run(sendMandrillMessage)
+    } else {
+      logger.info(nodes.text)
+    }
   }
 }

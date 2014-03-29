@@ -23,7 +23,7 @@ object RetentionDispatcherActorSpecExamples {
   }
 
   def giveUserTab(user: User, views: Int) = {
-    val tab = Tab(randomString(32), user._id, TabAppearance.defaults, LeadGenerationServiceWrapper(""), stats = TabStats(views))
+    val tab = Tab(randomString(32), user._id, TabAppearance.defaults, AlwaysSuccessfulServiceWrapper(), stats = TabStats(views))
     tab.save
     tab
   }

@@ -457,6 +457,7 @@ class StripeHookSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll 
           ("data" -> ("object" -> (
             ("customer" -> customer5.stripeCustomerId) ~
             ("status" -> "canceled") ~
+            ("cancel_at_period_end" -> true) ~
             ("current_period_end" -> tomorrowSeconds)
           )))
 
@@ -480,7 +481,8 @@ class StripeHookSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll 
           ("type" -> "customer.subscription.deleted") ~
           ("data" -> ("object" -> (
             ("customer" -> customer6.stripeCustomerId) ~
-            ("status" -> "unpaid") ~
+            ("status" -> "canceled") ~
+            ("cancel_at_period_end" -> false) ~
             ("current_period_end" -> tomorrowSeconds)
           )))
 
@@ -491,7 +493,6 @@ class StripeHookSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll 
           user.subscriptions should have length 1
           subscription.status should equal ("stopped")
           subscription.ends.get.isBefore(new DateTime()) should equal (true)
-          user.activeCard should equal (None)
         }
       }
     }

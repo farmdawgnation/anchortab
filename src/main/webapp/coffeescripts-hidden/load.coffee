@@ -20,6 +20,7 @@ secureApiDomain = anchortab?.secureApiDomain || parser.hostname
 resourcesDomain = anchortab?.resourcesDomain || parser.hostname
 secureResourcesDomain = anchortab?.secureResourcesDomain || parser.hostname
 jqVersion = "1.9.1"
+clientUsesGaq = false
 
 window.anchortab = window.anchortab || {}
 window.anchortab.i18n = {}
@@ -83,6 +84,8 @@ loadGAIfNeeded = ->
     # After the script is loaded, we need to make sure to reassign our local
     # _gaq to the _gaq loaded by Google Analytics.
     loadScript analyticsSrc
+  else
+    clientUsesGaq = true
 
 isAcceptableJQuery = ->
   jQueryVersionPieces = jQuery.fn.jquery.split(".")
@@ -191,6 +194,9 @@ submitEmail = (event) ->
       gaqInfo = "Domain: " + document.domain
       _gaq.push ["at._trackEvent", "Submission", "Email Submitted", gaqInfo]
 
+      if clientUsesGaq
+        _gaq.push ["_trackEvent", "Anchor Tab Submission", "Email Submitted", gaqInfo]
+
       setTimeout ->
         $("#anchor-tab")
           .removeClass("visible")
@@ -221,6 +227,18 @@ displayTab = (tabJson) ->
   collectName = tabJson.collectName
   window.anchortab.i18n = tabJson.i18n
 
+  # For now, use i18n version of submit and mobile tab "Subscribe" if the defaults
+  # were defined. When we implement a managable i18n system, we can do away with this.
+  submitButtonText = if tabJson.submitButtonText == "Submit"
+    anchortab.i18n["tab-submit"]
+  else
+    tabJson.submitButtonText
+
+  mobileTabText = if tabJson.mobileTabText == "Subscribe"
+    anchortab.i18n["tab-subscribe"]
+  else
+    tabJson.mobileTabText
+
   # Load the Anchor Tab stylesheet.
   atStyleSheet =
     $("<link />")
@@ -243,23 +261,35 @@ displayTab = (tabJson) ->
         .attr('href', "http://anchortab.com")
         .attr('target', '_blank')
 
-  # Build the color scheme CSS. :/
-  colorSchemeStyle = "background: #{colorScheme.baseColor}; "
-  colorSchemeStyle += "background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #{colorScheme.baseColor}), color-stop(100%, #{colorScheme.secondaryColor}));"
-  colorSchemeStyle += "background: -webkit-linear-gradient(#{colorScheme.baseColor}, #{colorScheme.secondaryColor}); "
-  colorSchemeStyle += "background: -moz-linear-gradient(#{colorScheme.baseColor}, #{colorScheme.secondaryColor});"
-  colorSchemeStyle += "background: -o-linear-gradient(#{colorScheme.baseColor}, #{colorScheme.secondaryColor});"
-  colorSchemeStyle += "background: linear-gradient(#{colorScheme.baseColor}, #{colorScheme.secondaryColor});"
+  # Build custom color scheme Tab CSS
+  tabStyle = "background: #{colorScheme.baseColor};"
+  tabStyle += "background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #{colorScheme.baseColor}), color-stop(100%, #{colorScheme.secondaryColor}));"
+  tabStyle += "background: -webkit-linear-gradient(#{colorScheme.baseColor}, #{colorScheme.secondaryColor}); "
+  tabStyle += "background: -moz-linear-gradient(#{colorScheme.baseColor}, #{colorScheme.secondaryColor});"
+  tabStyle += "background: -o-linear-gradient(#{colorScheme.baseColor}, #{colorScheme.secondaryColor});"
+  tabStyle += "background: linear-gradient(#{colorScheme.baseColor}, #{colorScheme.secondaryColor});"
+
+  # Build custom color scheme Button CSS
+  buttonStyle = "background: #{colorScheme.buttonTopColor}; color: #{colorScheme.buttonTextColor}; "
+  buttonStyle += "background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #{colorScheme.buttonTopColor}), color-stop(100%, #{colorScheme.buttonBottomColor}));"
+  buttonStyle += "background: -webkit-linear-gradient(#{colorScheme.buttonTopColor}, #{colorScheme.buttonBottomColor}); "
+  buttonStyle += "background: -moz-linear-gradient(#{colorScheme.buttonTopColor}, #{colorScheme.buttonBottomColor});"
+  buttonStyle += "background: -o-linear-gradient(#{colorScheme.buttonTopColor}, #{colorScheme.buttonBottomColor});"
+  buttonStyle += "background: linear-gradient(#{colorScheme.buttonTopColor}, #{colorScheme.buttonBottomColor});"
+
+  # custom text style
+  customTextStyle = "color: #{colorScheme.textColor}; "
 
   # Create the tab and append to the end of the body.
   anchorTab =
     $("<div />")
       .attr("id", "anchor-tab")
-      .attr("style", colorSchemeStyle)
+      .attr("style", tabStyle)
       .append(anchorTabStamp)
       .append(
         $("<p />")
           .addClass("custom-message")
+          .attr("style", customTextStyle)
           .text(customMessage)
       )
       .append(
@@ -271,7 +301,8 @@ displayTab = (tabJson) ->
       .append(
         $("<button />")
           .addClass('email-submission')
-          .text(anchortab.i18n["tab-submit"])
+          .attr("style", buttonStyle)
+          .text(submitButtonText)
           .click(submitEmail)
       )
       .append(
@@ -301,6 +332,7 @@ displayTab = (tabJson) ->
       .append(
         $("<p />")
           .addClass("success-message")
+          .attr("style", customTextStyle)
           .text("Success!")
       )
 
@@ -330,7 +362,7 @@ displayTab = (tabJson) ->
     if $("meta[name=viewport]").length > 0
       anchorTab.addClass("mobile-optimized-page")
 
-    anchorTab.find(".maximize").text(anchortab.i18n["tab-subscribe"])
+    anchorTab.find(".maximize").text(mobileTabText)
     anchorTab.find(".maximize").attr("style", colorSchemeStyle)
 
     anchorTab.find(".minimize").text("Close")

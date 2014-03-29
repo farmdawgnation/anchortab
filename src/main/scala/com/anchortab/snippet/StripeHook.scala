@@ -183,32 +183,26 @@ trait StripeHook extends RestHelper with Loggable {
       user <- User.find("stripeCustomerId" -> stripeCustomerId)
       status <- (objectJson \ "status").extractOpt[String]
       periodEnd <- (objectJson \ "current_period_end").extractOpt[Long]
+      cancelAtPeriodEnd <- (objectJson \ "cancel_at_period_end").extractOpt[Boolean]
     } yield {
       implicit val formats = User.formats
 
       user.subscription match {
         case Some(subscription) =>
-          if (status == "canceled") {
-            User.update(
-              ("_id" -> user._id) ~
-              ("subscriptions._id" -> subscription._id),
-              "$set" -> (
-                ("subscriptions.$.status" -> "cancelled") ~
-                ("subscriptions.$.ends" -> decompose(new DateTime(periodEnd * 1000)))
-              )
-            )
-          } else { //unpaid
-            User.update(
-              ("_id" -> user._id) ~
-              ("subscriptions._id" -> subscription._id),
-              ("$set" -> (
-                  ("subscriptions.$.status" -> "stopped") ~
-                  ("subscriptions.$.ends" -> decompose(new DateTime()))
-              ))
-            )
-
-            User.update("_id" -> user._id, "$unset" -> ("activeCard" -> true))
+          val (subscriptionStatus, subscriptionEnds) = if (cancelAtPeriodEnd) {
+            ("cancelled", decompose(new DateTime(periodEnd * 1000)))
+          } else {
+            ("stopped", decompose(new DateTime()))
           }
+
+          User.update(
+            ("_id" -> user._id) ~
+            ("subscriptions._id" -> subscription._id),
+            "$set" -> (
+              ("subscriptions.$.status" -> subscriptionStatus) ~
+              ("subscriptions.$.ends" -> subscriptionEnds)
+            )
+          )
 
         case _ =>
       }

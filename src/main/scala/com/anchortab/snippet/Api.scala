@@ -117,6 +117,8 @@ object Api extends RestHelper with Loggable {
             ("colorScheme" -> decompose(colorScheme)) ~
             ("whitelabel" -> whitelabelTab) ~
             ("customText" -> tab.appearance.customText) ~
+            ("submitButtonText" -> tab.appearance.customSubmitButtonText) ~
+            ("mobileTabText" -> tab.appearance.customMobileTabText) ~
             ("collectName" -> tab.appearance.collectName) ~
             ("i18n" -> localizedContent)
 
