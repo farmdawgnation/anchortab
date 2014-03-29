@@ -142,11 +142,9 @@ class TabForm(requestTab: Tab) extends Loggable
         for {
           session <- userSession.is
           user <- User.find(session.userId)
-          credentials <- user.credentialsFor("Constant Contact")
-          token <- credentials.serviceCredentials.get("token")
           constantContactListId <- constantContactListId
         } yield {
-          ConstantContactServiceWrapper(credentials.userIdentifier, token, constantContactListId.toLong)
+          ConstantContactServiceWrapper(session.userId, constantContactListId.toLong)
         }
 
       case Tab.EmailServices.CampaignMonitor =>

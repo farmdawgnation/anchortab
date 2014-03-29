@@ -129,9 +129,28 @@ case class CampaignMonitorServiceWrapper(userId: ObjectId, listId: String) exten
   }
 }
 
-case class ConstantContactServiceWrapper(username:String, implicit val accessToken:String, listId:Long) extends ServiceWrapper with Loggable {
+case class ConstantContactServiceWrapper(userId: ObjectId, listId:Long) extends ServiceWrapper with Loggable {
   import com.anchortab.constantcontact.model.Contacts._
   import com.anchortab.constantcontact.model.ContactLists._
+
+  implicit val accessToken: String = {
+    val accessTokenResult = for {
+      user <- (User.find(userId): Box[User])
+      credentials <- (user.credentialsFor("Constant Contact"): Box[UserServiceCredentials]) ?~! "No Constant Contact credentials."
+      token <- (credentials.serviceCredentials.get("token"): Box[String]) ?~! "No token on Constant Contact credentials."
+    } yield {
+      token
+    }
+
+    accessTokenResult match {
+      case Full(token) =>
+        token
+
+      case somethingUnexpected =>
+        logger.error(s"Something unexpected occured while retrieving Constant Contact token: $somethingUnexpected")
+        ""
+    }
+  }
 
   def subscribeEmail(email:String, name: Option[String] = None) = {
     val contact = Contact(
@@ -157,7 +176,7 @@ case class ConstantContactServiceWrapper(username:String, implicit val accessTok
   }
 
   def wrapperIdentifier = {
-    "Constant Contact - " + username
+    "Constant Contact - " + userId.toString
   }
 }
 
@@ -223,6 +242,6 @@ case class MailChimpServiceWrapper(userId:ObjectId, listId:String) extends Servi
   }
 
   def wrapperIdentifier = {
-    "MailChimp - " + listId
+    "MailChimp - " + userId.toString
   }
 }
