@@ -20,6 +20,7 @@ secureApiDomain = anchortab?.secureApiDomain || parser.hostname
 resourcesDomain = anchortab?.resourcesDomain || parser.hostname
 secureResourcesDomain = anchortab?.secureResourcesDomain || parser.hostname
 jqVersion = "1.9.1"
+clientUsesGaq = false
 
 window.anchortab = window.anchortab || {}
 window.anchortab.i18n = {}
@@ -83,6 +84,8 @@ loadGAIfNeeded = ->
     # After the script is loaded, we need to make sure to reassign our local
     # _gaq to the _gaq loaded by Google Analytics.
     loadScript analyticsSrc
+  else
+    clientUsesGaq = true
 
 isAcceptableJQuery = ->
   jQueryVersionPieces = jQuery.fn.jquery.split(".")
@@ -190,6 +193,9 @@ submitEmail = (event) ->
 
       gaqInfo = "Domain: " + document.domain
       _gaq.push ["at._trackEvent", "Submission", "Email Submitted", gaqInfo]
+
+      if clientUsesGaq
+        _gaq.push ["_trackEvent", "Anchor Tab Submission", "Email Submitted", gaqInfo]
 
       setTimeout ->
         $("#anchor-tab")
