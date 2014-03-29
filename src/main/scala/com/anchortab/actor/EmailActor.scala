@@ -44,7 +44,7 @@ case class SendNeighborhoodWatchEmail(
   multipleAccountsSameIpAndUserAgent: List[MultipleAccountsSameIp],
   similarEmailAddresses: List[SimilarEmailAddresses]
 ) extends EmailActorMessage
-case class SendLeadGenerationSubscriptionEmail(targetEmail: String, subscribedEmail: String, subscriberName: Option[String]) extends EmailActorMessage
+case class SendLeadGenerationSubscriptionEmail(targetEmail: String, tabName: String, subscribedEmail: String, subscriberName: Option[String]) extends EmailActorMessage
 case class SendSubmitErrorNotificationEmail(targetEmail: String, erroredTabs: List[Tab]) extends EmailActorMessage
 case class SendRetentionEmail(targetEmail: String) extends EmailActorMessage
 
@@ -210,7 +210,7 @@ trait LeadGenerationSubscriptionEmailHandling extends EmailHandlerChain {
   val leadGenerationSubject = "New Lead from your Anchor Tab"
 
   addHandler {
-    case SendLeadGenerationSubscriptionEmail(targetEmail, subscribedEmail, subscriberName) =>
+    case SendLeadGenerationSubscriptionEmail(targetEmail, tabName, subscribedEmail, subscriberName) =>
       val transform =
         ".email-address [href]" #> ("mailto:" + subscribedEmail) &
         ".email-address *" #> subscribedEmail &

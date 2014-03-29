@@ -95,7 +95,9 @@ case class LeadGenerationServiceWrapper(userId: ObjectId, tabId: ObjectId, targe
   val wrapperIdentifier = "I don't show up on services screen."
 
   def subscribeEmail(email: String, name: Option[String] = None) = {
-    EmailActor ! SendLeadGenerationSubscriptionEmail(targetEmail, email, name)
+    for (tab <- Tab.find(tabId)) {
+      EmailActor ! SendLeadGenerationSubscriptionEmail(targetEmail, tab.name, email, name)
+    }
     Full(true)
   }
 
