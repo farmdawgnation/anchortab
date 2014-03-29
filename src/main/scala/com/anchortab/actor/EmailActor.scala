@@ -213,6 +213,7 @@ trait LeadGenerationSubscriptionEmailHandling extends EmailHandlerChain {
     case SendLeadGenerationSubscriptionEmail(targetEmail, tabName, subscribedEmail, subscriberName) =>
       val transform =
         ".email-address [href]" #> ("mailto:" + subscribedEmail) &
+        ".tab-name *" #> tabName &
         ".email-address *" #> subscribedEmail &
         ".subscriber-name-line" #> subscriberName.map { name =>
           ".subscriber-name *" #> name
