@@ -47,7 +47,7 @@ libraryDependencies ++= {
     "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
     "net.databinder.dispatch" %% "dispatch-lift-json" % "0.11.0",
     "com.stripe"        %% "stripe-scala"       % "1.1.2",
-    "com.ecwid"         % "ecwid-mailchimp"     % "1.3.0.6",
+    "com.ecwid"         % "ecwid-mailchimp"     % "1.3.0.7",
     "org.scalatest"     %% "scalatest"          % "2.0" % "it,test",
     "org.seleniumhq.selenium" % "selenium-java" % "2.37.0" % "it",
     "org.apache.httpcomponents" % "httpclient"  % "4.3.1"  % "it",
