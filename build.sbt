@@ -53,7 +53,7 @@ libraryDependencies ++= {
     "org.apache.httpcomponents" % "httpclient"  % "4.3.1"  % "it",
     "com.newrelic.agent.java" % "newrelic-api"  % "3.1.0",
     "me.frmr.newrelic"  %% "lift-newrelic"      % "1.1.0",
-    "com.createsend"    % "createsend-java"     % "3.1.3"
+    "com.createsend"    % "createsend-java"     % "5.0.0"
   )
 }
 
