@@ -32,7 +32,7 @@ scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-language:postf
 port in container.Configuration := 8081
 
 libraryDependencies ++= {
-  val liftVersion = "2.6-M2"
+  val liftVersion = "2.6-M3"
   Seq(
     "net.liftweb"       %% "lift-webkit"        % liftVersion        % "compile",
     "net.liftweb"       %% "lift-testkit"       % liftVersion        % "test",
