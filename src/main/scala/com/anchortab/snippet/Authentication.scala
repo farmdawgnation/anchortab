@@ -57,6 +57,10 @@ object Authentication extends Loggable {
     // Set sticky notice for quota error if needed.
     if (user.subscription.isDefined && ! user.tabsActive_?)
       Notices.warning("Your tabs are inactive. You may upgrade your plan to reactivate your tabs.", Some("tab-shutdown-error"))
+
+    // Set IE 8 sticky notice
+    if (S.isIE8)
+      Notices.warning("Anchor Tab does not support IE 8. Your tabs won't display for you in IE 8 and this site may not work correctly. Please upgrade or switch to Firefox or Chrome.", Some("ie-8-warning"))
   }
 
   /**
