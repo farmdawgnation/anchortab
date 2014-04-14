@@ -54,6 +54,8 @@ class ErrorNotifierActorSpec extends FunSpec with ShouldMatchers with BeforeAndA
     tab1
     tab2
     tab3
+
+    LAScheduler.onSameThread = true
   }
 
   override def afterAll() {
@@ -61,6 +63,8 @@ class ErrorNotifierActorSpec extends FunSpec with ShouldMatchers with BeforeAndA
     tab1.delete
     tab2.delete
     tab3.delete
+
+    LAScheduler.onSameThread = false
   }
 
   describe("ErrorNotifierActor") {
@@ -72,22 +76,20 @@ class ErrorNotifierActorSpec extends FunSpec with ShouldMatchers with BeforeAndA
 
       mockErrorNotifierActor ! CheckForEmailSubmissionErrors
 
-      eventually(timeout(1 seconds)) {
-        val firstMessage = mockEmailActor.messages(0)
+      val firstMessage = mockEmailActor.messages(0)
 
-        firstMessage match {
-          case thing @ SendSubmitErrorNotificationEmail(userEmail, tabs) =>
-            println(thing)
-            userEmail should be (user.email)
+      firstMessage match {
+        case thing @ SendSubmitErrorNotificationEmail(userEmail, tabs) =>
+          println(thing)
+          userEmail should be (user.email)
 
-            val tabIds = tabs.map(_._id)
+          val tabIds = tabs.map(_._id)
 
-            tabIds should contain (tab2._id)
-            tabIds should contain (tab3._id)
+          tabIds should contain (tab2._id)
+          tabIds should contain (tab3._id)
 
-          case _ =>
-            fail("Message didn't match.")
-        }
+        case _ =>
+          fail("Message didn't match.")
       }
     }
   }
