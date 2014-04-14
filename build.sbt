@@ -8,7 +8,7 @@ seq(resourceManagementSettings :_*)
 
 name := "Anchor Tab"
 
-version := "1.3.0"
+version := "1.3.1"
 
 organization := "com.anchortab"
 
@@ -32,28 +32,27 @@ scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-language:postf
 port in container.Configuration := 8081
 
 libraryDependencies ++= {
-  val liftVersion = "2.6-M2"
+  val liftVersion = "2.6-M3"
   Seq(
     "net.liftweb"       %% "lift-webkit"        % liftVersion        % "compile",
     "net.liftweb"       %% "lift-testkit"       % liftVersion        % "test",
     "net.liftweb"       %% "lift-mongodb"       % liftVersion        % "compile",
     "net.liftmodules"   %% "lift-jquery-module_2.5" % "2.3",
     "javax.servlet"     %  "servlet-api"        % "2.5" % "provided",
-    "org.eclipse.jetty" % "jetty-webapp"        % "8.1.13.v20130916"  % "compile,container",
-    "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016" % "provided,compile,container" artifacts Artifact("javax.servlet", "jar", "jar"),
+    "org.eclipse.jetty" % "jetty-webapp"        % "9.1.4.v20140401"  % "compile,container",
     "ch.qos.logback"    % "logback-classic"     % "1.0.13",
     "joda-time"         % "joda-time"           % "2.3",
     "org.joda"          % "joda-convert"        % "1.5",
     "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
     "net.databinder.dispatch" %% "dispatch-lift-json" % "0.11.0",
     "com.stripe"        %% "stripe-scala"       % "1.1.2",
-    "com.ecwid"         % "ecwid-mailchimp"     % "1.3.0.6",
+    "com.ecwid"         % "ecwid-mailchimp"     % "1.3.0.7",
     "org.scalatest"     %% "scalatest"          % "2.0" % "it,test",
     "org.seleniumhq.selenium" % "selenium-java" % "2.37.0" % "it",
     "org.apache.httpcomponents" % "httpclient"  % "4.3.1"  % "it",
     "com.newrelic.agent.java" % "newrelic-api"  % "3.1.0",
     "me.frmr.newrelic"  %% "lift-newrelic"      % "1.1.0",
-    "com.createsend"    % "createsend-java"     % "3.1.3"
+    "com.createsend"    % "createsend-java"     % "5.0.0"
   )
 }
 
