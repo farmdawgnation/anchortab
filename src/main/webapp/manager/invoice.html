@@ -10,61 +10,62 @@
 
       <h2>Invoice</h2>
 
-      <dl>
-        <dt>Customer</dt>
-        <dd>austin.walne@mindjet.com</dd>
+      <div class="invoice-details" data-lift="Invoice">
+        <dl>
+          <dt>Customer:</dt>
+          <dd class="customer-email">austin.walne@mindjet.com</dd>
 
-        <dt>Paid?</dt>
-        <dd>Yes</dd>
+          <dt>Date:</dt>
+          <dd class="invoice-date">2014-01-01</dd>
 
-        <dt>Period Start</dt>
-        <dd>2014-01-01</dd>
+          <dt>Paid?</dt>
+          <dd class="paid-status">Yes</dd>
+        </dl>
 
-        <dt>Period End</dt>
-        <dd>2014-01-31</dd>
-      </dl>
+        <p class="anchortab-information">
+          Anchor Tab<br/>
+          5870 Stoneleigh Drive<br/>
+          Suwanee, GA 30024
+        </p>
 
-      <p class="anchortab-information">
-        Anchor Tab<br/>
-        5870 Stoneleigh Drive<br/>
-        Suwanee, GA 30024
-      </p>
+        <table class="invoice-items">
+          <tr class="header">
+            <th>Description</th>
+            <th>Period</th>
+            <th class="amount">Amount</th>
+          </tr>
 
-      <table class="invoice-items">
-        <tr class="header">
-          <th>Line Item</th>
-          <th>Period</th>
-          <th class="amount">Amount</th>
-        </tr>
+          <tr class="line-item">
+            <td class="line-item-description">The Influencer</td>
+            <td class="period">
+              <span class="period-start">2014-01-01</span>
+              to
+              <span class="period-end">2014-02-01</span>
+            </td>
+            <td class="amount">$10.00</td>
+          </tr>
 
-        <tr class="line-item">
-          <td>The Influencer</td>
-          <td class="period">
-            <span class="period-start">2014-01-01</span>
-            to
-            <span class="period-end">2014-02-01</span>
-          </td>
-          <td class="amount">$10.00</td>
-        </tr>
+          <tr class="total-line-item">
+            <td colspan="2">
+              Total
+            </td>
+            <td class="invoice-total amount">
+              $99.99
+            </td>
+          </tr>
 
-        <tr class="total-line-item">
-          <td colspan="2">
-            Total
-          </td>
-          <td class="amount">
-            $10.00
-          </td>
-        </tr>
-
-        <tr class="payment-line-item">
-          <td colspan="2">
-            Visa **** **** **** 1234
-          </td>
-          <td class="amount">
-            -$10.00
-          </td>
-        </tr>
-      </table>
+          <tr class="payment-line-item">
+            <td colspan="2">
+              <span class="card-type">Visa</span>
+              **** **** ****
+              <span class="last-four">1234</span>
+            </td>
+            <td class="amount">
+              -$10.00
+            </td>
+          </tr>
+        </table>
+      </div>
     </div>
   </body>
 </html>

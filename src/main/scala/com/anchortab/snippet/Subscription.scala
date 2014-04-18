@@ -67,7 +67,7 @@ object Subscription extends Loggable {
         ".invoice" #> invoices.data.map { invoice=>
           ".date *" #> new DateTime(invoice.date * 1000).toString("yyyy-MM-dd HH:mm:ss z") &
           ".amount *" #> ("$%.2f" format invoice.total/100d) &
-          ".details-link [href]" #> "#"
+          ".details-link [href]" #> Invoice.menu.toLoc.calcHref(invoice.id.getOrElse(""))
         }
       }
     } openOr {
