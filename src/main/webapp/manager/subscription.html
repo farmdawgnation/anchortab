@@ -103,29 +103,35 @@
       <div class="recent-billing-history">
         <h2>Recent Billing History</h2>
 
-        <table class="recent-billing-history-summary">
-          <tr class="header">
-            <th>Invoice Date</th>
-            <th>Invoice Amount</th>
-            <th>&nbsp;</th>
-          </tr>
+        <lift:lazy-load>
+          <table class="recent-billing-history-summary" data-lift="recent-billing-history">
+            <tr class="header">
+              <th>Invoice Date</th>
+              <th>Invoice Amount</th>
+              <th>&nbsp;</th>
+            </tr>
 
-          <tr class="invoice">
-            <td>January 1st, 2014</td>
-            <td>$10.00</td>
-            <td>
-              <a href="#">View Details</a>
-            </td>
-          </tr>
+            <tr class="no-invoices">
+              <td colspan="3">We have no invoices for your account.</td>
+            </tr>
 
-          <tr class="clearable">
-            <td>January 1st, 2014</td>
-            <td>$10.00</td>
-            <td>
-              <a href="#">View Details</a>
-            </td>
-          </tr>
-        </table>
+            <tr class="invoice">
+              <td class="date">January 1st, 2014</td>
+              <td class="amount">$10.00</td>
+              <td>
+                <a class="details-link" href="#">View Details</a>
+              </td>
+            </tr>
+
+            <tr class="clearable">
+              <td>January 1st, 2014</td>
+              <td>$10.00</td>
+              <td>
+                <a href="#">View Details</a>
+              </td>
+            </tr>
+          </table>
+        </lift:lazy-load>
 
         <a href="#">View Full History</a>
       </div>
