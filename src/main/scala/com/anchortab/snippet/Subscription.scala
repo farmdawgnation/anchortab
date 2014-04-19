@@ -51,6 +51,32 @@ object Subscription extends Loggable {
     case "subscription-summary" :: Nil => subscriptionSummary
     case "plan-selection" :: Nil => planSelection
     case "billing-summary" :: Nil => billingSummary
+    case "recent-billing-history" :: Nil => recentBillingHistory
+  }
+
+  def recentBillingHistory = {
+    {
+      for {
+        session <- userSession.is
+        user <- User.find(session.userId)
+        customerId <- user.stripeCustomerId
+        invoices <- tryo(stripe.Invoice.all(Map(
+          "customer" -> customerId,
+          "limit" -> 24
+        )))
+      } yield {
+        ClearClearable andThen
+        ".no-invoices" #> ClearNodes &
+        ".invoice" #> invoices.data.map { invoice=>
+          ".date *" #> StripeNumber(invoice.date).asDateTime.toString(DATE_FORMAT) &
+          ".amount *" #> StripeNumber(invoice.total).asDollarsAndCentsString &
+          ".details-link [href]" #> Invoice.menu.toLoc.calcHref(invoice.id.getOrElse(""))
+        }
+      }
+    } openOr {
+      ClearClearable andThen
+      ".invoice" #> ClearNodes
+    }
   }
 
   def subscriptionSummary = {
@@ -92,14 +118,18 @@ object Subscription extends Loggable {
 
   def planSelection = {
     def changeSubscription(user: User, subscription: Option[UserSubscription], newPlanId: ObjectId)() = {
-      def maybeCancelSubscription(customer: stripe.Customer) = {
-        customer.subscriptions.data match {
-          case Nil => Full(false)
-          case singleSubscription :: Nil =>
-            tryo(customer.cancelSubscription(singleSubscription.id))
-          case multipleSubscriptions =>
-            logger.error("The customer " + customer.id + " has multiple subscriptions. Bailing.")
-            Failure("There are somehow multiple subscriptions on your Stripe account. Please contact us.")
+      def changeFnForCustomer(customer: stripe.Customer) = {
+        val subscriptionsMatchingExistingPlan = customer.subscriptions.data.filter(_.plan.id == subscription.flatMap(_.plan).flatMap(_.stripeId).getOrElse(""))
+
+        subscriptionsMatchingExistingPlan match {
+          case existingSubscription :: Nil =>
+            Full((params: Map[String, _]) => customer.updateSubscription(existingSubscription.id, params))
+
+          case Nil =>
+            Full((params: Map[String, _]) => customer.createSubscription(params))
+
+          case _ =>
+            Failure("Error determining correct action to take on subscriptions.")
         }
       }
 
@@ -110,8 +140,8 @@ object Subscription extends Loggable {
             newPlanStripeId <- (plan.stripeId:Box[String]) ?~ "Plan lacks Stripe ID."
             customerId <- (user.stripeCustomerId:Box[String]) ?~ "User lacks Stripe ID."
             customer <- tryo(stripe.Customer.retrieve(customerId)) ?~ "Stripe doesn't recognize user."
-            cancelledStripeSubscription <- maybeCancelSubscription(customer)
-            updatedStripeSubscription <- tryo(customer.createSubscription(Map(
+            changeFn <- changeFnForCustomer(customer)
+            updatedStripeSubscription <- tryo(changeFn(Map(
               "plan" -> newPlanStripeId
             )))
             updatedSubscription = subscription.map(_.copy(

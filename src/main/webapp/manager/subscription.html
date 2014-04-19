@@ -99,6 +99,40 @@
           <button class="update-billing-information">Update Billing Information</button>
         </p>
       </div>
+
+      <div class="recent-billing-history">
+        <h2>Recent Billing History</h2>
+
+        <lift:lazy-load>
+          <table class="recent-billing-history-summary" data-lift="recent-billing-history">
+            <tr class="header">
+              <th>Invoice Date</th>
+              <th>Invoice Amount</th>
+              <th>&nbsp;</th>
+            </tr>
+
+            <tr class="no-invoices">
+              <td colspan="3">We have no invoices for your account.</td>
+            </tr>
+
+            <tr class="invoice">
+              <td class="date">January 1st, 2014</td>
+              <td class="amount">$10.00</td>
+              <td>
+                <a class="details-link" href="#">View Details</a>
+              </td>
+            </tr>
+
+            <tr class="clearable">
+              <td>January 1st, 2014</td>
+              <td>$10.00</td>
+              <td>
+                <a href="#">View Details</a>
+              </td>
+            </tr>
+          </table>
+        </lift:lazy-load>
+      </div>
     </div>
   </body>
 </html>

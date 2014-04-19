@@ -69,7 +69,7 @@ object QuotasActor extends LiftActor with Loggable {
         user <- User.find(userId)
           if ! user.admin_? && user.notificationSettings.alertEmails
       } {
-        logger.info("Checking quota for " + user.email)
+        logger.debug("Checking quota for " + user.email)
         if (! user.withinQuotaFor_?(Plan.Quotas.Views) ||
             ! user.withinQuotaFor_?(Plan.Quotas.EmailSubscriptions)) {
           EmailActor ! SendQuotaErrorEmail(user.email)

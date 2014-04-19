@@ -5,10 +5,47 @@
     </p>
 
     <p>
-      We're just writing to let you know that your monthly amount of
-      <span class="bill-amount">$5.00</span> has been successfully charged to your credit
-      card for your Anchor Tab subscription.
+      Just writing to let you know that we've charged <b class="invoice-total">$5.00</b> to your
+      card on <b class="invoice-date">2014-01-01</b>. Below is a summary of the charges.
     </p>
+
+    <table class="invoice-items" style="width: 100%">
+      <tr class="header">
+        <th style="text-align: left">Description</th>
+        <th style="text-align: left">Period</th>
+        <th class="amount" style="text-align: right">Amount</th>
+      </tr>
+
+      <tr class="line-item">
+        <td class="line-item-description">The Influencer</td>
+        <td class="period">
+          <span class="period-start">2014-01-01</span>
+          to
+          <span class="period-end">2014-02-01</span>
+        </td>
+        <td class="amount" style="text-align: right">$10.00</td>
+      </tr>
+
+      <tr class="total-line-item">
+        <td colspan="2">
+          Total
+        </td>
+        <td class="invoice-total amount" style="text-align: right">
+          $99.99
+        </td>
+      </tr>
+
+      <tr class="payment-line-item">
+        <td colspan="2">
+          <span class="card-type">Visa</span>
+          **** **** ****
+          <span class="last-four">1234</span>
+        </td>
+        <td class="amount" style="text-align: right">
+          -$10.00
+        </td>
+      </tr>
+    </table>
 
     <p>
       Let us know if you need any assistance... or grapefruits.

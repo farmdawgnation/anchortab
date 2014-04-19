@@ -26,6 +26,7 @@ services.css
 account.css
 affiliate.css
 spectrum.css
+invoice.css
 
 admin
 admin.css
