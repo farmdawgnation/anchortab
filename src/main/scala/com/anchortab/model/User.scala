@@ -85,7 +85,7 @@ case class UserPasswordResetKey(key: String = randomString(32),
 
 case class UserActiveCard(last4: String, cardType: String, expMonth: Int, expYear: Int)
 
-case class UserNotificationSettings(alertEmails: Boolean = true, announcementEmails: Boolean = true)
+case class UserNotificationSettings(alertEmails: Boolean = true, announcementEmails: Boolean = true, emailReceipts: Boolean = true)
 
 /**
  * User model. This class represnts a distinct user on the system.
