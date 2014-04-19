@@ -51,6 +51,32 @@ object Subscription extends Loggable {
     case "subscription-summary" :: Nil => subscriptionSummary
     case "plan-selection" :: Nil => planSelection
     case "billing-summary" :: Nil => billingSummary
+    case "recent-billing-history" :: Nil => recentBillingHistory
+  }
+
+  def recentBillingHistory = {
+    {
+      for {
+        session <- userSession.is
+        user <- User.find(session.userId)
+        customerId <- user.stripeCustomerId
+        invoices <- tryo(stripe.Invoice.all(Map(
+          "customer" -> customerId,
+          "limit" -> 24
+        )))
+      } yield {
+        ClearClearable andThen
+        ".no-invoices" #> ClearNodes &
+        ".invoice" #> invoices.data.map { invoice=>
+          ".date *" #> StripeNumber(invoice.date).asDateTime.toString(DATE_FORMAT) &
+          ".amount *" #> StripeNumber(invoice.total).asDollarsAndCentsString &
+          ".details-link [href]" #> Invoice.menu.toLoc.calcHref(invoice.id.getOrElse(""))
+        }
+      }
+    } openOr {
+      ClearClearable andThen
+      ".invoice" #> ClearNodes
+    }
   }
 
   def subscriptionSummary = {

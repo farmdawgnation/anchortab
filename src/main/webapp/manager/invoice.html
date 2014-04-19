@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+    <title>Tab Manager</title>
+  </head>
+  <body class="lift:content_id=main">
+    <div id="main" class="invoice-page" data-lift="surround?with=tab-manager;at=content">
+      <div data-lift="pwn-if-not-logged-in"></div>
+
+      <h2>Invoice</h2>
+
+      <div class="invoice-details" data-lift="Invoice">
+        <dl>
+          <dt>Customer:</dt>
+          <dd class="customer-email">austin.walne@mindjet.com</dd>
+
+          <dt>Date:</dt>
+          <dd class="invoice-date">2014-01-01</dd>
+
+          <dt>Paid?</dt>
+          <dd class="paid-status">Yes</dd>
+        </dl>
+
+        <p class="anchortab-information">
+          Anchor Tab<br/>
+          5870 Stoneleigh Drive<br/>
+          Suwanee, GA 30024
+        </p>
+
+        <table class="invoice-items">
+          <tr class="header">
+            <th>Description</th>
+            <th>Period</th>
+            <th class="amount">Amount</th>
+          </tr>
+
+          <tr class="line-item">
+            <td class="line-item-description">The Influencer</td>
+            <td class="period">
+              <span class="period-start">2014-01-01</span>
+              to
+              <span class="period-end">2014-02-01</span>
+            </td>
+            <td class="amount">$10.00</td>
+          </tr>
+
+          <tr class="total-line-item">
+            <td colspan="2">
+              Total
+            </td>
+            <td class="invoice-total amount">
+              $99.99
+            </td>
+          </tr>
+
+          <tr class="payment-line-item">
+            <td colspan="2">
+              <span class="card-type">Visa</span>
+              **** **** ****
+              <span class="last-four">1234</span>
+            </td>
+            <td class="amount">
+              -$10.00
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>

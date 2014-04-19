@@ -61,11 +61,10 @@ trait StripeHook extends RestHelper with Loggable {
     for {
       stripeCustomerId <- tryo((objectJson \ "customer").extract[String]) ?~! "No customer."
       user <- User.find("stripeCustomerId" -> stripeCustomerId)
-      totalAmountInCents <- tryo((objectJson \ "total").extract[Long]) ?~! "No total."
+      invoiceId <- tryo((objectJson \ "id").extract[String]) ?~! "No ID."
+      invoice <- tryo(stripe.Invoice.retrieve(invoiceId))
     } yield {
-      val amount = totalAmountInCents / 100d
-
-      emailActor ! SendInvoicePaymentSucceededEmail(user.email, amount)
+      emailActor ! SendInvoicePaymentSucceededEmail(user, invoice)
       OkResponse()
     }
   }

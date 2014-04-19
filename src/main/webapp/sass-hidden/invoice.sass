@@ -1,0 +1,25 @@
+@import "manager-common"
+
+.invoice-page
+  position: relative
+
+.anchortab-information
+  position: absolute
+  right: 0
+  top: 53px
+  text-align: right
+
+dl
+  margin-bottom: 20px
+
+dt
+  +clearfix
+  float: left
+  font-weight: bold
+  margin-right: 5px
+
+.invoice-items
+  +pretty-table
+
+  .amount
+    text-align: right
