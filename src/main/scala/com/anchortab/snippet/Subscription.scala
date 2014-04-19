@@ -60,12 +60,15 @@ object Subscription extends Loggable {
         session <- userSession.is
         user <- User.find(session.userId)
         customerId <- user.stripeCustomerId
-        invoices <- tryo(stripe.Invoice.all(Map("customer" -> customerId)))
+        invoices <- tryo(stripe.Invoice.all(Map(
+          "customer" -> customerId,
+          "limit" -> 24
+        )))
       } yield {
         ClearClearable andThen
         ".no-invoices" #> ClearNodes &
         ".invoice" #> invoices.data.map { invoice=>
-          ".date *" #> StripeNumber(invoice.date).asDateTime.toString("yyyy-MM-dd HH:mm:ss z") &
+          ".date *" #> StripeNumber(invoice.date).asDateTime.toString(DATE_FORMAT) &
           ".amount *" #> StripeNumber(invoice.total).asDollarsAndCentsString &
           ".details-link [href]" #> Invoice.menu.toLoc.calcHref(invoice.id.getOrElse(""))
         }
