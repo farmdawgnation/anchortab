@@ -190,6 +190,7 @@ object Accounts extends Loggable {
         var confirmPassword = ""
         var announcementEmails = user.notificationSettings.announcementEmails
         var alertEmails = user.notificationSettings.alertEmails
+        var emailReceipts = user.notificationSettings.emailReceipts
 
         def submit() = {
           implicit val formats = DefaultFormats
@@ -275,7 +276,8 @@ object Accounts extends Loggable {
                 ("email" -> email.toLowerCase) ~
                 ("profile" -> decompose(userProfile)) ~
                 ("notificationSettings.alertEmails" -> alertEmails) ~
-                ("notificationSettings.announcementEmails" -> announcementEmails)
+                ("notificationSettings.announcementEmails" -> announcementEmails) ~
+                ("notificationSettings.emailReceipts" -> emailReceipts)
               ))
 
               Notices.notice("Your profile was updated successfully. Jolly good fun.")
@@ -287,6 +289,7 @@ object Accounts extends Loggable {
                 ("profile" -> decompose(userProfile)) ~
                 ("notificationSettings.alertEmails" -> alertEmails) ~
                 ("notificationSettings.announcementEmails" -> announcementEmails) ~
+                ("notificationSettings.emailReceipts" -> emailReceipts) ~
                 pw
               ))
 
@@ -304,6 +307,7 @@ object Accounts extends Loggable {
           ".confirm-password" #> password(confirmPassword, confirmPassword = _) &
           "#announcement-emails" #> checkbox(announcementEmails, announcementEmails = _) &
           "#alert-emails" #> checkbox(alertEmails, alertEmails = _) &
+          "#email-receipts" #> checkbox(emailReceipts, emailReceipts = _) &
           ".submit" #> ajaxSubmit("Update Profile", submit _)
 
         "form" #> { ns:NodeSeq =>
