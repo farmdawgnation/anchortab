@@ -23,6 +23,9 @@ import org.joda.time._
 
 import com.anchortab.model._
 import com.anchortab.lib._
+import com.anchortab.util._
+
+import com.stripe
 
 import org.bson.types.ObjectId
 
@@ -38,7 +41,7 @@ case class SendQuotaWarningEmail(userEmail: String) extends EmailActorMessage
 case class SendQuotaErrorEmail(userEmail: String) extends EmailActorMessage
 case class SendTrialEndingEmail(userEmail: String, billingInfoPresent: Boolean, planName: String, trialEnd: DateTime) extends EmailActorMessage
 case class SendInvoicePaymentFailedEmail(userEmail: String, amount: Double, nextPaymentAttempt: Option[DateTime]) extends EmailActorMessage
-case class SendInvoicePaymentSucceededEmail(userEmail: String, amount: Double) extends EmailActorMessage
+case class SendInvoicePaymentSucceededEmail(user: User, invoice: stripe.Invoice) extends EmailActorMessage
 case class SendNeighborhoodWatchEmail(
   sameSiteMultipleAccount: List[SameSiteMultipleAccount],
   multipleAccountsSameIpAndUserAgent: List[MultipleAccountsSameIp],
@@ -168,6 +171,18 @@ trait InvoicePaymentFailedEmailHandling extends EmailHandlerChain {
   }
 }
 
+trait InvoicePaymentSucceededEmailHandling extends EmailHandlerChain with StripeInvoiceRendering {
+  val invoicePaymentSucceededEmailTemplate =
+    Templates("emails-hidden" :: "invoice-payment-succeeded-email" :: Nil) openOr NodeSeq.Empty
+
+  addHandler {
+    case SendInvoicePaymentSucceededEmail(user, invoice) =>
+      val subject = "Anchor Tab Receipt"
+      val invoicePaymentSucceededMessage = renderInvoice(user, invoice).apply(invoicePaymentSucceededEmailTemplate)
+      sendEmail(subject, user.email :: Nil, invoicePaymentSucceededMessage)
+  }
+}
+
 trait NeighborhoodWatchEmailHandling extends EmailHandlerChain {
   val template =
     Templates("emails-hidden" :: "neighborhood-watch-email" :: Nil) openOr NodeSeq.Empty
@@ -281,6 +296,7 @@ trait EmailActor extends EmailHandlerChain
                     with QuotaErrorEmailHandling
                     with TrialEndingEmailHandling
                     with InvoicePaymentFailedEmailHandling
+                    with InvoicePaymentSucceededEmailHandling
                     with NeighborhoodWatchEmailHandling
                     with LeadGenerationSubscriptionEmailHandling
                     with SubmitErrorNotificationEmailHandling
