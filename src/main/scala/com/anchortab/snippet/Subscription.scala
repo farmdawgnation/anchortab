@@ -65,8 +65,8 @@ object Subscription extends Loggable {
         ClearClearable andThen
         ".no-invoices" #> ClearNodes &
         ".invoice" #> invoices.data.map { invoice=>
-          ".date *" #> new DateTime(invoice.date * 1000).toString("yyyy-MM-dd HH:mm:ss z") &
-          ".amount *" #> ("$%.2f" format invoice.total/100d) &
+          ".date *" #> StripeNumber(invoice.date).asDateTime.toString("yyyy-MM-dd HH:mm:ss z") &
+          ".amount *" #> StripeNumber(invoice.total).asDollarsAndCentsString &
           ".details-link [href]" #> Invoice.menu.toLoc.calcHref(invoice.id.getOrElse(""))
         }
       }
