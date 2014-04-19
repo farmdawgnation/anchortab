@@ -1,6 +1,7 @@
 package com.anchortab.actor
 
 import scala.xml.NodeSeq
+import scala.util._
 
 import java.text.SimpleDateFormat
 
@@ -308,7 +309,7 @@ trait EmailActor extends EmailHandlerChain
   val fromName = "Anchor Tab"
 
   def sendEmail(subject: String, to: List[String], nodes: NodeSeq) = {
-    if (Props.productionMode) {
+    if (Props.productionMode || Properties.envOrNone("SEND_EMAILS").isDefined) {
       val sendMandrillMessage = Mandrill.SendMandrillMessage(
         Mandrill.MandrillMessage(subject, fromEmail,
           to.map(Mandrill.MandrillTo(_)),
