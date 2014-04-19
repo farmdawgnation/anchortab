@@ -177,7 +177,7 @@ trait InvoicePaymentSucceededEmailHandling extends EmailHandlerChain with Stripe
     Templates("emails-hidden" :: "invoice-payment-succeeded-email" :: Nil) openOr NodeSeq.Empty
 
   addHandler {
-    case SendInvoicePaymentSucceededEmail(user, invoice) =>
+    case SendInvoicePaymentSucceededEmail(user, invoice) if user.notificationSettings.emailReceipts =>
       val subject = "Anchor Tab Receipt"
       val invoicePaymentSucceededMessage = renderInvoice(user, invoice).apply(invoicePaymentSucceededEmailTemplate)
       sendEmail(subject, user.email :: Nil, invoicePaymentSucceededMessage)
