@@ -181,6 +181,9 @@ trait InvoicePaymentSucceededEmailHandling extends EmailHandlerChain with Stripe
       val subject = "Anchor Tab Receipt"
       val invoicePaymentSucceededMessage = renderInvoice(user, invoice).apply(invoicePaymentSucceededEmailTemplate)
       sendEmail(subject, user.email :: Nil, invoicePaymentSucceededMessage)
+
+    case _: SendInvoicePaymentSucceededEmail =>
+      // User has elected not to receive receipts.
   }
 }
 
