@@ -33,6 +33,9 @@ object Mandrill extends Loggable {
   case class SendMandrillMessage(message: MandrillMessage, async: Boolean = false) extends MandrillApiCall {
     def uri(requestBuilder: dispatch.Req) = requestBuilder / "messages" / "send.json"
   }
+  case class SendTemplateMandrillMessage(message: MandrillMessage, template_name: String, template_content: List[Map[String, String]], async: Boolean = false) extends MandrillApiCall {
+    def uri(requestBuilder: dispatch.Req) = requestBuilder / "messages" / "send-template.json"
+  }
 
   case class CodeResponse(code: Int)
   protected object AsCodeResponse extends (Response => CodeResponse) {
