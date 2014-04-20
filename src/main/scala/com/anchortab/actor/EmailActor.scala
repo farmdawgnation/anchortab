@@ -313,11 +313,14 @@ trait EmailActor extends EmailHandlerChain
 
   def sendEmail(subject: String, to: List[String], nodes: NodeSeq) = {
     if (Props.productionMode || Properties.envOrNone("SEND_EMAILS").isDefined) {
-      val sendMandrillMessage = Mandrill.SendMandrillMessage(
-        Mandrill.MandrillMessage(subject, fromEmail,
+      val sendMandrillMessage = Mandrill.SendTemplateMandrillMessage(
+        Mandrill.MandrillMessage(
+          subject, fromEmail,
           to.map(Mandrill.MandrillTo(_)),
-          Some(fromName),
-          html = Some(nodes.toString))
+          Some(fromName)
+        ),
+        "Anchor Tab Single Column",
+        List(Map("name" -> "messageContent", "content" -> nodes.toString))
       )
 
       Mandrill.run(sendMandrillMessage)
