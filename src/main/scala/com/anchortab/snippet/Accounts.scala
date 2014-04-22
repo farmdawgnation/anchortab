@@ -31,7 +31,7 @@ import org.bson.types.ObjectId
 
 import com.newrelic.api.agent.NewRelic
 
-object Accounts extends Loggable {
+object Accounts extends Loggable with AccountDeletion {
   val profileMenu = Menu.i("Profile") / "manager" / "account"
   val servicesMenu = Menu.i("Connected Services") / "manager" / "services"
 
@@ -187,7 +187,16 @@ object Accounts extends Loggable {
 
         def doDeleteAccount() = {
           if (submittedAccountEmail == user.email) {
-            Alert("Delete!")
+            deleteAccount(user) match {
+              case Full(true) =>
+                userSession(Empty)
+                Notices.notice("Account deleted successfully.")
+                RedirectTo(Authentication.managerMenu.loc.calcDefaultHref)
+
+              case somethingElse =>
+                logger.error(s"Something went wrong deleting account for ${user.email}: $somethingElse")
+                GeneralError("Something went wrong. Please contact support.")
+            }
           } else {
             GeneralError("The email provided did not match the email on your account.")
           }
