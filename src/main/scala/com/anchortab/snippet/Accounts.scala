@@ -45,6 +45,7 @@ object Accounts extends Loggable {
 
   def snippetHandlers : SnippetPF = {
     case "profile-form" :: Nil => profileForm
+    case "delete-account-form" :: Nil => deleteAccountForm
     case "campaign-monitor-connection" :: Nil => campaignMonitorConnection _
     case "constant-contact-connection" :: Nil => constantContactConnection _
     case "mailchimp-connection" :: Nil => mailchimpConnection _
@@ -174,6 +175,31 @@ object Accounts extends Loggable {
       }
 
     connectionTransform.apply(xhtml)
+  }
+
+  def deleteAccountForm = {
+    {
+      for {
+        session <- userSession.is
+        user <- User.find(session.userId)
+      } yield {
+        var submittedAccountEmail = ""
+
+        def doDeleteAccount() = {
+          if (submittedAccountEmail == user.email) {
+            Alert("Delete!")
+          } else {
+            GeneralError("The email provided did not match the email on your account.")
+          }
+        }
+
+        SHtml.makeFormsAjax andThen
+        "#delete-account-email" #> text(submittedAccountEmail, submittedAccountEmail = _) &
+        ".delete-my-account" #> ajaxOnSubmit(doDeleteAccount _)
+      }
+    } openOr {
+      "form" #> ClearNodes
+    }
   }
 
   def profileForm = {
