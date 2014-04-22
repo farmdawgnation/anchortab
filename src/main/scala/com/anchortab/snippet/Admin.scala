@@ -30,7 +30,7 @@ import org.joda.time._
 
 import org.bson.types.ObjectId
 
-object Admin extends AffiliateCalculation {
+object Admin extends AffiliateCalculation with AccountDeletion {
   val usersListMenu = Menu.i("Users") / "admin" / "users"
   val usersNewMenu = Menu.i("New User") / "admin" / "users" / "new" >>
     TemplateBox(() => Templates("admin" :: "user" :: "form" :: Nil))
@@ -398,6 +398,17 @@ object Admin extends AffiliateCalculation {
       Authentication.impersonateUser(userId)
     }
 
+    def deleteUser(user: User)(s: String) = {
+      deleteAccount(user) match {
+        case Full(true) =>
+          Notices.notice(s"Account for ${user.email} deleted.")
+          Reload
+
+        case somethingElse =>
+          Alert(somethingElse.toString)
+      }
+    }
+
     val userListTransform =
       {
         for {
@@ -409,7 +420,8 @@ object Admin extends AffiliateCalculation {
             ".email *" #> user.email &
             ".name *" #> user.name &
             ".impersonate-user [onclick]" #> onEvent(impersonateUser(user._id) _) &
-            ".edit-user [onclick]" #> onEvent(editUser(user._id) _)
+            ".edit-user [onclick]" #> onEvent(editUser(user._id) _) &
+            ".delete-user [onclick]" #> onEventIf("This will erase the user and all their tabs. May take a few moments. Are you sure?", deleteUser(user) _)
           }
         }
       }
