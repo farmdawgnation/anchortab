@@ -51,6 +51,7 @@ case class SendNeighborhoodWatchEmail(
 case class SendLeadGenerationSubscriptionEmail(targetEmail: String, tabName: String, subscribedEmail: String, subscriberName: Option[String]) extends EmailActorMessage
 case class SendSubmitErrorNotificationEmail(targetEmail: String, erroredTabs: List[Tab]) extends EmailActorMessage
 case class SendRetentionEmail(targetEmail: String) extends EmailActorMessage
+case class SendMassEmail(emailType: AnchorTabEmailType, subject: String, message: NodeSeq) extends EmailActorMessage
 
 trait AdminNotificationEmailHandling extends EmailHandlerChain {
   val adminNotificationTemplate = Templates("emails-hidden" :: "admin-notification-email" :: Nil) openOr NodeSeq.Empty
@@ -292,6 +293,24 @@ trait RetentionEmailHandling extends EmailHandlerChain {
   }
 }
 
+trait MassEmailHandling extends EmailHandlerChain {
+  addHandler {
+    case SendMassEmail(emailType, subject, message) =>
+      val users = emailType match {
+        case UrgentNotice =>
+          User.findAll
+
+        case AlertEmail =>
+          User.findAll("notificationSettings.alertEmails" -> true)
+
+        case _ =>
+          User.findAll("notificationSettings.announcementEmails" -> true)
+      }
+
+      sendEmail(subject, users.map(_.email), message, emailType)
+  }
+}
+
 sealed trait AnchorTabEmailType {
   def listDescription: String
 }
@@ -336,6 +355,7 @@ trait EmailActor extends EmailHandlerChain
                     with LeadGenerationSubscriptionEmailHandling
                     with SubmitErrorNotificationEmailHandling
                     with RetentionEmailHandling
+                    with MassEmailHandling
                     with AdminNotificationEmailHandling {
   implicit val formats = DefaultFormats
 
