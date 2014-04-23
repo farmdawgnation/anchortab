@@ -143,7 +143,8 @@ object RequestHandling {
         TabErrorsList.menu,
         TabForm.tabNewMenu,
         TabForm.tabEditMenu,
-        Invoice.menu
+        Invoice.menu,
+        EmailUsers.menu
       )
 
     LiftRules.setSiteMap(SiteMap(menus: _*))

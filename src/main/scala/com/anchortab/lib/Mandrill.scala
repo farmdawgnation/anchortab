@@ -22,16 +22,24 @@ object Mandrill extends Loggable {
   private val endpointHost = "mandrillapp.com"
   private val endpointVersion = "1.0"
 
-  case class MandrillTo(email: String, name: Option[String] = None)
-  case class MandrillMessage(subject: String, from_email: String, to: List[MandrillTo],
-    from_name: Option[String] = None, html: Option[String] = None,
-    text: Option[String] = None)
+  case class MandrillTo(email: String, name: Option[String] = None, `type`: String = "to")
+  case class MandrillMessage(
+    subject: String,
+    from_email: String,
+    to: List[MandrillTo],
+    from_name: Option[String] = None,
+    html: Option[String] = None,
+    text: Option[String] = None
+  )
 
   trait MandrillApiCall {
     def uri(requestBuilder: dispatch.Req): dispatch.Req
   }
   case class SendMandrillMessage(message: MandrillMessage, async: Boolean = false) extends MandrillApiCall {
     def uri(requestBuilder: dispatch.Req) = requestBuilder / "messages" / "send.json"
+  }
+  case class SendTemplateMandrillMessage(message: MandrillMessage, template_name: String, template_content: List[Map[String, String]], async: Boolean = false) extends MandrillApiCall {
+    def uri(requestBuilder: dispatch.Req) = requestBuilder / "messages" / "send-template.json"
   }
 
   case class CodeResponse(code: Int)

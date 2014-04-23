@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+    <title>Tab Manager</title>
+  </head>
+  <body class="lift:content_id=main">
+    <div id="main" data-lift="surround?with=tab-manager;at=content">
+      <h2>Email Users</h2>
+
+      <p>
+        Welcome to the User Administration panel. From here you can add new users and edit
+        existing users.
+      </p>
+
+      <form class="email-users-form" data-lift="EmailUsers">
+        <div>
+          <label for="message-type">Message Type</label>
+          <select id="message-type">
+            <option>Announcement</option>
+            <option>Alert</option>
+            <option>Urgent Notice</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="subject">Subject</label>
+          <input id="subject" type="text">
+        </div>
+
+        <div>
+          <label for="message">Message</label>
+          <textarea id="message"></textarea>
+        </div>
+
+        <button id="send-email" type="submit">Send Email</button>
+      </form>
+    </div>
+  </body>
+</html>
