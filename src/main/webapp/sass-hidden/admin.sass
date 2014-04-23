@@ -6,7 +6,7 @@
   td:last-child
     text-align: right
 
-  .edit-user, .impersonate-user
+  .edit-user, .impersonate-user, .delete-user
     +pretty-button
 
 .new-user
@@ -67,3 +67,10 @@
 
       > .subscribe-count
         font-weight: normal
+
+.email-users-form
+  +pretty-form
+
+  textarea
+    width: 60%
+    height: 300px

@@ -31,7 +31,7 @@ import org.bson.types.ObjectId
 
 import com.newrelic.api.agent.NewRelic
 
-object Accounts extends Loggable {
+object Accounts extends Loggable with AccountDeletion {
   val profileMenu = Menu.i("Profile") / "manager" / "account"
   val servicesMenu = Menu.i("Connected Services") / "manager" / "services"
 
@@ -45,6 +45,7 @@ object Accounts extends Loggable {
 
   def snippetHandlers : SnippetPF = {
     case "profile-form" :: Nil => profileForm
+    case "delete-account-form" :: Nil => deleteAccountForm
     case "campaign-monitor-connection" :: Nil => campaignMonitorConnection _
     case "constant-contact-connection" :: Nil => constantContactConnection _
     case "mailchimp-connection" :: Nil => mailchimpConnection _
@@ -174,6 +175,40 @@ object Accounts extends Loggable {
       }
 
     connectionTransform.apply(xhtml)
+  }
+
+  def deleteAccountForm = {
+    {
+      for {
+        session <- userSession.is
+        user <- User.find(session.userId)
+      } yield {
+        var submittedAccountEmail = ""
+
+        def doDeleteAccount() = {
+          if (submittedAccountEmail == user.email) {
+            deleteAccount(user) match {
+              case Full(true) =>
+                userSession(Empty)
+                Notices.notice("Account deleted successfully.")
+                RedirectTo(Authentication.managerMenu.loc.calcDefaultHref)
+
+              case somethingElse =>
+                logger.error(s"Something went wrong deleting account for ${user.email}: $somethingElse")
+                GeneralError("Something went wrong. Please contact support.")
+            }
+          } else {
+            GeneralError("The email provided did not match the email on your account.")
+          }
+        }
+
+        SHtml.makeFormsAjax andThen
+        "#delete-account-email" #> text(submittedAccountEmail, submittedAccountEmail = _) &
+        ".delete-my-account" #> ajaxOnSubmit(doDeleteAccount _)
+      }
+    } openOr {
+      "form" #> ClearNodes
+    }
   }
 
   def profileForm = {

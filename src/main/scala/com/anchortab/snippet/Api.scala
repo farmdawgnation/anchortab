@@ -26,7 +26,7 @@ import com.anchortab.actor._
 
 import com.newrelic.api.agent._
 
-object Api extends RestHelper with Loggable {
+object Api extends RestHelper with Loggable with AccountDeletion {
   private val localizationCache = new collection.mutable.HashMap[Locale, JObject] with collection.mutable.SynchronizedMap[Locale, JObject]
 
   def statelessRewrite : RewritePF = {
@@ -250,9 +250,9 @@ object Api extends RestHelper with Loggable {
           possibleAdminUser <- (statelessUser.is ?~ "Authentication Failed." ~> 401)
           adminUser <- (Full(possibleAdminUser).filter(_.admin_?) ?~ "Not authorized." ~> 403)
           user <- (User.find(id):Box[User]) ?~! "User not found." ~> 404
+          //deleteResult <- deleteAccount(user)
         } yield {
           user.delete
-
           OkResponse()
         }
       }

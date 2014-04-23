@@ -4,6 +4,7 @@ import scala.xml.NodeSeq
 
 import net.liftweb.actor._
 import net.liftweb.common._
+import com.anchortab.actor.AnchorTabEmailType
 
 trait HandlerChain extends LiftActor with Loggable {
   private val defaultHandler: PartialFunction[Any, Unit] = {
@@ -21,5 +22,5 @@ trait HandlerChain extends LiftActor with Loggable {
 }
 
 trait EmailHandlerChain extends HandlerChain {
-  def sendEmail(subject: String, emails: List[String], nodes: NodeSeq): Unit
+  def sendEmail(subject: String, emails: List[String], nodes: NodeSeq, emailType: AnchorTabEmailType, bccEmails: Boolean = false): Unit
 }

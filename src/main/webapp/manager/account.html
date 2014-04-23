@@ -85,6 +85,25 @@
           <input type="submit" class="submit" value="Update Profile">
         </div>
       </form>
+
+      <h2>Delete Account</h2>
+
+      <p>
+        If you wish, you may completely delete your Anchor Tab account. Doing so will erase your tabs,
+        your user information, and your billing information. Any active subscription will be cancelled
+        without any refund issued or creidt given for time remaining. To confirm this is the action you
+        would like to take, please enter the email address associated with your account in the box below.
+      </p>
+
+      <form class="delete-account-form stripe-form" data-lift="delete-account-form">
+        <div>
+          <label for="delete-account-email">Your email</label>
+          <input id="delete-account-email">
+        </div>
+        <div>
+          <button type="submit" class="submit delete-my-account">Delete My Account</button>
+        </div>
+      </form>
     </div>
   </body>
 </html>
