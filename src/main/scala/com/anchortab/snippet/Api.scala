@@ -250,8 +250,9 @@ object Api extends RestHelper with Loggable with AccountDeletion {
           possibleAdminUser <- (statelessUser.is ?~ "Authentication Failed." ~> 401)
           adminUser <- (Full(possibleAdminUser).filter(_.admin_?) ?~ "Not authorized." ~> 403)
           user <- (User.find(id):Box[User]) ?~! "User not found." ~> 404
-          deleteResult <- deleteAccount(user)
+          //deleteResult <- deleteAccount(user)
         } yield {
+          user.delete
           OkResponse()
         }
       }
