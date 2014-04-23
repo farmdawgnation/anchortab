@@ -22,5 +22,5 @@ trait HandlerChain extends LiftActor with Loggable {
 }
 
 trait EmailHandlerChain extends HandlerChain {
-  def sendEmail(subject: String, emails: List[String], nodes: NodeSeq, emailType: AnchorTabEmailType): Unit
+  def sendEmail(subject: String, emails: List[String], nodes: NodeSeq, emailType: AnchorTabEmailType, bccEmails: Boolean = false): Unit
 }

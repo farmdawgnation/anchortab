@@ -307,7 +307,7 @@ trait MassEmailHandling extends EmailHandlerChain {
           User.findAll("notificationSettings.announcementEmails" -> true)
       }
 
-      sendEmail(subject, users.map(_.email), message, emailType)
+      sendEmail(subject, users.map(_.email), message, emailType, true)
   }
 }
 
@@ -362,12 +362,27 @@ trait EmailActor extends EmailHandlerChain
   val fromEmail = "hello@anchortab.com"
   val fromName = "Anchor Tab"
 
-  def sendEmail(subject: String, to: List[String], nodes: NodeSeq, emailType: AnchorTabEmailType) = {
+  def sendEmail(
+    subject: String,
+    to: List[String],
+    nodes: NodeSeq,
+    emailType: AnchorTabEmailType,
+    bccEmails: Boolean = false
+  ) = {
     if (Props.productionMode || Properties.envOrNone("SEND_EMAILS").isDefined) {
+      val mandrillDestinationInformation = if (bccEmails) {
+        val mandrillBccs = to.map(Mandrill.MandrillTo(_, None, "bcc"))
+        val anchorTabTo = Mandrill.MandrillTo("blackhole@anchortab.com", Some("Anchor Tab Users"), "to")
+
+        anchorTabTo +: mandrillBccs
+      } else {
+        to.map(Mandrill.MandrillTo(_))
+      }
+
       val sendMandrillMessage = Mandrill.SendTemplateMandrillMessage(
         Mandrill.MandrillMessage(
           subject, fromEmail,
-          to.map(Mandrill.MandrillTo(_)),
+          mandrillDestinationInformation,
           Some(fromName)
         ),
         "Anchor Tab Single Column",
