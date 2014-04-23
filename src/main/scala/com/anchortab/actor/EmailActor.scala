@@ -75,7 +75,7 @@ trait AdminNotificationEmailHandling extends EmailHandlerChain {
 
       val admins = User.findAll("role" -> User.Roles.Admin).map(_.email)
 
-      sendEmail("Anchor Tab Admin Notification", admins, adminNotificationMessage)
+      sendEmail("Anchor Tab Admin Notification", admins, adminNotificationMessage, AdminEmail)
   }
 }
 
@@ -86,7 +86,7 @@ trait WelcomeEmailHandling extends EmailHandlerChain {
 
   addHandler {
     case SendWelcomeEmail(userEmail) =>
-      sendEmail(welcomeEmailSubject, userEmail :: Nil, welcomeEmailTemplate)
+      sendEmail(welcomeEmailSubject, userEmail :: Nil, welcomeEmailTemplate, WelcomeEmail)
   }
 }
 
@@ -103,7 +103,7 @@ trait ForgotPasswordEmailHandling extends EmailHandlerChain {
         ".reset-link *" #> resetLink
       ).apply(forgotPasswordEmailTemplate)
 
-      sendEmail(subject, userEmail :: Nil, forgotPasswordMessage)
+      sendEmail(subject, userEmail :: Nil, forgotPasswordMessage, ForgotPasswordEmail)
   }
 }
 
@@ -115,7 +115,7 @@ trait QuotaWarningEmailHandling extends EmailHandlerChain {
     case SendQuotaWarningEmail(userEmail) =>
       val subject = "Anchor Tab Quota Warning"
 
-      sendEmail(subject, userEmail :: Nil, quotaWarningEmailTemplate)
+      sendEmail(subject, userEmail :: Nil, quotaWarningEmailTemplate, AlertEmail)
   }
 }
 
@@ -127,7 +127,7 @@ trait QuotaErrorEmailHandling extends EmailHandlerChain {
     case SendQuotaErrorEmail(userEmail) =>
       val subject = "Anchor Tab Quota Error"
 
-      sendEmail(subject, userEmail :: Nil, quotaErrorEmailTemplate)
+      sendEmail(subject, userEmail :: Nil, quotaErrorEmailTemplate, AlertEmail)
   }
 }
 
@@ -146,7 +146,7 @@ trait TrialEndingEmailHandling extends EmailHandlerChain {
         ".billing-info" #> (billingInfoPresent ? PassThru | ClearNodes)
       ).apply(trialEndingEmailTemplate)
 
-      sendEmail(subject, userEmail :: Nil, trialEndingSoonMessage)
+      sendEmail(subject, userEmail :: Nil, trialEndingSoonMessage, BillingAlert)
   }
 }
 
@@ -168,7 +168,7 @@ trait InvoicePaymentFailedEmailHandling extends EmailHandlerChain {
         }
       ).apply(invoicePaymentFailedEmailTemplate)
 
-      sendEmail(subject, userEmail :: Nil, invoicePaymentFailedMessage)
+      sendEmail(subject, userEmail :: Nil, invoicePaymentFailedMessage, BillingAlert)
   }
 }
 
@@ -180,7 +180,7 @@ trait InvoicePaymentSucceededEmailHandling extends EmailHandlerChain with Stripe
     case SendInvoicePaymentSucceededEmail(user, invoice) if user.notificationSettings.emailReceipts =>
       val subject = "Anchor Tab Receipt"
       val invoicePaymentSucceededMessage = renderInvoice(user, invoice).apply(invoicePaymentSucceededEmailTemplate)
-      sendEmail(subject, user.email :: Nil, invoicePaymentSucceededMessage)
+      sendEmail(subject, user.email :: Nil, invoicePaymentSucceededMessage, ReceiptEmail)
 
     case _: SendInvoicePaymentSucceededEmail =>
       // User has elected not to receive receipts.
@@ -219,7 +219,7 @@ trait NeighborhoodWatchEmailHandling extends EmailHandlerChain {
         }
       ).apply(template)
 
-      sendEmail(subject, to :: Nil, neighborhoodWatchMessage)
+      sendEmail(subject, to :: Nil, neighborhoodWatchMessage, AdminEmail)
   }
 }
 
@@ -240,7 +240,7 @@ trait LeadGenerationSubscriptionEmailHandling extends EmailHandlerChain {
 
       val message = transform.apply(leadGenerationTemplate)
 
-      sendEmail(leadGenerationSubject, targetEmail :: Nil, message)
+      sendEmail(leadGenerationSubject, targetEmail :: Nil, message, LeadGenerationEmail)
   }
 }
 
@@ -277,7 +277,7 @@ trait SubmitErrorNotificationEmailHandling extends EmailHandlerChain {
 
       val message = transform.apply(submitErrorNotificationTemplate)
 
-      sendEmail(submitErrorNotificationSubject, targetEmail :: Nil, message)
+      sendEmail(submitErrorNotificationSubject, targetEmail :: Nil, message, AlertEmail)
   }
 }
 
@@ -288,8 +288,39 @@ trait RetentionEmailHandling extends EmailHandlerChain {
 
   addHandler {
     case SendRetentionEmail(targetEmail) =>
-      sendEmail(retentionEmailSubject, targetEmail :: Nil, retentionEmailTemplate)
+      sendEmail(retentionEmailSubject, targetEmail :: Nil, retentionEmailTemplate, WelcomeEmail)
   }
+}
+
+sealed trait AnchorTabEmailType {
+  def listDescription: String
+}
+case object AdminEmail extends AnchorTabEmailType {
+  val listDescription = "This is an email dispatched to admins."
+}
+case object ForgotPasswordEmail extends AnchorTabEmailType {
+  val listDescription = "This is a forgot password email triggered from the Anchor Tab website. If you did not trigger this email, please contact us immediately."
+}
+case object LeadGenerationEmail extends AnchorTabEmailType {
+  val listDescription = "You are receiving this email because one of your tabs is running in Lead Generation mode."
+}
+case object WelcomeEmail extends AnchorTabEmailType {
+  val listDescription = "This is a welcome email associated with your recently created Anchor Tab account. If you did not create an Anchor Tab account or don't know what this is, hit reply and let us know."
+}
+case object AnnouncementEmail extends AnchorTabEmailType {
+  val listDescription = "You are receiving this email because Anchor Tab Announcement emails are enabled on your Anchor Tab account. You can disable these emails by turning off Announcement Emails in your profile."
+}
+case object AlertEmail extends AnchorTabEmailType {
+  val listDescription = "You are receiving this email because Anchor Tab alert emails, which include emails about scheduled downtime and your tab quotas, are turned on for your account. You can disable these emails by turning off Alert Emails in your profile."
+}
+case object ReceiptEmail extends AnchorTabEmailType {
+  val listDescription = "You are receiving this email because you have requested we send you Email Receipts. You can disable these emails by turning off Email Receipts in your profile."
+}
+case object BillingAlert extends AnchorTabEmailType {
+  val listDescription = "You are receiving this email because we're having trouble billing your account for your Anchor Tab subscription."
+}
+case object UrgentNotice extends AnchorTabEmailType {
+  val listDescription = "You are receiving this email because it is an urgent notice related to security, Terms of Service changes, or other matters that we always inform all Anchor Tab users about."
 }
 
 object EmailActor extends EmailActor
@@ -311,7 +342,7 @@ trait EmailActor extends EmailHandlerChain
   val fromEmail = "hello@anchortab.com"
   val fromName = "Anchor Tab"
 
-  def sendEmail(subject: String, to: List[String], nodes: NodeSeq) = {
+  def sendEmail(subject: String, to: List[String], nodes: NodeSeq, emailType: AnchorTabEmailType) = {
     if (Props.productionMode || Properties.envOrNone("SEND_EMAILS").isDefined) {
       val sendMandrillMessage = Mandrill.SendTemplateMandrillMessage(
         Mandrill.MandrillMessage(
@@ -320,7 +351,10 @@ trait EmailActor extends EmailHandlerChain
           Some(fromName)
         ),
         "Anchor Tab Single Column",
-        List(Map("name" -> "messageContent", "content" -> nodes.toString))
+        List(
+          Map("name" -> "messageContent", "content" -> nodes.toString),
+          Map("name" -> "listDescription", "content" -> emailType.listDescription)
+        )
       )
 
       Mandrill.run(sendMandrillMessage)
