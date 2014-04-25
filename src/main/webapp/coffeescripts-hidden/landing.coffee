@@ -36,7 +36,7 @@ $(document).ready ->
       error : onFailure,
       crossDomain: true
 
-  $('body').on 'click', 'button.plans-and-pricing', ->
+  $('body').on 'click', 'button.go-to-plans-and-pricing', ->
     mixpanel.track("Click Plans & Pricing")
 
     $targetElem = $("section.plans-and-pricing > h3")
