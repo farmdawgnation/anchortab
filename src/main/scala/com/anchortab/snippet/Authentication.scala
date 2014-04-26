@@ -156,6 +156,39 @@ object Authentication extends Loggable {
     "button [data-plan-id]" #> planId
   }
 
+  val ifAdmin = If(
+    () => currentUser.is.map(_.admin_?).getOrElse(false),
+    () => NotFoundResponse()
+  )
+
+  val ifAffiliate = If(
+    () => currentUser.is.map(_.affiliate_?).getOrElse(false),
+    () => NotFoundResponse()
+  )
+
+  val ifLoggedIn = If(
+    () => currentUser.is.isDefined,
+    () => RedirectResponse(managerMenu.loc.calcDefaultHref)
+  )
+
+  val ifNotLoggedIn = If(
+    () => userSession.isEmpty,
+    () => RedirectResponse(Dashboard.dashboardMenu.loc.calcDefaultHref)
+  )
+
+  val tabIsMine = TestValueAccess[Tab](
+    (tab: Box[Tab]) => {
+      for {
+        tab <- tab
+        userId <- userSession.is.map(_.userId) or Full(ObjectId.get)
+          if tab.userId != userId
+      } yield {
+        NotFoundResponse()
+      }
+    }
+  )
+
+  ////// old auth enforcers
   def redirectToDashboardIfLoggedIn(ns:NodeSeq) = {
     if (userSession.isDefined)
       S.redirectTo(Dashboard.dashboardMenu.loc.calcDefaultHref)
@@ -183,6 +216,7 @@ object Authentication extends Loggable {
       throw new ResponseShortcutException(NotFoundResponse())
     }
   }
+  //////
 
   def showIfAffiliate(ns: NodeSeq) = {
     {
