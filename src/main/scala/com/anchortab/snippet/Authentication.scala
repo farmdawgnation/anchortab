@@ -34,6 +34,8 @@ case class FormValidationError(fieldSelector: String, error: String) extends
 
 object userSession extends SessionVar[Box[UserSession]](Empty)
 object impersonatorSession extends SessionVar[Box[UserSession]](Empty)
+
+object currentUser extends RequestVar[Box[User]](userSession.is.flatMap(sess => User.find(sess.userId)))
 object statelessUser extends RequestVar[Box[User]](Empty)
 object passwordResetUser extends RequestVar[Box[User]](Empty)
 
