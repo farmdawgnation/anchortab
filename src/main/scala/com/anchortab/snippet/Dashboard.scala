@@ -39,8 +39,7 @@ object Dashboard {
   def accountStats = {
     val currentPlanName =
       for {
-        session <- userSession.is
-        user <- User.find(session.userId)
+        user <- currentUser.is
       } yield {
         user.plan.name
       }
@@ -50,8 +49,7 @@ object Dashboard {
         import Option.option2Iterable
 
         for {
-          session <- userSession.is
-          user <- User.find(session.userId)
+          user <- currentUser.is
         } yield {
           val quotas =
             for {

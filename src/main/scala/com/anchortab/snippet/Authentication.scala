@@ -173,8 +173,7 @@ object Authentication extends Loggable {
   def pwnIfNotAdmin(ns:NodeSeq) = {
     {
       for {
-        session <- userSession
-        user <- User.find(session.userId) if user.admin_?
+        user <- currentUser.is if user.admin_?
       } yield {
         ns
       }
@@ -188,8 +187,7 @@ object Authentication extends Loggable {
   def showIfAffiliate(ns: NodeSeq) = {
     {
       for {
-        session <- userSession
-        user <- User.find(session.userId) if user.affiliate_?
+        user <- currentUser.is if user.affiliate_?
       } yield {
         ns
       }
@@ -201,8 +199,7 @@ object Authentication extends Loggable {
   def showIfAdmin(ns:NodeSeq) = {
     {
       for {
-        session <- userSession
-        user <- User.find(session.userId) if user.admin_?
+        user <- currentUser.is if user.admin_?
       } yield {
         ns
       }

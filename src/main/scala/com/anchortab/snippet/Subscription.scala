@@ -57,8 +57,7 @@ object Subscription extends Loggable {
   def recentBillingHistory = {
     {
       for {
-        session <- userSession.is
-        user <- User.find(session.userId)
+        user <- currentUser.is
         customerId <- user.stripeCustomerId
         invoices <- tryo(stripe.Invoice.all(Map(
           "customer" -> customerId,
@@ -82,8 +81,7 @@ object Subscription extends Loggable {
   def subscriptionSummary = {
     {
       for {
-        session <- userSession.is
-        user <- User.find(session.userId)
+        user <- currentUser.is
         subscription <- user.subscription
         plan <- Plan.find(subscription.planId)
       } yield {
@@ -224,8 +222,7 @@ object Subscription extends Loggable {
 
     {
       for {
-        session <- userSession.is
-        user <- User.find(session.userId)
+        user <- currentUser.is
           if ! user.onSpecialPlan_?
       } yield {
         val subscription = user.subscription
@@ -268,8 +265,7 @@ object Subscription extends Loggable {
     def submitBillingUpdateToStripe(token: String) = {
       val billingUpdateResult = {
         for {
-          session <- userSession.is ?~! "Could not find session."
-          user <- (User.find(session.userId): Box[User]) ?~! "Could not find user."
+          user <- currentUser.is ?~! "Could not find user."
           customerId <- (user.stripeCustomerId: Box[String]) ?~! "We couldn't find your Stripe ID."
           customer <- tryo(stripe.Customer.retrieve(customerId)) ?~! "We couldn't retrieve your customer data."
           updatedCustomer <- tryo(customer.update(Map("card" -> token)))
@@ -302,8 +298,7 @@ object Subscription extends Loggable {
 
     {
       for {
-        session <- userSession.is
-        user <- User.find(session.userId)
+        user <- currentUser.is
       } yield {
         ".no-billing-information" #> (user.activeCard.isDefined ? ClearNodes | PassThru) &
         ".billing-information-on-file" #> user.activeCard.map { card =>

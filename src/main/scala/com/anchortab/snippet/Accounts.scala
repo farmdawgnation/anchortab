@@ -73,8 +73,7 @@ object Accounts extends Loggable with AccountDeletion {
     val connectionTransform =
       {
         for {
-          session <- userSession.is
-          user <- User.find(session.userId)
+          user <- currentUser.is
           credentials <- user.credentialsFor("Mailchimp")
           username = credentials.userIdentifier
         } yield {
@@ -112,8 +111,7 @@ object Accounts extends Loggable with AccountDeletion {
     val connectionTransform =
       {
         for {
-          session <- userSession.is
-          user <- User.find(session.userId)
+          user <- currentUser.is
           credentials <- user.credentialsFor("Constant Contact")
           username = credentials.userIdentifier
         } yield {
@@ -160,8 +158,7 @@ object Accounts extends Loggable with AccountDeletion {
     val connectionTransform =
       {
         for {
-          session <- userSession.is
-          user <- User.find(session.userId)
+          user <- currentUser.is
           credentials <- user.credentialsFor(CampaignMonitor.serviceIdentifier)
           username = credentials.userIdentifier
         } yield {
@@ -180,8 +177,7 @@ object Accounts extends Loggable with AccountDeletion {
   def deleteAccountForm = {
     {
       for {
-        session <- userSession.is
-        user <- User.find(session.userId)
+        user <- currentUser.is
       } yield {
         var submittedAccountEmail = ""
 
@@ -214,8 +210,7 @@ object Accounts extends Loggable with AccountDeletion {
   def profileForm = {
     {
       for {
-        session <- userSession.is
-        user <- User.find(session.userId)
+        user <- currentUser.is
       } yield {
         var firstName = user.profile.flatMap(_.firstName) getOrElse ""
         var lastName = user.profile.flatMap(_.lastName) getOrElse ""

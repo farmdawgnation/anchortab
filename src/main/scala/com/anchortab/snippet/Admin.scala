@@ -269,8 +269,7 @@ object Admin extends AffiliateCalculation with AccountDeletion {
   def editUserForm = {
     {
       for {
-        session <- userSession.is
-        currentUser <- User.find(session.userId) if currentUser.admin_?
+        currentUser <- currentUser.is if currentUser.admin_?
         user <- usersEditMenu.currentValue or Full(User("", ""))
       } yield {
         var firstName = user.profile.flatMap(_.firstName) getOrElse ""
@@ -412,8 +411,7 @@ object Admin extends AffiliateCalculation with AccountDeletion {
     val userListTransform =
       {
         for {
-          session <- userSession.is
-          currentUser <- User.find(session.userId) if currentUser.admin_?
+          currentUser <- currentUser.is if currentUser.admin_?
           users = User.findAll
         } yield {
           ".user-row" #> users.map { user =>

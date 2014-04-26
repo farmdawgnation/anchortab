@@ -28,8 +28,7 @@ class Invoice(invoiceId: String) extends StripeInvoiceRendering {
   def render = {
     {
       for {
-        userSession <- userSession.is
-        user <- User.find(userSession.userId)
+        user <- currentUser.is
         customerId <- user.stripeCustomerId
         invoice <- tryo(stripe.Invoice.retrieve(invoiceId))
          if invoice.customer == customerId

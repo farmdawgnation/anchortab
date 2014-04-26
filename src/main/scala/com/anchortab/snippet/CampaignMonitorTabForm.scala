@@ -13,8 +13,7 @@ import com.newrelic.api.agent.NewRelic
 trait CampaignMonitorTabForm extends Loggable {
   val campaignMonitorAuthorized_? = {
     for {
-      session <- userSession.is
-      user <- User.find(session.userId)
+      user <- currentUser.is
       credentials <- user.credentialsFor(CampaignMonitor.serviceIdentifier)
     } yield {
       true
