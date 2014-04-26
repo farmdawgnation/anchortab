@@ -31,21 +31,41 @@ import org.joda.time._
 import org.bson.types.ObjectId
 
 object Admin extends AffiliateCalculation with AccountDeletion {
-  val usersListMenu = Menu.i("Users") / "admin" / "users"
+  val usersListMenu = Menu.i("Users") / "admin" / "users" >>
+    Authentication.ifLoggedIn >>
+    Authentication.ifAdmin
+
   val usersNewMenu = Menu.i("New User") / "admin" / "users" / "new" >>
-    TemplateBox(() => Templates("admin" :: "user" :: "form" :: Nil))
+    TemplateBox(() => Templates("admin" :: "user" :: "form" :: Nil)) >>
+    Authentication.ifLoggedIn >>
+    Authentication.ifAdmin
+
   val usersEditMenu =
     Menu.param[User]("Edit User", Text("Edit User"), User.find(_), _._id.toString) /
     "admin" / "user" / * >>
-    TemplateBox(() => Templates("admin" :: "user" :: "form" :: Nil))
-  val plansListMenu = Menu.i("Plans") / "admin" / "plans"
+    TemplateBox(() => Templates("admin" :: "user" :: "form" :: Nil)) >>
+    Authentication.ifLoggedIn >>
+    Authentication.ifAdmin
+
+  val plansListMenu = Menu.i("Plans") / "admin" / "plans" >>
+    Authentication.ifLoggedIn >>
+    Authentication.ifAdmin
+
   val plansNewMenu = Menu.i("New Plan") / "admin" / "plans" / "new" >>
-    TemplateBox(() => Templates("admin" :: "plan" :: "form" :: Nil))
+    TemplateBox(() => Templates("admin" :: "plan" :: "form" :: Nil)) >>
+    Authentication.ifLoggedIn >>
+    Authentication.ifAdmin
+
   val plansEditMenu =
     Menu.param[Plan]("Edit Plan", Text("Edit Plan"), Plan.find(_), _._id.toString) /
     "admin" / "plan" / * >>
-    TemplateBox(() => Templates("admin" :: "plan" :: "form" :: Nil))
-  val affiliateReportMenu = Menu.i("Affiliate Report") / "admin" / "affiliate-report"
+    TemplateBox(() => Templates("admin" :: "plan" :: "form" :: Nil)) >>
+    Authentication.ifLoggedIn >>
+    Authentication.ifAdmin
+
+  val affiliateReportMenu = Menu.i("Affiliate Report") / "admin" / "affiliate-report" >>
+    Authentication.ifLoggedIn >>
+    Authentication.ifAdmin
 
   val menus =
     usersListMenu ::

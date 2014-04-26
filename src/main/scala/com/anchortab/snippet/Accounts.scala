@@ -32,8 +32,10 @@ import org.bson.types.ObjectId
 import com.newrelic.api.agent.NewRelic
 
 object Accounts extends Loggable with AccountDeletion {
-  val profileMenu = Menu.i("Profile") / "manager" / "account"
-  val servicesMenu = Menu.i("Connected Services") / "manager" / "services"
+  val profileMenu = Menu.i("Profile") / "manager" / "account" >>
+    Authentication.ifLoggedIn
+  val servicesMenu = Menu.i("Connected Services") / "manager" / "services" >>
+    Authentication.ifLoggedIn
 
   val menus =
     profileMenu ::

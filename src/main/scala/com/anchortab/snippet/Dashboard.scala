@@ -17,7 +17,8 @@ import net.liftweb._
 import com.anchortab.model._
 
 object Dashboard {
-  val dashboardMenu = Menu.i("Dashboard") / "manager" / "dashboard"
+  val dashboardMenu = Menu.i("Dashboard") / "manager" / "dashboard" >>
+    Authentication.ifLoggedIn
 
   val menus =
     dashboardMenu ::

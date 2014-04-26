@@ -18,7 +18,8 @@ case class TabEmbedCodeReceived(embedCode: String) extends SimpleAnchorTabEvent(
 case class NewTabCreated(embedCode: String) extends SimpleAnchorTabEvent("new-tab-created")
 
 object TabList {
-  val menu = Menu.i("My Tabs") / "manager" / "tabs"
+  val menu = Menu.i("My Tabs") / "manager" / "tabs" >>
+    Authentication.ifLoggedIn
 }
 class TabList {
   def render = {

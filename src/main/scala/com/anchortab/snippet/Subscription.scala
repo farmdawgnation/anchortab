@@ -38,7 +38,8 @@ case object NoBillingInformationError extends SimpleAnchorTabEvent("no-billing-i
 case class GeneralError(errorText: String) extends SimpleAnchorTabEvent("general-error")
 
 object Subscription extends Loggable {
-  val subscriptionMenu = Menu.i("Subscription") / "manager" / "subscription"
+  val subscriptionMenu = Menu.i("Subscription") / "manager" / "subscription" >>
+    Authentication.ifLoggedIn
 
   val menus =
     subscriptionMenu ::

@@ -22,7 +22,8 @@ import com.anchortab.model._
 import com.anchortab.actor._
 
 object Register {
-  val menu = Menu.i("Register") / "register"
+  val menu = Menu.i("Register") / "register" >>
+    Authentication.ifNotLoggedIn
 }
 
 class Register extends Loggable {
