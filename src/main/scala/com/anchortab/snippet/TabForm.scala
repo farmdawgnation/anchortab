@@ -100,8 +100,7 @@ class TabForm(requestTab: Tab) extends Loggable
   val (hasWhitelabel_?, hasCustomColorSchemes_?) = {
     {
       for {
-        session <- userSession.is
-        user <- User.find(session.userId)
+        user <- currentUser.is
         subscription <- user.subscription
         plan <- subscription.plan
       } yield {
@@ -144,7 +143,6 @@ class TabForm(requestTab: Tab) extends Loggable
       case Tab.EmailServices.ConstantContact =>
         for {
           session <- userSession.is
-          user <- User.find(session.userId)
           constantContactListId <- constantContactListId
         } yield {
           ConstantContactServiceWrapper(session.userId, constantContactListId.toLong)

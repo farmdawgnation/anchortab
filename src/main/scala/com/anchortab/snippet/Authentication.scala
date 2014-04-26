@@ -34,6 +34,8 @@ case class FormValidationError(fieldSelector: String, error: String) extends
 
 object userSession extends SessionVar[Box[UserSession]](Empty)
 object impersonatorSession extends SessionVar[Box[UserSession]](Empty)
+
+object currentUser extends RequestVar[Box[User]](userSession.is.flatMap(sess => User.find(sess.userId)))
 object statelessUser extends RequestVar[Box[User]](Empty)
 object passwordResetUser extends RequestVar[Box[User]](Empty)
 
@@ -171,8 +173,7 @@ object Authentication extends Loggable {
   def pwnIfNotAdmin(ns:NodeSeq) = {
     {
       for {
-        session <- userSession
-        user <- User.find(session.userId) if user.admin_?
+        user <- currentUser.is if user.admin_?
       } yield {
         ns
       }
@@ -186,8 +187,7 @@ object Authentication extends Loggable {
   def showIfAffiliate(ns: NodeSeq) = {
     {
       for {
-        session <- userSession
-        user <- User.find(session.userId) if user.affiliate_?
+        user <- currentUser.is if user.affiliate_?
       } yield {
         ns
       }
@@ -199,8 +199,7 @@ object Authentication extends Loggable {
   def showIfAdmin(ns:NodeSeq) = {
     {
       for {
-        session <- userSession
-        user <- User.find(session.userId) if user.admin_?
+        user <- currentUser.is if user.admin_?
       } yield {
         ns
       }

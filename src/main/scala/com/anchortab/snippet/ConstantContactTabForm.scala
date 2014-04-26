@@ -13,8 +13,7 @@ import com.newrelic.api.agent.NewRelic
 trait ConstantContactTabForm extends Loggable {
   val constantContactLists = {
     for {
-      session <- userSession.is
-      user <- User.find(session.userId)
+      user <- currentUser.is
       credentials <- user.credentialsFor("Constant Contact")
     } yield {
       implicit val accessToken = credentials.serviceCredentials.get("token") getOrElse ""

@@ -103,8 +103,7 @@ object Util extends Loggable {
   def firstSteps = {
     {
       for {
-        session <- userSession.is
-        user <- User.find(session.userId)
+        user <- currentUser.is
           if ! user.firstSteps.isEmpty
       } yield {
         ClearClearable andThen

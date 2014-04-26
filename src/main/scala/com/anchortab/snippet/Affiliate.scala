@@ -56,8 +56,7 @@ object Affiliate extends Loggable with AffiliateCalculation {
   def referralUrl = {
     val url = {
       for {
-        session <- userSession.is
-        user <- User.find(session.userId)
+        user <- currentUser.is
         code <- user.affiliateCode
       } yield {
         "http://" + S.hostName + referralMenu.toLoc.calcHref(code)
