@@ -39,11 +39,15 @@ object currentUser extends RequestVar[Box[User]](userSession.is.flatMap(sess => 
 object statelessUser extends RequestVar[Box[User]](Empty)
 object passwordResetUser extends RequestVar[Box[User]](Empty)
 
+object intendedLoginPath extends RequestVar[Box[String]](Empty)
+object sessionLoginCompletePath extends SessionVar[Box[String]](Empty)
+
 object Authentication extends Loggable {
   /**
    * Sitemap menus.
   **/
-  val managerMenu = Menu.i("Manager") / "manager"
+  val managerMenu = Menu.i("Manager") / "manager" //>>
+    //Authentication.ifNotLoggedIn
 
   val menus =
     managerMenu ::
@@ -131,8 +135,11 @@ object Authentication extends Loggable {
       () => {
         for {
           session <- userSession.is
+          redirectDestination = sessionLoginCompletePath.is openOr Dashboard.dashboardMenu.loc.calcDefaultHref
         } yield {
-          RedirectResponse(Dashboard.dashboardMenu.loc.calcDefaultHref, HTTPCookie("session", session._id.toString).setPath("/"))
+          println(redirectDestination)
+          sessionLoginCompletePath(Empty)
+          RedirectResponse(redirectDestination, HTTPCookie("session", session._id.toString).setPath("/"))
         }
       }
   }
@@ -165,7 +172,10 @@ object Authentication extends Loggable {
 
   val ifLoggedIn = If(
     () => currentUser.is.isDefined,
-    () => RedirectResponse(managerMenu.loc.calcDefaultHref)
+    () => {
+      val currentUri = S.uri
+      RedirectWithState(managerMenu.loc.calcDefaultHref, RedirectState(() => intendedLoginPath(Full(currentUri))))
+    }
   )
 
   val ifNotLoggedIn = If(
@@ -248,6 +258,7 @@ object Authentication extends Loggable {
 
         authenticationStickyNotices(user)
 
+        sessionLoginCompletePath(intendedLoginPath.is)
         RedirectTo("/session/login")
 
       case _ =>
