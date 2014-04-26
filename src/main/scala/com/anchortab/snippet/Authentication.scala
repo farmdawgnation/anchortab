@@ -139,10 +139,7 @@ object Authentication extends Loggable {
 
   def snippetHandlers : SnippetPF = {
     case "login-form" :: Nil => loginForm
-    case "redirect-to-dashboard-if-logged-in" :: Nil => redirectToDashboardIfLoggedIn
-    case "pwn-if-not-logged-in" :: Nil => pwnIfNotLoggedIn
     case "show-if-logged-in" :: Nil => showIfLoggedIn
-    case "pwn-if-not-admin" :: Nil => pwnIfNotAdmin
     case "show-if-admin" :: Nil => showIfAdmin
     case "show-if-affiliate" :: Nil => showIfAffiliate
 
@@ -187,36 +184,6 @@ object Authentication extends Loggable {
       }
     }
   )
-
-  ////// old auth enforcers
-  def redirectToDashboardIfLoggedIn(ns:NodeSeq) = {
-    if (userSession.isDefined)
-      S.redirectTo(Dashboard.dashboardMenu.loc.calcDefaultHref)
-
-    ns
-  }
-
-  def pwnIfNotLoggedIn(ns:NodeSeq) = {
-    if (! userSession.isDefined)
-      S.redirectTo(managerMenu.loc.calcDefaultHref)
-
-    ns
-  }
-
-  def pwnIfNotAdmin(ns:NodeSeq) = {
-    {
-      for {
-        user <- currentUser.is if user.admin_?
-      } yield {
-        ns
-      }
-    } openOr {
-      // Let's be clever here and trigger a 404 so that someone doing random
-      // probes on our app will believe there simply is no /admin url.
-      throw new ResponseShortcutException(NotFoundResponse())
-    }
-  }
-  //////
 
   def showIfAffiliate(ns: NodeSeq) = {
     {
