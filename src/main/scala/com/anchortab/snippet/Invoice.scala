@@ -22,7 +22,8 @@ object Invoice {
     s => Full(s),
     s => s
   ) / "manager" / "invoice" / * >>
-  TemplateBox(() => Templates("manager" :: "invoice" :: Nil))
+  TemplateBox(() => Templates("manager" :: "invoice" :: Nil)) >>
+  Authentication.ifLoggedIn
 }
 class Invoice(invoiceId: String) extends StripeInvoiceRendering {
   def render = {

@@ -24,7 +24,9 @@ object TabErrorsList {
   val menu =
     Menu.param[Tab]("Tab Errors", Text("Tab Errors"), Tab.find(_), _._id.toString) /
     "manager" / "tab" / * / "errors" >>
-    TemplateBox(() => Templates("manager" :: "tab" :: "errors" :: Nil))
+    TemplateBox(() => Templates("manager" :: "tab" :: "errors" :: Nil)) >>
+    Authentication.ifLoggedIn >>
+    Authentication.tabIsMine
 }
 class TabErrorsList(requestTab: Tab) {
   val dateAndTimeFormatter = new SimpleDateFormat("MM/dd/yyyy hh:mm aa")

@@ -21,11 +21,15 @@ import org.bson.types.ObjectId
 
 object TabForm {
   val tabNewMenu = Menu.i("New Tab") / "manager" / "tabs" / "new" >>
-    TemplateBox(() => Templates("manager" :: "tab" :: "form" :: Nil))
+    TemplateBox(() => Templates("manager" :: "tab" :: "form" :: Nil)) >>
+    Authentication.ifLoggedIn
+
   val tabEditMenu =
     Menu.param[Tab]("Edit Tab", Text("Edit Tab"), Tab.find(_), _._id.toString) /
     "manager" / "tab" / * >>
-    TemplateBox(() => Templates("manager" :: "tab" :: "form" :: Nil))
+    TemplateBox(() => Templates("manager" :: "tab" :: "form" :: Nil)) >>
+    Authentication.ifLoggedIn >>
+    Authentication.tabIsMine
 }
 class TabForm(requestTab: Tab) extends Loggable
                                           with MailChimpTabForm

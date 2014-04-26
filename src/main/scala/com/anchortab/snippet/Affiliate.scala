@@ -26,7 +26,10 @@ import org.joda.time._
 object Affiliate extends Loggable with AffiliateCalculation {
   val cookieName = "referral-code"
 
-  val menu = Menu.i("Affiliate Info") / "manager" / "affiliate"
+  val menu = Menu.i("Affiliate Info") / "manager" / "affiliate" >>
+    Authentication.ifLoggedIn >>
+    Authentication.ifAffiliate
+
   val referralMenu = Menu.param[String]("Referral", Text("Referral"), Full(_), _.toString) /
     "referral" / * >>
     EarlyResponse(referralRedirect _)

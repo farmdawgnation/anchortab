@@ -39,11 +39,15 @@ object currentUser extends RequestVar[Box[User]](userSession.is.flatMap(sess => 
 object statelessUser extends RequestVar[Box[User]](Empty)
 object passwordResetUser extends RequestVar[Box[User]](Empty)
 
+object intendedLoginPath extends RequestVar[Box[String]](Empty)
+object sessionLoginCompletePath extends SessionVar[Box[String]](Empty)
+
 object Authentication extends Loggable {
   /**
    * Sitemap menus.
   **/
-  val managerMenu = Menu.i("Manager") / "manager"
+  val managerMenu = Menu.i("Manager") / "manager" //>>
+    //Authentication.ifNotLoggedIn
 
   val menus =
     managerMenu ::
@@ -131,18 +135,18 @@ object Authentication extends Loggable {
       () => {
         for {
           session <- userSession.is
+          redirectDestination = sessionLoginCompletePath.is openOr Dashboard.dashboardMenu.loc.calcDefaultHref
         } yield {
-          RedirectResponse(Dashboard.dashboardMenu.loc.calcDefaultHref, HTTPCookie("session", session._id.toString).setPath("/"))
+          println(redirectDestination)
+          sessionLoginCompletePath(Empty)
+          RedirectResponse(redirectDestination, HTTPCookie("session", session._id.toString).setPath("/"))
         }
       }
   }
 
   def snippetHandlers : SnippetPF = {
     case "login-form" :: Nil => loginForm
-    case "redirect-to-dashboard-if-logged-in" :: Nil => redirectToDashboardIfLoggedIn
-    case "pwn-if-not-logged-in" :: Nil => pwnIfNotLoggedIn
     case "show-if-logged-in" :: Nil => showIfLoggedIn
-    case "pwn-if-not-admin" :: Nil => pwnIfNotAdmin
     case "show-if-admin" :: Nil => showIfAdmin
     case "show-if-affiliate" :: Nil => showIfAffiliate
 
@@ -156,33 +160,40 @@ object Authentication extends Loggable {
     "button [data-plan-id]" #> planId
   }
 
-  def redirectToDashboardIfLoggedIn(ns:NodeSeq) = {
-    if (userSession.isDefined)
-      S.redirectTo(Dashboard.dashboardMenu.loc.calcDefaultHref)
+  val ifAdmin = If(
+    () => currentUser.is.map(_.admin_?).getOrElse(false),
+    () => NotFoundResponse()
+  )
 
-    ns
-  }
+  val ifAffiliate = If(
+    () => currentUser.is.map(_.affiliate_?).getOrElse(false),
+    () => NotFoundResponse()
+  )
 
-  def pwnIfNotLoggedIn(ns:NodeSeq) = {
-    if (! userSession.isDefined)
-      S.redirectTo(managerMenu.loc.calcDefaultHref)
-
-    ns
-  }
-
-  def pwnIfNotAdmin(ns:NodeSeq) = {
-    {
-      for {
-        user <- currentUser.is if user.admin_?
-      } yield {
-        ns
-      }
-    } openOr {
-      // Let's be clever here and trigger a 404 so that someone doing random
-      // probes on our app will believe there simply is no /admin url.
-      throw new ResponseShortcutException(NotFoundResponse())
+  val ifLoggedIn = If(
+    () => currentUser.is.isDefined,
+    () => {
+      val currentUri = S.uri
+      RedirectWithState(managerMenu.loc.calcDefaultHref, RedirectState(() => intendedLoginPath(Full(currentUri))))
     }
-  }
+  )
+
+  val ifNotLoggedIn = If(
+    () => userSession.isEmpty,
+    () => RedirectResponse(Dashboard.dashboardMenu.loc.calcDefaultHref)
+  )
+
+  val tabIsMine = TestValueAccess[Tab](
+    (tab: Box[Tab]) => {
+      for {
+        tab <- tab
+        userId <- userSession.is.map(_.userId) or Full(ObjectId.get)
+          if tab.userId != userId
+      } yield {
+        NotFoundResponse()
+      }
+    }
+  )
 
   def showIfAffiliate(ns: NodeSeq) = {
     {
@@ -247,6 +258,7 @@ object Authentication extends Loggable {
 
         authenticationStickyNotices(user)
 
+        sessionLoginCompletePath(intendedLoginPath.is)
         RedirectTo("/session/login")
 
       case _ =>

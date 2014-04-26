@@ -19,10 +19,8 @@ import com.anchortab.actor._
 
 object EmailUsers {
   val menu = Menu.i("Email Users") / "admin" / "email-users" >>
-    If(
-      () => userSession.is.map(_.userId).flatMap(id => User.find(id)).map(_.admin_?).getOrElse(false),
-      () => NotFoundResponse()
-    )
+    Authentication.ifLoggedIn >>
+    Authentication.ifAdmin
 }
 
 class EmailUsers {

@@ -26,14 +26,24 @@ object Invites extends Loggable {
   val acceptInviteMenu =
     Menu.param[InviteCode]("Accept Invite", Text("Accept Invite"), inviteForCode(_), _.code) /
     "accept-invite" / * >>
-    TemplateBox(() => Templates("register" :: Nil))
-  val invitesListMenu = Menu.i("Invites") / "admin" / "invites"
+    TemplateBox(() => Templates("register" :: Nil)) >>
+    Authentication.ifNotLoggedIn
+
+  val invitesListMenu = Menu.i("Invites") / "admin" / "invites" >>
+    Authentication.ifLoggedIn >>
+    Authentication.ifAdmin
+
   val invitesNewMenu = Menu.i("New Invite") / "admin" / "invites" / "new" >>
-    TemplateBox(() => Templates("admin" :: "invite" :: "form" :: Nil))
+    TemplateBox(() => Templates("admin" :: "invite" :: "form" :: Nil)) >>
+    Authentication.ifLoggedIn >>
+    Authentication.ifAdmin
+
   val inviteEditMenu =
     Menu.param[InviteCode]("Edit Invite", Text("Edit Invite"), InviteCode.find(_), _._id.toString) /
     "admin" / "invite" / * >>
-    TemplateBox(() => Templates("admin" :: "invite" :: "form" :: Nil))
+    TemplateBox(() => Templates("admin" :: "invite" :: "form" :: Nil)) >>
+    Authentication.ifLoggedIn >>
+    Authentication.ifAdmin
 
   val menus =
     acceptInviteMenu ::
