@@ -8,12 +8,22 @@ import net.liftweb.mongodb.BsonDSL._
 import com.anchortab.model._
 import com.stripe
 
-trait AccountDeletion {
+trait AccountDeletion extends Loggable {
+  def deleteStripeCustomer(stripeCustomerId: Box[String]) = {
+    for (stripeCustomerId <- stripeCustomerId) {
+      tryo(stripe.Customer.retrieve(stripeCustomerId).delete) match {
+        case error: EmptyBox =>
+          logger.error("Error encountered while deleting Stripe customer: " + error)
+
+        case _ =>
+      }
+    }
+  }
+
   def deleteAccount(user: User) = {
     for {
       tabDelete <- tryo(Tab.delete("userId" -> user._id)) // Nuke tabs.
-      stripeCustomerId <- (user.stripeCustomerId: Box[String]) ?~! "No stripe ID."
-      stripeCustomerDelete <- tryo(stripe.Customer.retrieve(stripeCustomerId).delete) // Delete Stripe customer
+      _ = deleteStripeCustomer(user.stripeCustomerId)
       userDelete <- tryo(user.delete)
     } yield {
       true
