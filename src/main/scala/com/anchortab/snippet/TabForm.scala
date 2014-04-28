@@ -22,7 +22,8 @@ import org.bson.types.ObjectId
 object TabForm {
   val tabNewMenu = Menu.i("New Tab") / "manager" / "tabs" / "new" >>
     TemplateBox(() => Templates("manager" :: "tab" :: "form" :: Nil)) >>
-    Authentication.ifLoggedIn
+    Authentication.ifLoggedIn >>
+    Authentication.ifWithinTabQuota
 
   val tabEditMenu =
     Menu.param[Tab]("Edit Tab", Text("Edit Tab"), Tab.find(_), _._id.toString) /

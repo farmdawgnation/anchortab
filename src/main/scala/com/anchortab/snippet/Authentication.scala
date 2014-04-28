@@ -183,6 +183,18 @@ object Authentication extends Loggable {
     () => RedirectResponse(Dashboard.dashboardMenu.loc.calcDefaultHref)
   )
 
+  val ifWithinTabQuota = If(
+    () => {
+      val userTabCount = Tab.count("userId" -> userSession.is.map(_.userId).openOr(ObjectId.get))
+      val tabQuota = currentUser.is.flatMap(_.plan.quotas.get(Plan.Quotas.NumberOfTabs))
+      tabQuota.map(_ > userTabCount).getOrElse(true)
+    },
+    () => {
+      Notices.error("Nice try, but you're already at your tab quota.")
+      RedirectResponse(TabList.menu.loc.calcDefaultHref)
+    }
+  )
+
   val tabIsMine = TestValueAccess[Tab](
     (tab: Box[Tab]) => {
       for {
