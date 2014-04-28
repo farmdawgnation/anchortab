@@ -36,6 +36,7 @@ class TabErrorsList(requestTab: Tab) {
   def render = {
     val errorInformation = requestTab.errors.map { error =>
       ".message *" #> error.message &
+      ".email *" #> error.email &
       ".time *" #> dateAndTimeFormatter.format(error.createdAt.toDate)
     }
 
