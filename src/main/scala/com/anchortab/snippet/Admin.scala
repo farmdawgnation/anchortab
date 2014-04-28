@@ -434,6 +434,27 @@ object Admin extends AffiliateCalculation with AccountDeletion {
       Authentication.impersonateUser(userId)
     }
 
+    def repairUser(user: User)(s: String) = {
+      user.stripeCustomerId.flatMap { customerId =>
+        tryo(stripe.Customer.retrieve(customerId))
+      } match {
+        case Some(_) =>
+          Alert("This user does not appear to be broken.")
+
+        case _ =>
+          tryo(stripe.Customer.create(Map("email" -> user.email))) match {
+            case somethingElse: EmptyBox =>
+              Alert("Couldn't create customer for user: " + somethingElse)
+
+            case Full(customer) =>
+              user.copy(stripeCustomerId = Some(customer.id)).save
+
+              Notices.notice("User repaired.")
+              Reload
+          }
+      }
+    }
+
     def deleteUser(user: User)(s: String) = {
       deleteAccount(user) match {
         case Full(true) =>
@@ -454,6 +475,7 @@ object Admin extends AffiliateCalculation with AccountDeletion {
           ".user-row" #> users.map { user =>
             ".email *" #> user.email &
             ".name *" #> user.name &
+            ".repair-user [onclick]" #> onEvent(repairUser(user) _) &
             ".impersonate-user [onclick]" #> onEvent(impersonateUser(user._id) _) &
             ".edit-user [onclick]" #> onEvent(editUser(user._id) _) &
             ".delete-user [onclick]" #> onEventIf("This will erase the user and all their tabs. May take a few moments. Are you sure?", deleteUser(user) _)
