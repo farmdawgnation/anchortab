@@ -474,7 +474,6 @@ object Admin extends AffiliateCalculation with AccountDeletion {
         } yield {
           ".user-row" #> users.map { user =>
             ".email *" #> user.email &
-            ".name *" #> user.name &
             ".repair-user [onclick]" #> onEvent(repairUser(user) _) &
             ".impersonate-user [onclick]" #> onEvent(impersonateUser(user._id) _) &
             ".edit-user [onclick]" #> onEvent(editUser(user._id) _) &
