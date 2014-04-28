@@ -60,5 +60,8 @@ object RetentionDispatcherActor extends LiftActor with Loggable {
 
     case DispatchRetentionEmails =>
       dispatchRetentionEmailTo(retentionEmailTargets)
+
+      if (Props.productionMode)
+        this ! ScheduleRetentionDispatch
   }
 }
