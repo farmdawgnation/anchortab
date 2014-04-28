@@ -103,8 +103,7 @@ object Util extends Loggable {
   def firstSteps = {
     {
       for {
-        session <- userSession.is
-        user <- User.find(session.userId)
+        user <- currentUser.is
           if ! user.firstSteps.isEmpty
       } yield {
         ClearClearable andThen
@@ -206,9 +205,6 @@ object Util extends Loggable {
 
         case s if s.startsWith("/admin/plan") =>
           Some(".plans [class+]" #> "selected")
-
-        case s if s.startsWith("/admin/invite") =>
-          Some(".invites [class+]" #> "selected")
 
         case s if s.startsWith("/admin/miracle") =>
           Some(".miracles [class+]" #> "selected")

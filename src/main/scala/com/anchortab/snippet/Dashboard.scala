@@ -17,7 +17,8 @@ import net.liftweb._
 import com.anchortab.model._
 
 object Dashboard {
-  val dashboardMenu = Menu.i("Dashboard") / "manager" / "dashboard"
+  val dashboardMenu = Menu.i("Dashboard") / "manager" / "dashboard" >>
+    Authentication.ifLoggedIn
 
   val menus =
     dashboardMenu ::
@@ -39,8 +40,7 @@ object Dashboard {
   def accountStats = {
     val currentPlanName =
       for {
-        session <- userSession.is
-        user <- User.find(session.userId)
+        user <- currentUser.is
       } yield {
         user.plan.name
       }
@@ -50,8 +50,7 @@ object Dashboard {
         import Option.option2Iterable
 
         for {
-          session <- userSession.is
-          user <- User.find(session.userId)
+          user <- currentUser.is
         } yield {
           val quotas =
             for {

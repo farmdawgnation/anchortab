@@ -36,7 +36,8 @@ object ResetPassword {
   val menu =
     Menu.param[User]("Reset Password", Text("Reset Password"), userForReset(_), resetForUser(_)) /
     "lost-sticky-note" / * >>
-    TemplateBox(() => Templates("lost-sticky-note" :: Nil))
+    TemplateBox(() => Templates("lost-sticky-note" :: Nil)) >>
+    Authentication.ifNotLoggedIn
 }
 
 class ResetPassword(user: User) extends Loggable {

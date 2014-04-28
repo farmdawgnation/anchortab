@@ -12,6 +12,7 @@ import net.liftweb._
     import JsCmds._
 
 object ForgotPasswordComplete {
-  val menu = Menu.i("Reset Email Sent") / "amnesia-complete"
+  val menu = Menu.i("Reset Email Sent") / "amnesia-complete" >>
+    Authentication.ifNotLoggedIn
 }
 
