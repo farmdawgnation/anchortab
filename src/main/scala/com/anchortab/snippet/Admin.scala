@@ -300,6 +300,7 @@ object Admin extends AffiliateCalculation with AccountDeletion {
         var confirmPassword = ""
         var isAdmin = user.admin_?
         var isAffiliate = user.affiliate_?
+        var stripeId = user.stripeCustomerId
 
         def submit() = {
           implicit val formats = DefaultFormats
@@ -337,17 +338,30 @@ object Admin extends AffiliateCalculation with AccountDeletion {
 
           val userProfile = UserProfile(firstNameOpt, lastNameOpt, organizationOpt)
 
-          (usersEditMenu.currentValue, email, passwordChange) match {
-            case (_, "", _) =>
+          def stripeUpdate = stripeId match {
+            case None =>
+              tryo {
+                val customer = stripe.Customer.create(Map("email" -> email))
+                stripeId = Some(customer.id)
+              }
+
+            case _ =>
+          }
+
+          (usersEditMenu.currentValue, email, passwordChange, stripeUpdate) match {
+            case (_, _, _, error: EmptyBox) =>
+              Alert("Error creating stripe customer: " + error)
+
+            case (_, "", _, _) =>
               Alert("Email is a required field. It must have a value.")
 
-            case (_, _, Failure(msg, _, _)) =>
+            case (_, _, Failure(msg, _, _), _) =>
               Alert(msg)
 
-            case (Failure(msg, _, _), _, _) =>
+            case (Failure(msg, _, _), _, _, _) =>
               Alert(msg)
 
-            case (Full(_), _, pw) =>
+            case (Full(_), _, pw, _) =>
               User.update("_id" -> user._id, "$set" -> (
                 ("email" -> email) ~
                 ("profile" -> decompose(userProfile)) ~
@@ -362,8 +376,8 @@ object Admin extends AffiliateCalculation with AccountDeletion {
 
               RedirectTo("/admin/users")
 
-            case (Empty, email, Full(pw)) =>
-              val user = User(email, pw, Some(userProfile))
+            case (Empty, email, Full(pw), Full(_)) =>
+              val user = User(email, pw, Some(userProfile), stripeCustomerId = stripeId)
 
               val userWithRole = {
                 if (isAdmin)
@@ -383,8 +397,11 @@ object Admin extends AffiliateCalculation with AccountDeletion {
 
               RedirectTo("/admin/users")
 
-            case (Empty, _, Empty) =>
+            case (Empty, _, Empty, _) =>
               Alert("Password is required for new users.")
+
+            case _ =>
+              Alert("WAT")
           }
         }
 
