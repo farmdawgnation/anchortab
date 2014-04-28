@@ -15,8 +15,7 @@ import com.newrelic.api.agent.NewRelic
 trait MailChimpTabForm {
   val mailChimpAuthorized_? = {
     for {
-      session <- userSession.is
-      user <- User.find(session.userId)
+      user <- currentUser.is
       credentials <- user.credentialsFor("Mailchimp")
     } yield {
       true
@@ -28,8 +27,7 @@ trait MailChimpTabForm {
   val mailchimpLists = {
     val lists = {
       for {
-        session <- userSession.is
-        user <- User.find(session.userId)
+        user <- currentUser.is
         credentials <- user.credentialsFor("Mailchimp")
         token <- credentials.serviceCredentials.get("token")
       } yield {

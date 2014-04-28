@@ -33,7 +33,7 @@ object RequestHandling {
 
     // Force URLs processing sensitive data to SSL in production.
     if (Props.productionMode) {
-      val sslProtectedPaths = "/(lost-sticky-note|amnesia|register|accept-invite|admin|manager|session)".r
+      val sslProtectedPaths = "/(lost-sticky-note|amnesia|register|admin|manager|session)".r
       LiftRules.earlyResponse.append { req =>
         val uriAndQueryString = req.uri + (req.request.queryString.map(s => "?"+s) openOr "")
 
@@ -103,7 +103,6 @@ object RequestHandling {
     LiftRules.snippets.append(Authentication.snippetHandlers)
     LiftRules.snippets.append(Accounts.snippetHandlers)
     LiftRules.snippets.append(Admin.snippetHandlers)
-    LiftRules.snippets.append(Invites.snippetHandlers)
     LiftRules.snippets.append(Subscription.snippetHandlers)
     LiftRules.snippets.append(Affiliate.snippetHandlers)
   }
@@ -131,7 +130,6 @@ object RequestHandling {
       Dashboard.menus ++
       Accounts.menus ++
       Subscription.menus ++
-      Invites.menus ++
       Affiliate.menus ++
       Admin.menus ++
       List(

@@ -18,7 +18,8 @@ case class TabEmbedCodeReceived(embedCode: String) extends SimpleAnchorTabEvent(
 case class NewTabCreated(embedCode: String) extends SimpleAnchorTabEvent("new-tab-created")
 
 object TabList {
-  val menu = Menu.i("My Tabs") / "manager" / "tabs"
+  val menu = Menu.i("My Tabs") / "manager" / "tabs" >>
+    Authentication.ifLoggedIn
 }
 class TabList {
   def render = {
@@ -61,8 +62,7 @@ class TabList {
   def newTabButton = {
     {
       for {
-        session <- userSession.is
-        user <- User.find(session.userId)
+        user <- currentUser.is
         userTabCount = Tab.count("userId" -> user._id)
       } yield {
         if (user.plan.quotas.get(Plan.Quotas.NumberOfTabs).map(_ > userTabCount) getOrElse true) {

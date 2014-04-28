@@ -15,8 +15,7 @@ import com.newrelic.api.agent.NewRelic
 trait PardotTabForm {
   val pardotAuthorized_? = {
     for {
-      session <- userSession.is
-      user <- User.find(session.userId) if user.plan.hasFeature_?(Plan.Features.PardotIntegration)
+      user <- currentUser.is if user.plan.hasFeature_?(Plan.Features.PardotIntegration)
     } yield {
       true
     }

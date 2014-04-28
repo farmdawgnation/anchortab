@@ -15,7 +15,8 @@ import com.anchortab.model.{User, UserPasswordResetKey}
 import com.anchortab.actor._
 
 object ForgotPassword {
-  val menu = Menu.i("Forgot Password") / "amnesia"
+  val menu = Menu.i("Forgot Password") / "amnesia" >>
+    Authentication.ifNotLoggedIn
 }
 
 class ForgotPassword extends Loggable {

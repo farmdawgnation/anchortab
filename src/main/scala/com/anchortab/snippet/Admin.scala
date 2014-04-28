@@ -31,21 +31,41 @@ import org.joda.time._
 import org.bson.types.ObjectId
 
 object Admin extends AffiliateCalculation with AccountDeletion {
-  val usersListMenu = Menu.i("Users") / "admin" / "users"
+  val usersListMenu = Menu.i("Users") / "admin" / "users" >>
+    Authentication.ifLoggedIn >>
+    Authentication.ifAdmin
+
   val usersNewMenu = Menu.i("New User") / "admin" / "users" / "new" >>
-    TemplateBox(() => Templates("admin" :: "user" :: "form" :: Nil))
+    TemplateBox(() => Templates("admin" :: "user" :: "form" :: Nil)) >>
+    Authentication.ifLoggedIn >>
+    Authentication.ifAdmin
+
   val usersEditMenu =
     Menu.param[User]("Edit User", Text("Edit User"), User.find(_), _._id.toString) /
     "admin" / "user" / * >>
-    TemplateBox(() => Templates("admin" :: "user" :: "form" :: Nil))
-  val plansListMenu = Menu.i("Plans") / "admin" / "plans"
+    TemplateBox(() => Templates("admin" :: "user" :: "form" :: Nil)) >>
+    Authentication.ifLoggedIn >>
+    Authentication.ifAdmin
+
+  val plansListMenu = Menu.i("Plans") / "admin" / "plans" >>
+    Authentication.ifLoggedIn >>
+    Authentication.ifAdmin
+
   val plansNewMenu = Menu.i("New Plan") / "admin" / "plans" / "new" >>
-    TemplateBox(() => Templates("admin" :: "plan" :: "form" :: Nil))
+    TemplateBox(() => Templates("admin" :: "plan" :: "form" :: Nil)) >>
+    Authentication.ifLoggedIn >>
+    Authentication.ifAdmin
+
   val plansEditMenu =
     Menu.param[Plan]("Edit Plan", Text("Edit Plan"), Plan.find(_), _._id.toString) /
     "admin" / "plan" / * >>
-    TemplateBox(() => Templates("admin" :: "plan" :: "form" :: Nil))
-  val affiliateReportMenu = Menu.i("Affiliate Report") / "admin" / "affiliate-report"
+    TemplateBox(() => Templates("admin" :: "plan" :: "form" :: Nil)) >>
+    Authentication.ifLoggedIn >>
+    Authentication.ifAdmin
+
+  val affiliateReportMenu = Menu.i("Affiliate Report") / "admin" / "affiliate-report" >>
+    Authentication.ifLoggedIn >>
+    Authentication.ifAdmin
 
   val menus =
     usersListMenu ::
@@ -269,8 +289,7 @@ object Admin extends AffiliateCalculation with AccountDeletion {
   def editUserForm = {
     {
       for {
-        session <- userSession.is
-        currentUser <- User.find(session.userId) if currentUser.admin_?
+        currentUser <- currentUser.is if currentUser.admin_?
         user <- usersEditMenu.currentValue or Full(User("", ""))
       } yield {
         var firstName = user.profile.flatMap(_.firstName) getOrElse ""
@@ -281,6 +300,7 @@ object Admin extends AffiliateCalculation with AccountDeletion {
         var confirmPassword = ""
         var isAdmin = user.admin_?
         var isAffiliate = user.affiliate_?
+        var stripeId = user.stripeCustomerId
 
         def submit() = {
           implicit val formats = DefaultFormats
@@ -318,17 +338,30 @@ object Admin extends AffiliateCalculation with AccountDeletion {
 
           val userProfile = UserProfile(firstNameOpt, lastNameOpt, organizationOpt)
 
-          (usersEditMenu.currentValue, email, passwordChange) match {
-            case (_, "", _) =>
+          def stripeUpdate = stripeId match {
+            case None =>
+              tryo {
+                val customer = stripe.Customer.create(Map("email" -> email))
+                stripeId = Some(customer.id)
+              }
+
+            case _ =>
+          }
+
+          (usersEditMenu.currentValue, email, passwordChange, stripeUpdate) match {
+            case (_, _, _, error: EmptyBox) =>
+              Alert("Error creating stripe customer: " + error)
+
+            case (_, "", _, _) =>
               Alert("Email is a required field. It must have a value.")
 
-            case (_, _, Failure(msg, _, _)) =>
+            case (_, _, Failure(msg, _, _), _) =>
               Alert(msg)
 
-            case (Failure(msg, _, _), _, _) =>
+            case (Failure(msg, _, _), _, _, _) =>
               Alert(msg)
 
-            case (Full(_), _, pw) =>
+            case (Full(_), _, pw, _) =>
               User.update("_id" -> user._id, "$set" -> (
                 ("email" -> email) ~
                 ("profile" -> decompose(userProfile)) ~
@@ -343,8 +376,8 @@ object Admin extends AffiliateCalculation with AccountDeletion {
 
               RedirectTo("/admin/users")
 
-            case (Empty, email, Full(pw)) =>
-              val user = User(email, pw, Some(userProfile))
+            case (Empty, email, Full(pw), Full(_)) =>
+              val user = User(email, pw, Some(userProfile), stripeCustomerId = stripeId)
 
               val userWithRole = {
                 if (isAdmin)
@@ -364,8 +397,11 @@ object Admin extends AffiliateCalculation with AccountDeletion {
 
               RedirectTo("/admin/users")
 
-            case (Empty, _, Empty) =>
+            case (Empty, _, Empty, _) =>
               Alert("Password is required for new users.")
+
+            case _ =>
+              Alert("WAT")
           }
         }
 
@@ -398,6 +434,27 @@ object Admin extends AffiliateCalculation with AccountDeletion {
       Authentication.impersonateUser(userId)
     }
 
+    def repairUser(user: User)(s: String) = {
+      user.stripeCustomerId.flatMap { customerId =>
+        tryo(stripe.Customer.retrieve(customerId))
+      } match {
+        case Some(_) =>
+          Alert("This user does not appear to be broken.")
+
+        case _ =>
+          tryo(stripe.Customer.create(Map("email" -> user.email))) match {
+            case somethingElse: EmptyBox =>
+              Alert("Couldn't create customer for user: " + somethingElse)
+
+            case Full(customer) =>
+              user.copy(stripeCustomerId = Some(customer.id)).save
+
+              Notices.notice("User repaired.")
+              Reload
+          }
+      }
+    }
+
     def deleteUser(user: User)(s: String) = {
       deleteAccount(user) match {
         case Full(true) =>
@@ -412,13 +469,12 @@ object Admin extends AffiliateCalculation with AccountDeletion {
     val userListTransform =
       {
         for {
-          session <- userSession.is
-          currentUser <- User.find(session.userId) if currentUser.admin_?
+          currentUser <- currentUser.is if currentUser.admin_?
           users = User.findAll
         } yield {
           ".user-row" #> users.map { user =>
             ".email *" #> user.email &
-            ".name *" #> user.name &
+            ".repair-user [onclick]" #> onEvent(repairUser(user) _) &
             ".impersonate-user [onclick]" #> onEvent(impersonateUser(user._id) _) &
             ".edit-user [onclick]" #> onEvent(editUser(user._id) _) &
             ".delete-user [onclick]" #> onEventIf("This will erase the user and all their tabs. May take a few moments. Are you sure?", deleteUser(user) _)
