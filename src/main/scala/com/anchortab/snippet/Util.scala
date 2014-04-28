@@ -206,9 +206,6 @@ object Util extends Loggable {
         case s if s.startsWith("/admin/plan") =>
           Some(".plans [class+]" #> "selected")
 
-        case s if s.startsWith("/admin/invite") =>
-          Some(".invites [class+]" #> "selected")
-
         case s if s.startsWith("/admin/miracle") =>
           Some(".miracles [class+]" #> "selected")
 

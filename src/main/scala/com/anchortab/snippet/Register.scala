@@ -32,11 +32,7 @@ class Register extends Loggable {
   private var requestedPassword = ""
   private var selectedPlan: Plan = Plan.DefaultPlan
 
-  private val plans = {
-    Invites.acceptInviteMenu.currentValue.flatMap(_.forPlan).map(List(_))
-  } openOr {
-    Plan.findAll("visibleOnRegistration" -> true)
-  }
+  private val plans = Plan.findAll("visibleOnRegistration" -> true)
 
   private val planSelections = (Plan.DefaultPlan +: plans).map { plan =>
     ((plan.hasTrial_? || plan.free_?).toString, plan._id.toString, plan.registrationTitle)
@@ -141,13 +137,6 @@ class Register extends Loggable {
         user match {
           case Full(user) =>
             val loginResult = Authentication.processLogin(emailAddress, requestedPassword)
-
-            // Bump the invite code count
-            for {
-              invite <- Invites.acceptInviteMenu.currentValue
-            } {
-              InviteCode.update("_id" -> invite._id, "$inc" -> ("numberOfUses" -> 1))
-            }
 
             // Send welcome email
             EmailActor ! SendWelcomeEmail(user.email)
