@@ -137,6 +137,7 @@ object RequestHandling {
         ForgotPasswordComplete.menu,
         ResetPassword.menu,
         Register.menu,
+        Register.promoMenu,
         TabList.menu,
         TabErrorsList.menu,
         TabForm.tabNewMenu,
