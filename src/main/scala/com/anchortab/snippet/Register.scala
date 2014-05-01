@@ -21,9 +21,31 @@ import com.stripe
 import com.anchortab.model._
 import com.anchortab.actor._
 
+object registrationCoupon extends RequestVar[Box[stripe.Coupon]](Empty)
+
 object Register {
   val menu = Menu.i("Register") / "register" >>
-    Authentication.ifNotLoggedIn
+  Authentication.ifNotLoggedIn
+
+  val promoMenu = Menu.param[stripe.Coupon](
+    "promo",
+    "promo",
+    (s) => registrationCoupon.is or {
+      registrationCoupon(tryo(stripe.Coupon.retrieve(s)))
+      registrationCoupon.is
+    },
+    _.id
+  ) / "promo" >>
+  TestValueAccess((coupon) => {
+    println("test value access")
+    for (coupon <- coupon) yield {
+      if (coupon.valid) {
+        RedirectWithState(menu.loc.calcDefaultHref, RedirectState(() => registrationCoupon(Full(coupon))))
+      } else {
+        RedirectResponse(menu.loc.calcDefaultHref)
+      }
+    }
+  })
 }
 
 class Register extends Loggable {
@@ -34,11 +56,13 @@ class Register extends Loggable {
 
   private val plans = Plan.findAll("visibleOnRegistration" -> true)
 
-  private val planSelections = (Plan.DefaultPlan +: plans).map { plan =>
-    ((plan.hasTrial_? || plan.free_?).toString, plan._id.toString, plan.registrationTitle)
+  private lazy val hasFullDiscount_? = registrationCoupon.is.map(coupon => {
+    coupon.valid && coupon.percentOff == 100
+  }).openOr(false)
 
-    SelectableOption(plan, plan.registrationTitle, "data-has-trial" -> plan.free_?.toString)
-  }
+  private lazy val planSelections = (Plan.DefaultPlan +: plans).map({ plan =>
+    SelectableOption(plan, plan.registrationTitle, "data-has-trial" -> (plan.hasTrial_? || plan.free_? || hasFullDiscount_?).toString)
+  }).sortWith(_.value.price > _.value.price)
 
   private def createStripeCustomer(plan: Plan) = {
     def createFn(customerMap: Map[String, _]) = tryo(stripe.Customer.create(customerMap))
@@ -47,11 +71,26 @@ class Register extends Loggable {
       case (freePlan, _) if freePlan.free_? =>
         createFn(Map("email" -> emailAddress))
 
+      case (paidPlan, _) if hasFullDiscount_? =>
+        createFn(Map(
+          "email" -> emailAddress,
+          "coupon" -> registrationCoupon.is.map(_.id).openOr(""),
+          "plan" -> plan.stripeId.getOrElse("")
+        ))
+
       case (_, stripeToken) if stripeToken.isEmpty =>
         Failure("Your Stripe Token was empty and you attempted to subscribe to a paid plan.")
 
       case (paidPlan, _) if paidPlan.stripeId.isEmpty =>
         Failure("Paid plan didn't have a Stripe identifier.")
+
+      case (paidPlan, stripeToken) if registrationCoupon.is.isDefined =>
+        createFn(Map(
+          "email" -> emailAddress,
+          "plan" -> plan.stripeId.getOrElse(""),
+          "card" -> stripeToken,
+          "coupon" -> registrationCoupon.is.map(_.id).openOr("")
+        ))
 
       case (paidPlan, stripeToken) =>
         createFn(Map(
@@ -158,6 +197,17 @@ class Register extends Loggable {
   }
 
   def render = {
+    if (registrationCoupon.is.isDefined) {
+      val percentOff = registrationCoupon.is.map(_.percentOff).openOr(0)
+      val duration = registrationCoupon.is.map(_.duration).openOr("") match {
+        case "once" => "one month"
+        case "repeating" => "multiple months"
+        case _ => "forever"
+      }
+
+      Notices.notice(s"Coupon applied: $percentOff% off $duration.")
+    }
+
     SHtml.makeFormsAjax andThen
     ".plan-selection" #> selectObj[Plan](planSelections, Empty, selectedPlan = _) &
     "#stripe-token" #> hidden(stripeToken = _, stripeToken) &
