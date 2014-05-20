@@ -147,7 +147,7 @@ trait CampaignMonitorCredentialsHelper extends Loggable {
     val tokenRefreshResult = for {
       newToken <- CampaignMonitor.refreshToken(accessToken, refreshToken)
       expiresAt = (new DateTime()).plusSeconds(newToken.expires_in)
-      updateCredentialsUnit = updateCredentials(userId, accessToken, refreshToken, expiresAt)
+      updateCredentialsUnit = updateCredentials(userId, newToken.access_token, newToken.refresh_token, expiresAt)
       resultOfSomething <- doSomething(newToken.access_token, newToken.refresh_token)
     } yield {
       resultOfSomething
