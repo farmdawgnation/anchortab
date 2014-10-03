@@ -12,26 +12,7 @@
         <lift:script-bundle name="register"></lift:script-bundle>
       </tail>
 
-      <h3>
-        User registration disabled
-      </h3>
-
-      <p>
-        On July 8th, 2014, Crazy Goat Creative and Cirion Group made the call to
-        shut down Anchor Tab to pursue other ventures. New user registration has been
-        disabled as a part of this shutdown.
-      </p>
-
-      <p>
-        We thank you for considering us, and wish you all the best.
-      </p>
-
-      <p>
-        - The Anchor Tab Team
-      </p>
-
-      <!--
-      <form id="registration-form" class="registration-form stripe-form">
+      <form id="registration-form" class="registration-form stripe-form" data-lift="Register.render">
         <input type="hidden" id="stripe-token">
         <h3>Create Your Account</h3>
 
@@ -91,7 +72,6 @@
 
         <input type="submit" class="submit" value="Register">
       </form>
-      -->
 
       <tail>
         <script data-lift="mixpanel"></script>
